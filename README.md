@@ -1,16 +1,11 @@
 # cableTvBook
 
 A new Flutter project.
+This project is for all the cable operators,who is suffering from carrying lot of books along with them daily.
+It makes your work easy, by storing all your data in one small device.
 
 ## Getting Started
 
-This project is a starting point for a Flutter application.
-
-A few resources to get you started if this is your first Flutter project:
-
-- [Lab: Write your first Flutter app](https://flutter.dev/docs/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://flutter.dev/docs/cookbook)
-
-For help getting started with Flutter, view our
-[online documentation](https://flutter.dev/docs), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+It is very easy to use this app.
+Similar to a book that you use, with wide range of options that a book cannot provide.
+An app which reduces paper use, save your time and makes your work easy.

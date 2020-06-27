@@ -1,5 +1,25 @@
 import 'package:flutter/cupertino.dart';
 
+class AreaData {
+  String areaName;
+  int totalAccounts;
+  int activeAccounts;
+  int inActiveAccounts;
+  AreaData({
+    @required this.areaName,
+    this.totalAccounts = 0,
+    this.activeAccounts = 0,
+    this.inActiveAccounts = 0,
+  });
+}
+
+List<AreaData> areas = [
+  AreaData(areaName: 'North'),
+  AreaData(areaName: 'East'),
+  AreaData(areaName: 'West'),
+  AreaData(areaName: 'South'),
+];
+
 class Plan {
   int monthCode;
   String date;
@@ -9,7 +29,7 @@ class Plan {
     this.monthCode,
     this.date,
     this.plan,
-    this.status,
+    this.status = 'Not started',
   });
 }
 
@@ -32,5 +52,7 @@ class Customer {
     @required this.macId,
     @required this.networkProviderName,
     @required this.area,
+    this.currentStatus,
+    this.plans,
   });
 }

@@ -1,10 +1,13 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_icons/flutter_icons.dart';
+
 import 'package:cableTvBook/screens/add_customer_screen.dart';
 import 'package:cableTvBook/screens/home_screen.dart';
 import 'package:cableTvBook/screens/search_screen.dart';
-import 'package:flutter/material.dart';
 import 'package:cableTvBook/widgets/home_drawer.dart';
 
 class BottomTabsScreen extends StatefulWidget {
+  static const routeName = '/bottomTabsScreen';
   final networkName;
   final username;
   final phoneNumber;
@@ -53,14 +56,14 @@ class _BottomTabsScreenState extends State<BottomTabsScreen> {
                     Text(
                       'Welcome ' + widget.username,
                       style: TextStyle(
-                       fontSize: height * 0.02,
+                        fontSize: height * 0.02,
                         color: Colors.white,
                       ),
                     ),
                     Text(
                       'Phone : ' + widget.phoneNumber,
                       style: TextStyle(
-                       fontSize: height * 0.02,
+                        fontSize: height * 0.02,
                         color: Colors.white,
                       ),
                     ),
@@ -85,15 +88,15 @@ class _BottomTabsScreenState extends State<BottomTabsScreen> {
         type: BottomNavigationBarType.fixed,
         items: [
           BottomNavigationBarItem(
-            icon: Icon(Icons.home),
+            icon: Icon(FlutterIcons.home_ant),
             title: Text('Home'),
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.search),
+            icon: Icon(FlutterIcons.search1_ant),
             title: Text('Search'),
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.person_add),
+            icon: Icon(FlutterIcons.adduser_ant),
             title: Text('Add customer'),
           ),
         ],

@@ -7,6 +7,7 @@ class HomeDrawer extends StatelessWidget {
     return Drawer(
       elevation: 5,
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
           Container(
             height: height * 0.25,
@@ -16,7 +17,30 @@ class HomeDrawer extends StatelessWidget {
               fit: BoxFit.cover,
             ),
           ),
-          
+          SizedBox(height: height * 0.01),
+          FlatButton.icon(
+            onPressed: () {},
+            icon: Icon(Icons.account_circle),
+            label: Text('Profile settings'),
+          ),
+          Divider(),
+          FlatButton.icon(
+            onPressed: () {},
+            icon: Icon(Icons.collections_bookmark),
+            label: Text('Collection Information'),
+          ),
+          Divider(),
+          FlatButton.icon(
+            onPressed: () {},
+            icon: Icon(Icons.settings),
+            label: Text('Settings'),
+          ),
+          Divider(),
+          FlatButton.icon(
+            onPressed: () {},
+            icon: Icon(Icons.power_settings_new),
+            label: Text('Logout'),
+          ),
         ],
       ),
     );

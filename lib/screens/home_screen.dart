@@ -1,4 +1,10 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
+
+import 'package:cableTvBook/screens/area_customers_screen.dart';
+import 'package:cableTvBook/models/customer.dart';
+import 'package:flutter_icons/flutter_icons.dart';
 
 final List<Color> colors = [
   Colors.orange,
@@ -12,15 +18,19 @@ final List<Color> colors = [
 ];
 
 class HomeScreen extends StatefulWidget {
+  static const routeName = '/homeScreen';
   @override
   _HomeScreenState createState() => _HomeScreenState();
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  final _formKey = GlobalKey<FormState>();
   int _year = DateTime.now().year.floor();
   int _selectedYear;
   bool _isLeftActive = true;
   bool _isRightActive = true;
+  bool _animation = true;
+  Timer _timer;
 
   @override
   void initState() {
@@ -29,6 +39,9 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void _leftArrowClickAction() {
+    setState(() {
+      _animation = false;
+    });
     if (_year - _selectedYear + 1 <= 0) {
       setState(() {
         _isLeftActive = true;
@@ -37,14 +50,23 @@ class _HomeScreenState extends State<HomeScreen> {
       });
     } else {
       setState(() {
-        _selectedYear = _selectedYear - 1;
         _isLeftActive = false;
         _isRightActive = true;
+        _selectedYear = _selectedYear - 1;
       });
     }
+    _timer = Timer.periodic(Duration(milliseconds: 150), (timer) {
+      setState(() {
+        _animation = true;
+      });
+      timer.cancel();
+    });
   }
 
   void _rightArrowClickAction() {
+    setState(() {
+      _animation = false;
+    });
     if (_year - _selectedYear - 1 >= 0) {
       setState(() {
         _isRightActive = true;
@@ -53,18 +75,31 @@ class _HomeScreenState extends State<HomeScreen> {
       });
     } else {
       setState(() {
-        _selectedYear = _selectedYear + 1;
         _isRightActive = false;
         _isLeftActive = true;
+        _selectedYear = _selectedYear + 1;
       });
     }
+    _timer = Timer.periodic(Duration(milliseconds: 150), (timer) {
+      setState(() {
+        _animation = true;
+      });
+      timer.cancel();
+    });
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    try {
+      _timer.cancel();
+    } catch (error) {}
   }
 
   @override
   Widget build(BuildContext context) {
     final width = MediaQuery.of(context).size.width;
     return Scaffold(
-      backgroundColor: Colors.black.withOpacity(0.1),
       appBar: PreferredSize(
         child: Padding(
           padding: EdgeInsets.symmetric(vertical: 5),
@@ -77,13 +112,19 @@ class _HomeScreenState extends State<HomeScreen> {
                 onPressed: _isLeftActive ? _leftArrowClickAction : null,
               ),
               Expanded(
-                child: Text(
-                  'Year\n$_selectedYear',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    color: Theme.of(context).primaryColor,
-                    fontWeight: FontWeight.bold,
-                    letterSpacing: 2,
+                child: AnimatedDefaultTextStyle(
+                  curve: Curves.fastOutSlowIn,
+                  duration: Duration(milliseconds: 300),
+                  style: _animation
+                      ? TextStyle(
+                          color: Theme.of(context).primaryColor,
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: 2,
+                        )
+                      : TextStyle(fontSize: 0),
+                  child: Text(
+                    'Year\n$_selectedYear',
+                    textAlign: TextAlign.center,
                   ),
                 ),
               ),
@@ -99,18 +140,18 @@ class _HomeScreenState extends State<HomeScreen> {
         preferredSize: Size(width, width * 0.15),
       ),
       body: GridView.builder(
-        itemCount: 8,
+        itemCount: areas.length,
         itemBuilder: (context, index) => GestureDetector(
           child: Container(
             margin: EdgeInsets.all(width * 0.025),
             padding: EdgeInsets.all(width * 0.05),
             decoration: BoxDecoration(
+              backgroundBlendMode: BlendMode.darken,
               borderRadius: BorderRadius.circular(15),
               gradient: LinearGradient(
                 colors: [
-                  colors[index % 8].withOpacity(0.2),
-                  colors[index % 8].withOpacity(0.6),
                   colors[index % 8].withOpacity(0.4),
+                  colors[index % 8].withOpacity(0.6),
                   colors[index % 8].withOpacity(0.8),
                   colors[index % 8].withOpacity(0.6),
                   colors[index % 8].withOpacity(1),
@@ -124,59 +165,153 @@ class _HomeScreenState extends State<HomeScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
                 Text(
-                  'Area Name',
+                  areas[index].areaName,
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-                Text('Total number of customers : 200'),
-                Text('Active accounts : 150'),
-                Text('In-Active accounts : 50'),
+                Text(
+                    'Total number of accounts : ${areas[index].totalAccounts}'),
+                Text('Active accounts : ${areas[index].activeAccounts}'),
+                Text('In-Active accounts : ${areas[index].inActiveAccounts}'),
               ],
             ),
           ),
-          onTap: () {},
+          onTap: () => Navigator.of(context).pushNamed(
+            AreaCustomersScreen.routeName,
+            arguments: areas[index],
+          ),
           onLongPress: () => showDialog(
             context: context,
-            builder: (context) => AlertDialog(
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(30),
-              ),
-              title: Text(
-                'Edit name',
-                style: TextStyle(
-                  color: Theme.of(context).primaryColor,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              content: TextField(
-                maxLength: 10,
-                decoration: InputDecoration(
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(15),
+            builder: (context) {
+              final textController = TextEditingController();
+              return Form(
+                key: _formKey,
+                child: AlertDialog(
+                  title: Text(
+                    'Edit name',
                   ),
-                ),
-              ),
-              actions: <Widget>[
-                FlatButton.icon(
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.only(
-                      bottomRight: Radius.circular(15),
+                  content: TextFormField(
+                    maxLength: 10,
+                    controller: textController,
+                    validator: (value) {
+                      if (value.isEmpty) {
+                        return 'Name is empty';
+                      } else if (value.compareTo('[A-Z|a-z|0-9]*') == 0) {
+                        return 'Must be a combination of letter and number';
+                      } else {
+                        return null;
+                      }
+                    },
+                    decoration: InputDecoration(
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(15),
+                      ),
                     ),
                   ),
-                  onPressed: () {},
-                  icon: Icon(Icons.save_alt),
-                  label: Text('save'),
-                  color: Colors.orange,
+                  actions: <Widget>[
+                    FlatButton.icon(
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.only(
+                          topLeft: Radius.circular(15),
+                          bottomRight: Radius.circular(15),
+                        ),
+                      ),
+                      onPressed: () {
+                        if (_formKey.currentState.validate()) {
+                          _formKey.currentState.save();
+                          setState(() {
+                            areas[index].areaName = textController.text;
+                          });
+                          Navigator.of(context).pop();
+                        }
+                      },
+                      icon: Icon(FlutterIcons.content_save_edit_mco),
+                      label: Text('save'),
+                      color: Theme.of(context).primaryColor,
+                    ),
+                  ],
                 ),
-              ],
-            ),
+              );
+            },
           ),
         ),
         padding: EdgeInsets.symmetric(horizontal: width * 0.025),
         gridDelegate:
             SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 2),
       ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () => showDialog(
+          context: context,
+          builder: (ctx) {
+            final textController = TextEditingController();
+            return Form(
+              key: _formKey,
+              child: AlertDialog(
+                title: Text('Add New Area'),
+                content: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  mainAxisSize: MainAxisSize.min,
+                  children: <Widget>[
+                    Text(
+                      'This action cannot be undone.\n\nPlease make sure before adding.\n',
+                      style: TextStyle(
+                        color: Theme.of(context).errorColor,
+                      ),
+                    ),
+                    TextFormField(
+                      maxLength: 10,
+                      controller: textController,
+                      validator: (value) {
+                        if (value.isEmpty) {
+                          return 'Name is empty';
+                        } else if (value.compareTo('[A-Z|a-z|0-9]*') == 0) {
+                          return 'Must be a combination of letter and number';
+                        } else {
+                          return null;
+                        }
+                      },
+                      decoration: InputDecoration(
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(15),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                actions: <Widget>[
+                  FlatButton.icon(
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.only(
+                        topLeft: Radius.circular(15),
+                        bottomRight: Radius.circular(15),
+                      ),
+                    ),
+                    onPressed: () {
+                      if (_formKey.currentState.validate()) {
+                        _formKey.currentState.save();
+                        setState(() {
+                          areas.add(AreaData(areaName: textController.text));
+                        });
+                        Navigator.of(context).pop();
+                      }
+                    },
+                    icon: Icon(FlutterIcons.content_save_mco),
+                    label: Text('save'),
+                    color: Theme.of(context).primaryColor,
+                  ),
+                ],
+              ),
+            );
+          },
+        ),
+        child: Icon(
+          FlutterIcons.add_to_list_ent,
+          color: Theme.of(context).accentColor,
+        ),
+        backgroundColor: Theme.of(context).primaryColor,
+      ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
     );
   }
 }

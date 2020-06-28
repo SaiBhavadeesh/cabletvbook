@@ -1,3 +1,4 @@
+import 'package:cableTvBook/screens/customer_detail_screen.dart';
 import 'package:cableTvBook/widgets/default_dialog_box.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_icons/flutter_icons.dart';
@@ -39,18 +40,21 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
       key: _formKey,
       child: SingleChildScrollView(
         child: Padding(
-          padding: const EdgeInsets.all(8.0),
+          padding: const EdgeInsets.symmetric(horizontal: 8.0),
           child: Column(
             children: <Widget>[
               Container(
-                margin: EdgeInsets.all(10),
+                margin: EdgeInsets.only(bottom: 10),
                 padding: EdgeInsets.all(10),
                 child: Text(
                   'ADD NEW CUSTOMER',
                   style: TextStyle(color: Colors.white),
                 ),
                 decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(30),
+                  borderRadius: BorderRadius.only(
+                    bottomLeft: Radius.circular(15),
+                    bottomRight: Radius.circular(15),
+                  ),
                   color: Theme.of(context).primaryColor,
                   boxShadow: [
                     BoxShadow(
@@ -230,18 +234,36 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
                       _selectedArea != null &&
                       _selectedPlan != null) {
                     _formKey.currentState.save();
-                    customers.add(
-                      Customer(
-                        id: DateTime.now().toString(),
-                        name: _nameController.text.trim(),
-                        phoneNumber: _phoneController.text.trim(),
-                        address: _addressController.text.trim(),
-                        accountNumber: _accountController.text.trim(),
-                        macId: _macController.text.trim(),
-                        networkProviderName: 'Sri Rama Cable Network',
-                        area: _selectedArea,
-                        currentPlan: _selectedPlan,
-                      ),
+                    final newCustomer = Customer(
+                      id: DateTime.now().toString(),
+                      name: _nameController.text.trim(),
+                      phoneNumber: _phoneController.text.trim(),
+                      address: _addressController.text.trim(),
+                      accountNumber: _accountController.text.trim(),
+                      macId: _macController.text.trim(),
+                      networkProviderName: 'Sri Rama Cable Network',
+                      area: _selectedArea,
+                      currentPlan: _selectedPlan,
+                    );
+                    areas.forEach((element) {
+                      if (element.areaName == _selectedArea) {
+                        element.totalAccounts++;
+                        element.inActiveAccounts++;
+                      }
+                    });
+                    customers.add(newCustomer);
+                    _nameController.clear();
+                    _phoneController.clear();
+                    _addressController.clear();
+                    _accountController.clear();
+                    _macController.clear();
+                    setState(() {
+                      _selectedArea = null;
+                      _selectedPlan = null;
+                    });
+                    Navigator.of(context).pushNamed(
+                      CustomerDetailScreen.routeName,
+                      arguments: newCustomer,
                     );
                   } else if (_selectedArea == null || _selectedPlan == null) {
                     String msg;

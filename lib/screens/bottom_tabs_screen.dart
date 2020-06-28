@@ -78,6 +78,7 @@ class _BottomTabsScreenState extends State<BottomTabsScreen> {
       drawer: HomeDrawer(),
       body: [HomeScreen(), SearchScreen(), AddCustomerScreen()][_currentIndex],
       bottomNavigationBar: BottomNavigationBar(
+        
         elevation: 10,
         onTap: (value) {
           setState(() {

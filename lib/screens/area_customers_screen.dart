@@ -1,4 +1,5 @@
 import 'package:cableTvBook/models/customer.dart';
+import 'package:cableTvBook/widgets/customer_tile.dart';
 import 'package:flutter/material.dart';
 
 class AreaCustomersScreen extends StatelessWidget {
@@ -6,17 +7,16 @@ class AreaCustomersScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final AreaData area = ModalRoute.of(context).settings.arguments;
+    final List<Customer> customers = getAreaCustomers(area.areaName);
     return Scaffold(
       appBar: AppBar(
         title: Text(area.areaName),
       ),
       body: ListView.builder(
-        itemCount: 1,
-        itemBuilder: (context, index) {
-          return Container(
-            child: Center(
-              child: Text('No customers'),
-            ),
+        itemCount: customers.length,
+        itemBuilder: (ctx, index) {
+          return CustomerTile(
+            customer: customers[index],
           );
         },
       ),

@@ -1,5 +1,6 @@
 import 'dart:ui';
 
+import 'package:cableTvBook/screens/customer_detail_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -76,6 +77,7 @@ class MyApp extends StatelessWidget {
         SearchScreen.routeName: (ctx) => SearchScreen(),
         AddCustomerScreen.routeName: (ctx) => AddCustomerScreen(),
         AreaCustomersScreen.routeName: (ctx) => AreaCustomersScreen(),
+        CustomerDetailScreen.routeName: (ctx) => CustomerDetailScreen(),
       },
     );
   }

@@ -148,6 +148,14 @@ class _HomeScreenState extends State<HomeScreen> {
             decoration: BoxDecoration(
               backgroundBlendMode: BlendMode.darken,
               borderRadius: BorderRadius.circular(15),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black12,
+                  offset: Offset(3, 3),
+                  spreadRadius: 5,
+                  blurRadius: 5,
+                ),
+              ],
               gradient: LinearGradient(
                 colors: [
                   colors[index % 8].withOpacity(0.4),
@@ -183,7 +191,7 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
           onLongPress: () => showDialog(
             context: context,
-            builder: (context) {
+            builder: (ctx) {
               final textController = TextEditingController();
               return Form(
                 key: _formKey,
@@ -196,9 +204,9 @@ class _HomeScreenState extends State<HomeScreen> {
                     controller: textController,
                     validator: (value) {
                       if (value.isEmpty) {
-                        return 'Name is empty';
-                      } else if (value.compareTo('[A-Z|a-z|0-9]*') == 0) {
-                        return 'Must be a combination of letter and number';
+                        return 'Name is empty!';
+                      } else if (!RegExp(r'^[A-Za-z]').hasMatch(value)) {
+                        return 'Name must start with a letter!';
                       } else {
                         return null;
                       }
@@ -223,7 +231,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           setState(() {
                             areas[index].areaName = textController.text;
                           });
-                          Navigator.of(context).pop();
+                          Navigator.of(ctx).pop();
                         }
                       },
                       icon: Icon(FlutterIcons.content_save_edit_mco),
@@ -254,7 +262,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   mainAxisSize: MainAxisSize.min,
                   children: <Widget>[
                     Text(
-                      'This action cannot be undone.\n\nPlease make sure before adding.\n',
+                      'NOTE : This action cannot be undone, Please make sure before adding.\n',
                       style: TextStyle(
                         color: Theme.of(context).errorColor,
                       ),
@@ -264,9 +272,9 @@ class _HomeScreenState extends State<HomeScreen> {
                       controller: textController,
                       validator: (value) {
                         if (value.isEmpty) {
-                          return 'Name is empty';
-                        } else if (value.compareTo('[A-Z|a-z|0-9]*') == 0) {
-                          return 'Must be a combination of letter and number';
+                          return 'Name is empty!';
+                        } else if (!RegExp(r'^[A-Za-z]').hasMatch(value)) {
+                          return 'Name must start with a letter!';
                         } else {
                           return null;
                         }
@@ -293,7 +301,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         setState(() {
                           areas.add(AreaData(areaName: textController.text));
                         });
-                        Navigator.of(context).pop();
+                        Navigator.of(ctx).pop();
                       }
                     },
                     icon: Icon(FlutterIcons.content_save_mco),
@@ -311,7 +319,6 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
         backgroundColor: Theme.of(context).primaryColor,
       ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
     );
   }
 }

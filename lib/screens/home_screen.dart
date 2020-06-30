@@ -7,7 +7,6 @@ import 'package:cableTvBook/models/customer.dart';
 import 'package:flutter_icons/flutter_icons.dart';
 
 final List<Color> colors = [
-  Colors.orange,
   Colors.red,
   Colors.blue,
   Colors.purple,
@@ -15,6 +14,7 @@ final List<Color> colors = [
   Colors.green,
   Colors.indigo,
   Colors.brown,
+  Colors.orange,
 ];
 
 class HomeScreen extends StatefulWidget {
@@ -102,7 +102,7 @@ class _HomeScreenState extends State<HomeScreen> {
     return Scaffold(
       appBar: PreferredSize(
         child: Padding(
-          padding: EdgeInsets.symmetric(vertical: 5),
+          padding: EdgeInsets.symmetric(vertical: width * 0.01),
           child: Row(
             children: <Widget>[
               IconButton(
@@ -119,11 +119,12 @@ class _HomeScreenState extends State<HomeScreen> {
                       ? TextStyle(
                           color: Theme.of(context).primaryColor,
                           fontWeight: FontWeight.bold,
+                          fontSize: width * 0.06,
                           letterSpacing: 2,
                         )
                       : TextStyle(fontSize: 0),
                   child: Text(
-                    'Year\n$_selectedYear',
+                    _selectedYear.toString(),
                     textAlign: TextAlign.center,
                   ),
                 ),
@@ -144,7 +145,7 @@ class _HomeScreenState extends State<HomeScreen> {
         itemBuilder: (context, index) => GestureDetector(
           child: Container(
             margin: EdgeInsets.all(width * 0.025),
-            padding: EdgeInsets.all(width * 0.05),
+            padding: EdgeInsets.all(width * 0.04),
             decoration: BoxDecoration(
               backgroundBlendMode: BlendMode.darken,
               borderRadius: BorderRadius.circular(15),
@@ -168,20 +169,40 @@ class _HomeScreenState extends State<HomeScreen> {
                 end: Alignment.bottomRight,
               ),
             ),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              crossAxisAlignment: CrossAxisAlignment.start,
+            child: ListView(
               children: <Widget>[
                 Text(
                   areas[index].areaName,
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
+                    fontSize: width * 0.06,
+                    color: Colors.white,
                   ),
                 ),
+                Divider(color: Colors.black38),
                 Text(
-                    'Total number of accounts : ${areas[index].totalAccounts}'),
-                Text('Active accounts : ${areas[index].activeAccounts}'),
-                Text('In-Active accounts : ${areas[index].inActiveAccounts}'),
+                  'Total customers : ${areas[index].totalAccounts}',
+                  style: TextStyle(
+                    fontSize: width * 0.045,
+                    color: Colors.white,
+                  ),
+                ),
+                Divider(color: Colors.black38),
+                Text(
+                  'Active : ${areas[index].activeAccounts}',
+                  style: TextStyle(
+                    fontSize: width * 0.045,
+                    color: Colors.white,
+                  ),
+                ),
+                Divider(color: Colors.black38),
+                Text(
+                  'In-Active : ${areas[index].inActiveAccounts}',
+                  style: TextStyle(
+                    fontSize: width * 0.045,
+                    color: Colors.white,
+                  ),
+                ),
               ],
             ),
           ),

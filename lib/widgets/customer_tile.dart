@@ -19,11 +19,11 @@ class CustomerTile extends StatelessWidget {
 
   void copyAndShowSnackBar(BuildContext ctx, String copy, String text) {
     Clipboard.setData(ClipboardData(text: copy));
+    HapticFeedback.vibrate();
     Scaffold.of(ctx).showSnackBar(
       SnackBar(
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
-        backgroundColor: Colors.black12,
         duration: Duration(milliseconds: 300),
         content: Text('$text copied to Clipboard'),
       ),
@@ -33,6 +33,7 @@ class CustomerTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
+      color: Theme.of(context).primaryColor.withOpacity(0.7),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(10),
         side: BorderSide(
@@ -47,59 +48,75 @@ class CustomerTile extends StatelessWidget {
           onTap: () => gestureNavigator(context),
           child: CircleAvatar(
             radius: 30,
-            backgroundImage: AssetImage('assets/images/drawer.jpg'),
+            backgroundImage: AssetImage('assets/images/default_profile.jpg'),
           ),
         ),
         title: GestureDetector(
           onTap: () => gestureNavigator(context),
-          child: Text(
-            customer.name,
-            style: TextStyle(
-              fontWeight: FontWeight.bold,
-              fontSize: 20,
+          child: Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Text(
+              customer.name,
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 20,
+                color: Colors.white,
+              ),
             ),
           ),
         ),
         isThreeLine: true,
-        subtitle: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+        subtitle: Row(
+          mainAxisAlignment: MainAxisAlignment.start,
           children: <Widget>[
             GestureDetector(
-              child: Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Text(
-                  'A/C : ${customer.accountNumber}',
-                  style: TextStyle(fontSize: 18),
+              child: Card(
+                color: Colors.red[300],
+                child: Padding(
+                  padding: const EdgeInsets.all(5.0),
+                  child: Text(
+                    '${customer.accountNumber}',
+                    style: TextStyle(
+                      fontSize: 18,
+                      color: Colors.white,
+                    ),
+                  ),
                 ),
               ),
               onTap: () => gestureNavigator(context),
-              onLongPress: () =>
-                  copyAndShowSnackBar(context, customer.accountNumber, 'A/C'),
+              onLongPress: () => copyAndShowSnackBar(
+                  context, customer.accountNumber, 'Account number'),
             ),
             GestureDetector(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                child: Text(
-                  'MAC : ${customer.macId}',
-                  style: TextStyle(fontSize: 18),
+              child: Card(
+                color: Colors.teal,
+                child: Padding(
+                  padding: const EdgeInsets.all(5.0),
+                  child: Text(
+                    '${customer.macId}',
+                    style: TextStyle(
+                      fontSize: 18,
+                      color: Colors.white,
+                    ),
+                  ),
                 ),
               ),
               onTap: () => gestureNavigator(context),
               onLongPress: () =>
-                  copyAndShowSnackBar(context, customer.macId, 'MAC Id'),
+                  copyAndShowSnackBar(context, customer.macId, 'MAC-Id'),
             ),
           ],
         ),
         trailing: GestureDetector(
           onTap: () => gestureNavigator(context),
           child: Text(
-            'Status :${customer.currentStatus}',
+            customer.currentStatus,
             softWrap: true,
             style: TextStyle(
               color: customer.currentStatus == 'Inactive'
                   ? Colors.red
                   : customer.currentStatus == 'Active'
-                      ? Colors.green
+                      ? Colors.teal[700]
                       : Colors.yellow,
             ),
           ),

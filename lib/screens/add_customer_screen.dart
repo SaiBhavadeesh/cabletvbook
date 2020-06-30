@@ -1,8 +1,7 @@
-import 'package:cableTvBook/screens/customer_detail_screen.dart';
-import 'package:cableTvBook/widgets/default_dialog_box.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_icons/flutter_icons.dart';
 
+import 'package:cableTvBook/widgets/default_dialog_box.dart';
 import 'package:cableTvBook/models/customer.dart';
 
 class AddCustomerScreen extends StatefulWidget {
@@ -65,7 +64,29 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
                   ],
                 ),
               ),
-              SizedBox(height: 10),
+              Stack(
+                children: <Widget>[
+                  CircleAvatar(
+                    radius: 60,
+                    backgroundImage: AssetImage(
+                      'assets/images/profile_icon.png',
+                    ),
+                  ),
+                  Positioned(
+                    bottom: 5,
+                    left: 0,
+                    child: CircleAvatar(
+                      backgroundColor: Colors.green,
+                      child: IconButton(
+                        color: Colors.white,
+                        icon: Icon(FlutterIcons.ios_camera_ion),
+                        onPressed: () {},
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              SizedBox(height: 5),
               TextFormField(
                 controller: _nameController,
                 validator: (value) {
@@ -80,13 +101,14 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
                 },
                 decoration: InputDecoration(
                   labelText: 'Customer name',
+                  contentPadding: EdgeInsets.all(10),
                   prefixIcon: Icon(FlutterIcons.ios_person_ion),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(15),
                   ),
                 ),
               ),
-              SizedBox(height: 15),
+              SizedBox(height: 5),
               TextFormField(
                 controller: _addressController,
                 minLines: 1,
@@ -100,13 +122,14 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
                 },
                 decoration: InputDecoration(
                   labelText: 'Address',
+                  contentPadding: EdgeInsets.all(10),
                   prefixIcon: Icon(FlutterIcons.address_ent),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(15),
                   ),
                 ),
               ),
-              SizedBox(height: 15),
+              SizedBox(height: 5),
               TextFormField(
                 controller: _phoneController,
                 keyboardType: TextInputType.phone,
@@ -118,13 +141,14 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
                 },
                 decoration: InputDecoration(
                   labelText: 'Phone number',
+                  contentPadding: EdgeInsets.all(10),
                   prefixIcon: Icon(Icons.phone),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(15),
                   ),
                 ),
               ),
-              SizedBox(height: 15),
+              SizedBox(height: 5),
               TextFormField(
                 controller: _accountController,
                 keyboardType: TextInputType.number,
@@ -136,13 +160,14 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
                 },
                 decoration: InputDecoration(
                   labelText: 'Account number',
+                  contentPadding: EdgeInsets.all(10),
                   prefixIcon: Icon(FlutterIcons.account_badge_horizontal_mco),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(15),
                   ),
                 ),
               ),
-              SizedBox(height: 15),
+              SizedBox(height: 5),
               TextFormField(
                 controller: _macController,
                 validator: (value) {
@@ -153,13 +178,14 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
                 },
                 decoration: InputDecoration(
                   labelText: 'MAC number',
+                  contentPadding: EdgeInsets.all(10),
                   prefixIcon: Icon(FlutterIcons.ethernet_cable_mco),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(15),
                   ),
                 ),
               ),
-              SizedBox(height: 20),
+              SizedBox(height: 10),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: <Widget>[
@@ -180,6 +206,8 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
                           return Row(
                             children: <Widget>[
                               Radio(
+                                materialTapTargetSize:
+                                    MaterialTapTargetSize.shrinkWrap,
                                 activeColor: Theme.of(context).primaryColor,
                                 value: area.areaName,
                                 groupValue: _selectedArea,
@@ -209,6 +237,8 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
                           return Row(
                             children: <Widget>[
                               Radio(
+                                materialTapTargetSize:
+                                    MaterialTapTargetSize.shrinkWrap,
                                 activeColor: Theme.of(context).primaryColor,
                                 value: plan,
                                 groupValue: _selectedPlan,
@@ -242,6 +272,7 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
                       accountNumber: _accountController.text.trim(),
                       macId: _macController.text.trim(),
                       networkProviderName: 'Sri Rama Cable Network',
+                      startDate: DateTime.now(),
                       area: _selectedArea,
                       currentPlan: _selectedPlan,
                     );
@@ -261,10 +292,6 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
                       _selectedArea = null;
                       _selectedPlan = null;
                     });
-                    Navigator.of(context).pushNamed(
-                      CustomerDetailScreen.routeName,
-                      arguments: newCustomer,
-                    );
                   } else if (_selectedArea == null || _selectedPlan == null) {
                     String msg;
                     if (_selectedArea == null && _selectedPlan == null)

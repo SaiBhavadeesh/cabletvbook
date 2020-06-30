@@ -46,25 +46,34 @@ class _BottomTabsScreenState extends State<BottomTabsScreen> {
             children: <Widget>[
               Text(
                 widget.networkName,
-                style: TextStyle(fontSize: height * 0.025),
+                style: TextStyle(
+                  fontSize: height * 0.025,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.amber,
+                ),
               ),
               Padding(
-                padding: EdgeInsets.all(width * 0.02),
+                padding: EdgeInsets.symmetric(
+                  horizontal: width * 0.02,
+                  vertical: width * 0.01,
+                ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: <Widget>[
                     Text(
-                      'Welcome ' + widget.username,
+                      widget.username,
                       style: TextStyle(
-                        fontSize: height * 0.02,
-                        color: Colors.white,
+                        fontSize: height * 0.023,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.amber,
                       ),
                     ),
                     Text(
-                      'Phone : ' + widget.phoneNumber,
+                      widget.phoneNumber,
                       style: TextStyle(
-                        fontSize: height * 0.02,
-                        color: Colors.white,
+                        fontSize: height * 0.023,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.amber,
                       ),
                     ),
                   ],
@@ -72,7 +81,7 @@ class _BottomTabsScreenState extends State<BottomTabsScreen> {
               ),
             ],
           ),
-          preferredSize: Size(width, height * 0.07),
+          preferredSize: Size(width, height * 0.06),
         ),
       ),
       drawer: HomeDrawer(),

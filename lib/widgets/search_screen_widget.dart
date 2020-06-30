@@ -1,4 +1,5 @@
 import 'package:cableTvBook/models/customer.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:cableTvBook/widgets/customer_tile.dart';
 import 'package:flutter_icons/flutter_icons.dart';
@@ -27,11 +28,28 @@ class SearchScreenWidget extends StatelessWidget {
       children: <Widget>[
         Scrollbar(
           child: SingleChildScrollView(
+            physics: BouncingScrollPhysics(),
             child: Column(
               children: <Widget>[
                 SizedBox(
                   height: 55,
                 ),
+                // AnimatedList(
+                //   shrinkWrap: true,
+                //   physics: NeverScrollableScrollPhysics(),
+                //   initialItemCount: customers.length,
+                //   itemBuilder: (context, index, animation) => SlideTransition(
+                //     position: animation.drive(
+                //       Tween(
+                //         begin: Offset(0, 10),
+                //         end: Offset(100, 10),
+                //       ),
+                //     ),
+                //     child: CustomerTile(
+                //       customer: customers[index],
+                //     ),
+                //   ),
+                // )
                 ListView.builder(
                   shrinkWrap: true,
                   physics: NeverScrollableScrollPhysics(),

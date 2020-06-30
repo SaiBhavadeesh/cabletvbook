@@ -141,6 +141,7 @@ class _HomeScreenState extends State<HomeScreen> {
         preferredSize: Size(width, width * 0.15),
       ),
       body: GridView.builder(
+        physics: BouncingScrollPhysics(),
         itemCount: areas.length,
         itemBuilder: (context, index) => GestureDetector(
           child: Container(

@@ -38,6 +38,7 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
     return Form(
       key: _formKey,
       child: SingleChildScrollView(
+        physics: BouncingScrollPhysics(),
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 8.0),
           child: Column(

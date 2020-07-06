@@ -1,11 +1,13 @@
+import 'package:intl/intl.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_icons/flutter_icons.dart';
 
 import 'package:cableTvBook/models/customer.dart';
 import 'package:cableTvBook/widgets/customer_plan_list.dart';
 import 'package:cableTvBook/widgets/customer_primary_info.dart';
-import 'package:flutter_icons/flutter_icons.dart';
-import 'package:intl/intl.dart';
+import 'package:cableTvBook/widgets/modal_bottom_sheet.dart';
 
 class CustomerDetailScreen extends StatefulWidget {
   static const routeName = '/customerDetailScreen';
@@ -16,6 +18,19 @@ class CustomerDetailScreen extends StatefulWidget {
 
 class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
   bool _isEdit = false;
+
+  void modalBottomSheet(BuildContext ctx, Customer data) {
+    Navigator.of(ctx)
+        .push(
+      PageRouteBuilder(
+        pageBuilder: (context, _, __) => ModalBottomSheet(customer: data),
+        opaque: false,
+      ),
+    )
+        .then((value) {
+      setState(() {});
+    });
+  }
 
   void copyTextOnLongTap(
     BuildContext ctx,
@@ -177,7 +192,7 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
                       ),
                     ),
                     Positioned(
-                      top: height * 0.22,
+                      top: height * 0.215,
                       right: width * 0.1,
                       child: IconButton(
                         onPressed: () {
@@ -220,36 +235,48 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: 20),
                 child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
                   children: <Widget>[
+                    SizedBox(width: 10),
                     FloatingActionButton.extended(
                       heroTag: 0,
                       onPressed: () {},
-                      label: Text(
-                        'Activate',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: height * 0.025,
-                          fontWeight: FontWeight.bold,
-                          letterSpacing: 1,
+                      label: SizedBox(
+                        width: width * 0.25,
+                        child: Center(
+                          child: Text(
+                            'Activate',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: height * 0.025,
+                              fontWeight: FontWeight.bold,
+                              letterSpacing: 1,
+                            ),
+                          ),
                         ),
                       ),
                       backgroundColor: Colors.green,
                     ),
+                    Expanded(child: SizedBox()),
                     FloatingActionButton.extended(
                       heroTag: 1,
                       onPressed: () {},
-                      label: Text(
-                        'Deactivate',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: height * 0.025,
-                          fontWeight: FontWeight.bold,
-                          letterSpacing: 1,
+                      label: SizedBox(
+                        width: width * 0.25,
+                        child: Center(
+                          child: Text(
+                            'Deactivate',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: height * 0.025,
+                              fontWeight: FontWeight.bold,
+                              letterSpacing: 1,
+                            ),
+                          ),
                         ),
                       ),
                       backgroundColor: Colors.red,
                     ),
+                    SizedBox(width: 10),
                   ],
                 ),
               ),
@@ -258,9 +285,10 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
           ),
         ),
         floatingActionButton: FloatingActionButton(
-          onPressed: () {},
-          child: Icon(Icons.edit),
+          onPressed: () => modalBottomSheet(context, customer),
+          child: Icon(FlutterIcons.account_edit_outline_mco),
           backgroundColor: Theme.of(context).primaryColor,
+          foregroundColor: Colors.white,
         ),
         floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
       ),

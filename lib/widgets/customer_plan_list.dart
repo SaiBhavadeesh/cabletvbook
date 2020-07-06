@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-class CustomerPlanList extends StatelessWidget {
+class CustomerPlanList extends StatefulWidget {
   final String month;
   final String billDate;
   final String billAmount;
@@ -14,69 +14,81 @@ class CustomerPlanList extends StatelessWidget {
   });
 
   @override
+  _CustomerPlanListState createState() => _CustomerPlanListState();
+}
+
+class _CustomerPlanListState extends State<CustomerPlanList> {
+  @override
   Widget build(BuildContext context) {
     final width = MediaQuery.of(context).size.width;
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceAround,
+    return Column(
       children: <Widget>[
-        Container(
-          alignment: Alignment.center,
-          width: width * 0.18,
-          child: Text(
-            month,
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              fontSize: width * 0.045,
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceAround,
+          children: <Widget>[
+            Container(
+              alignment: Alignment.center,
+              width: width * 0.18,
+              child: Text(
+                widget.month,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: width * 0.045,
+                ),
+              ),
             ),
-          ),
-        ),
-        Container(
-          height: width * 0.05,
-          color: Theme.of(context).primaryColor,
-          width: 1.5,
-        ),
-        Container(
-          alignment: Alignment.center,
-          width: width * 0.18,
-          child: Text(
-            billDate,
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              fontSize: width * 0.045,
+            Container(
+              height: width * 0.05,
+              color: Theme.of(context).primaryColor,
+              width: 1.5,
             ),
-          ),
-        ),
-        Container(
-          height: width * 0.05,
-          color: Theme.of(context).primaryColor,
-          width: 1.5,
-        ),
-        Container(
-          alignment: Alignment.center,
-          width: width * 0.18,
-          child: Text(
-            billAmount,
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              fontSize: width * 0.045,
+            Container(
+              alignment: Alignment.center,
+              width: width * 0.18,
+              child: Text(
+                widget.billDate,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: width * 0.045,
+                ),
+              ),
             ),
-          ),
+            Container(
+              height: width * 0.05,
+              color: Theme.of(context).primaryColor,
+              width: 1.5,
+            ),
+            Container(
+              alignment: Alignment.center,
+              width: width * 0.18,
+              child: Text(
+                widget.billAmount,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: width * 0.045,
+                ),
+              ),
+            ),
+            Container(
+              height: width * 0.05,
+              color: Theme.of(context).primaryColor,
+              width: 1.5,
+            ),
+            Container(
+              alignment: Alignment.center,
+              width: width * 0.35,
+              height: width * 0.05,
+              child: Text(
+                widget.status,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: width * 0.045,
+                ),
+              ),
+            ),
+          ],
         ),
-        Container(
-          height: width * 0.05,
-          color: Theme.of(context).primaryColor,
-          width: 1.5,
-        ),
-        Container(
-          alignment: Alignment.center,
-          width: width * 0.35,
-          height: width * 0.05,
-          child: FlatButton.icon(
-            onPressed: () {},
-            icon: Icon(Icons.arrow_drop_down),
-            label: Text(status),
-          ),
-        ),
+        if (widget.month != 'Month') Divider(),
       ],
     );
   }

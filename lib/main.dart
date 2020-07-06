@@ -31,7 +31,6 @@ class MyApp extends StatelessWidget {
         accentColor: Colors.white,
         primaryColorBrightness: Brightness.dark,
         accentColorBrightness: Brightness.light,
-        // brightness: Brightness.dark,
         cursorColor: Color.fromRGBO(14, 137, 234, 1),
         iconTheme: IconThemeData(
           color: Color.fromRGBO(14, 137, 234, 1),

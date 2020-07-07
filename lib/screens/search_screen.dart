@@ -20,7 +20,6 @@ class _SearchScreenState extends State<SearchScreen> {
       child: Scaffold(
         appBar: AppBar(
           backgroundColor: Colors.amber[700],
-          leading: null,
           bottom: PreferredSize(
             child: TabBar(
               indicator: BoxDecoration(),

@@ -1,9 +1,8 @@
 import 'dart:io';
 
+import 'package:cableTvBook/helpers/image_getter.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_icons/flutter_icons.dart';
-
-import 'package:image_picker/image_picker.dart';
 
 import 'package:cableTvBook/widgets/default_dialog_box.dart';
 import 'package:cableTvBook/models/customer.dart';
@@ -22,7 +21,6 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
   final _phoneController = TextEditingController();
   final _accountController = TextEditingController();
   final _macController = TextEditingController();
-  final _imagePicker = ImagePicker();
   String _selectedArea;
   int _selectedPlan;
   File _selectedImageFile;
@@ -37,41 +35,6 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
     setState(() {
       _selectedPlan = value;
     });
-  }
-
-  void _getImageFromDevice(BuildContext ctx) {
-    showDialog(
-      context: ctx,
-      builder: (c) => AlertDialog(
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: <Widget>[
-            FlatButton.icon(
-              onPressed: () async {
-                final pickedImage =
-                    await _imagePicker.getImage(source: ImageSource.camera);
-                try {
-                  _selectedImageFile = File(pickedImage.path);
-                } catch (error) {}
-              },
-              icon: Icon(FlutterIcons.ios_camera_ion),
-              label: Text('Take Image'),
-            ),
-            FlatButton.icon(
-              onPressed: () async {
-                final pickedImage =
-                    await _imagePicker.getImage(source: ImageSource.gallery);
-                try {
-                  _selectedImageFile = File(pickedImage.path);
-                } catch (error) {}
-              },
-              icon: Icon(FlutterIcons.ios_images_ion),
-              label: Text('Select Image'),
-            ),
-          ],
-        ),
-      ),
-    );
   }
 
   @override
@@ -105,7 +68,11 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
                           child: IconButton(
                             color: Colors.white,
                             icon: Icon(FlutterIcons.ios_camera_ion),
-                            onPressed: () => _getImageFromDevice(context),
+                            onPressed: () async {
+                              _selectedImageFile =
+                                  await ImageGetter.getImageFromDevice(context);
+                              setState(() {});
+                            },
                           ),
                         ),
                       ),

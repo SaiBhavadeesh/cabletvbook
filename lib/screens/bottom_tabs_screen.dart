@@ -1,3 +1,6 @@
+import 'dart:io';
+
+import 'package:cableTvBook/helpers/image_getter.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_icons/flutter_icons.dart';
 
@@ -23,6 +26,7 @@ class BottomTabsScreen extends StatefulWidget {
 
 class _BottomTabsScreenState extends State<BottomTabsScreen> {
   int _currentIndex = 0;
+  File _profilePic;
   @override
   Widget build(BuildContext context) {
     final height =
@@ -34,10 +38,18 @@ class _BottomTabsScreenState extends State<BottomTabsScreen> {
         centerTitle: true,
         actions: <Widget>[
           Padding(
-            padding: EdgeInsets.all(height * 0.01),
-            child: CircleAvatar(
-              backgroundColor: Colors.white,
-              backgroundImage: AssetImage('assets/images/drawer.jpg'),
+            padding: EdgeInsets.all(height * 0.007),
+            child: GestureDetector(
+              child: CircleAvatar(
+                backgroundColor: Colors.white,
+                backgroundImage: _profilePic == null
+                    ? AssetImage('assets/images/drawer.jpg')
+                    : FileImage(_profilePic),
+              ),
+              onTap: () async {
+                _profilePic = await ImageGetter.getImageFromDevice(context);
+                setState(() {});
+              },
             ),
           )
         ],
@@ -84,7 +96,7 @@ class _BottomTabsScreenState extends State<BottomTabsScreen> {
           preferredSize: Size(width, height * 0.06),
         ),
       ),
-      drawer: HomeDrawer(),
+      drawer: HomeDrawer(image: _profilePic),
       body: [HomeScreen(), SearchScreen(), AddCustomerScreen()][_currentIndex],
       bottomNavigationBar: BottomNavigationBar(
         elevation: 10,

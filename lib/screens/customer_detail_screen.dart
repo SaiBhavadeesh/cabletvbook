@@ -194,14 +194,26 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
                     Positioned(
                       top: height * 0.215,
                       right: width * 0.1,
-                      child: IconButton(
-                        onPressed: () {
-                          setState(() {
-                            _isEdit = !_isEdit;
-                          });
-                        },
-                        icon: Icon(
-                          _isEdit ? Icons.delete : FlutterIcons.edit_ant,
+                      child: AnimatedCrossFade(
+                        duration: Duration(seconds: 1),
+                        crossFadeState: _isEdit
+                            ? CrossFadeState.showSecond
+                            : CrossFadeState.showFirst,
+                        firstChild: IconButton(
+                          onPressed: () {
+                            setState(() {
+                              _isEdit = !_isEdit;
+                            });
+                          },
+                          icon: Icon(FlutterIcons.edit_ant),
+                        ),
+                        secondChild: IconButton(
+                          onPressed: () {
+                            setState(() {
+                              _isEdit = !_isEdit;
+                            });
+                          },
+                          icon: Icon(Icons.delete),
                         ),
                       ),
                     ),

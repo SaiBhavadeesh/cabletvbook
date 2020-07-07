@@ -1,6 +1,10 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 
 class HomeDrawer extends StatelessWidget {
+  final File image;
+  HomeDrawer({@required this.image});
   @override
   Widget build(BuildContext context) {
     final height = MediaQuery.of(context).size.height;
@@ -12,10 +16,15 @@ class HomeDrawer extends StatelessWidget {
           Container(
             height: height * 0.25,
             width: double.infinity,
-            child: Image.asset(
-              'assets/images/drawer.jpg',
-              fit: BoxFit.cover,
-            ),
+            child: image == null
+                ? Image.asset(
+                    'assets/images/drawer.jpg',
+                    fit: BoxFit.cover,
+                  )
+                : Image.file(
+                    image,
+                    fit: BoxFit.cover,
+                  ),
           ),
           SizedBox(height: height * 0.01),
           FlatButton.icon(

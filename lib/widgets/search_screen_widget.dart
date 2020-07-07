@@ -27,6 +27,7 @@ class SearchScreenWidget extends StatelessWidget {
       children: <Widget>[
         Scrollbar(
           child: ListView.builder(
+            physics: BouncingScrollPhysics(),
             itemCount: customers.length,
             itemBuilder: (context, index) {
               if (index == 0) {
@@ -37,12 +38,14 @@ class SearchScreenWidget extends StatelessWidget {
                     ),
                     CustomerTile(
                       customer: customers[index],
+                      index: index,
                     ),
                   ],
                 );
               }
               return CustomerTile(
                 customer: customers[index],
+                index: index,
               );
             },
           ),
@@ -68,19 +71,3 @@ class SearchScreenWidget extends StatelessWidget {
     );
   }
 }
-                // AnimatedList(
-                //   shrinkWrap: true,
-                //   physics: NeverScrollableScrollPhysics(),
-                //   initialItemCount: customers.length,
-                //   itemBuilder: (context, index, animation) => SlideTransition(
-                //     position: animation.drive(
-                //       Tween(
-                //         begin: Offset(0, 10),
-                //         end: Offset(100, 10),
-                //       ),
-                //     ),
-                //     child: CustomerTile(
-                //       customer: customers[index],
-                //     ),
-                //   ),
-                // )

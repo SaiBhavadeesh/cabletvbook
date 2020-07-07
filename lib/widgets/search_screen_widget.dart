@@ -1,5 +1,4 @@
 import 'package:cableTvBook/models/customer.dart';
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:cableTvBook/widgets/customer_tile.dart';
 import 'package:flutter_icons/flutter_icons.dart';
@@ -27,39 +26,25 @@ class SearchScreenWidget extends StatelessWidget {
     return Stack(
       children: <Widget>[
         Scrollbar(
-          child: SingleChildScrollView(
-            physics: BouncingScrollPhysics(),
-            child: Column(
-              children: <Widget>[
-                SizedBox(
-                  height: 55,
-                ),
-                // AnimatedList(
-                //   shrinkWrap: true,
-                //   physics: NeverScrollableScrollPhysics(),
-                //   initialItemCount: customers.length,
-                //   itemBuilder: (context, index, animation) => SlideTransition(
-                //     position: animation.drive(
-                //       Tween(
-                //         begin: Offset(0, 10),
-                //         end: Offset(100, 10),
-                //       ),
-                //     ),
-                //     child: CustomerTile(
-                //       customer: customers[index],
-                //     ),
-                //   ),
-                // )
-                ListView.builder(
-                  shrinkWrap: true,
-                  physics: NeverScrollableScrollPhysics(),
-                  itemCount: customers.length,
-                  itemBuilder: (context, index) => CustomerTile(
-                    customer: customers[index],
-                  ),
-                ),
-              ],
-            ),
+          child: ListView.builder(
+            itemCount: customers.length,
+            itemBuilder: (context, index) {
+              if (index == 0) {
+                return Column(
+                  children: <Widget>[
+                    SizedBox(
+                      height: 55,
+                    ),
+                    CustomerTile(
+                      customer: customers[index],
+                    ),
+                  ],
+                );
+              }
+              return CustomerTile(
+                customer: customers[index],
+              );
+            },
           ),
         ),
         Padding(
@@ -83,3 +68,19 @@ class SearchScreenWidget extends StatelessWidget {
     );
   }
 }
+                // AnimatedList(
+                //   shrinkWrap: true,
+                //   physics: NeverScrollableScrollPhysics(),
+                //   initialItemCount: customers.length,
+                //   itemBuilder: (context, index, animation) => SlideTransition(
+                //     position: animation.drive(
+                //       Tween(
+                //         begin: Offset(0, 10),
+                //         end: Offset(100, 10),
+                //       ),
+                //     ),
+                //     child: CustomerTile(
+                //       customer: customers[index],
+                //     ),
+                //   ),
+                // )

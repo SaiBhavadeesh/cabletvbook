@@ -165,12 +165,12 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
                     controller: _macController,
                     validator: (value) {
                       if (value.isEmpty) {
-                        return 'Account number field is empty!';
+                        return 'MAC Id field is empty!';
                       }
                       return null;
                     },
                     decoration: InputDecoration(
-                      labelText: 'MAC number',
+                      labelText: 'MAC Id',
                       contentPadding: EdgeInsets.all(10),
                       prefixIcon: Icon(FlutterIcons.ethernet_cable_mco),
                       border: OutlineInputBorder(

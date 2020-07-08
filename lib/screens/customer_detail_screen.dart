@@ -51,9 +51,7 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
   @override
   Widget build(BuildContext context) {
     final Customer customer = ModalRoute.of(context).settings.arguments;
-    final height = MediaQuery.of(context).size.height;
-    final width = MediaQuery.of(context).size.width;
-
+    final size = MediaQuery.of(context).size;
     return DefaultTabController(
       length: 1,
       child: Scaffold(
@@ -78,7 +76,7 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
                 ],
               ),
             ),
-            preferredSize: Size(width, 10),
+            preferredSize: Size(size.width, 10),
           ),
           actions: <Widget>[
             DropdownButton(
@@ -96,20 +94,20 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
             children: <Widget>[
               AnimatedContainer(
                 duration: Duration(milliseconds: 300),
-                height: _isEdit ? height * 0.355 : height * 0.3,
+                height: _isEdit ? size.height * 0.355 : size.height * 0.3,
                 child: Stack(
                   children: <Widget>[
                     Container(
-                      height: height * 0.2,
-                      width: width,
+                      height: size.height * 0.2,
+                      width: size.width,
                       padding: EdgeInsets.symmetric(
-                        horizontal: height * 0.01,
-                        vertical: height * 0.01,
+                        horizontal: size.height * 0.01,
+                        vertical: size.height * 0.01,
                       ),
                       decoration: BoxDecoration(
                         color: Theme.of(context).primaryColor,
                         borderRadius: BorderRadius.vertical(
-                          bottom: Radius.elliptical(width * 0.2, height * 0.08),
+                          bottom: Radius.elliptical(size.width * 0.2, size.height * 0.08),
                         ),
                       ),
                       child: Row(
@@ -173,7 +171,7 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
                             ],
                           ),
                           CircleAvatar(
-                            radius: width * 0.075,
+                            radius: size.width * 0.075,
                             backgroundImage:
                                 AssetImage('assets/images/default_profile.jpg'),
                           ),
@@ -181,9 +179,9 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
                       ),
                     ),
                     Positioned(
-                      top: height * 0.13,
-                      left: width * 0.08,
-                      right: width * 0.08,
+                      top: size.height * 0.13,
+                      left: size.width * 0.08,
+                      right: size.width * 0.08,
                       child: CustomerPrimaryInfo(
                         phoneNumber: customer.phoneNumber,
                         accountNumber: customer.accountNumber,
@@ -192,8 +190,8 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
                       ),
                     ),
                     Positioned(
-                      top: height * 0.215,
-                      right: width * 0.1,
+                      top: size.height * 0.215,
+                      right: size.width * 0.1,
                       child: AnimatedCrossFade(
                         duration: Duration(seconds: 1),
                         crossFadeState: _isEdit
@@ -253,13 +251,13 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
                       heroTag: 0,
                       onPressed: () {},
                       label: SizedBox(
-                        width: width * 0.25,
+                        width: size.width * 0.25,
                         child: Center(
                           child: Text(
                             'Activate',
                             style: TextStyle(
                               color: Colors.white,
-                              fontSize: height * 0.025,
+                              fontSize: size.height * 0.025,
                               fontWeight: FontWeight.bold,
                               letterSpacing: 1,
                             ),
@@ -273,13 +271,13 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
                       heroTag: 1,
                       onPressed: () {},
                       label: SizedBox(
-                        width: width * 0.25,
+                        width: size.width * 0.25,
                         child: Center(
                           child: Text(
                             'Deactivate',
                             style: TextStyle(
                               color: Colors.white,
-                              fontSize: height * 0.025,
+                              fontSize: size.height * 0.025,
                               fontWeight: FontWeight.bold,
                               letterSpacing: 1,
                             ),

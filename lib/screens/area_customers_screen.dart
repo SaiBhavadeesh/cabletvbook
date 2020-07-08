@@ -6,8 +6,7 @@ class AreaCustomersScreen extends StatelessWidget {
   static const routeName = '/areaCustomer';
   @override
   Widget build(BuildContext context) {
-    final width = MediaQuery.of(context).size.width;
-    final height = MediaQuery.of(context).size.height;
+    final size = MediaQuery.of(context).size;
     final AreaData area = ModalRoute.of(context).settings.arguments;
     final List<Customer> customers = getAreaCustomers(area.areaName);
     return DefaultTabController(
@@ -23,12 +22,12 @@ class AreaCustomersScreen extends StatelessWidget {
                 indicator: BoxDecoration(),
                 labelColor: Theme.of(context).primaryColor,
                 labelStyle: TextStyle(
-                  fontSize: height * 0.03,
+                  fontSize: size.height * 0.03,
                   fontWeight: FontWeight.bold,
                 ),
                 unselectedLabelColor: Colors.white,
                 unselectedLabelStyle: TextStyle(
-                  fontSize: height * 0.02,
+                  fontSize: size.height * 0.02,
                   fontWeight: FontWeight.bold,
                 ),
                 tabs: [
@@ -39,8 +38,8 @@ class AreaCustomersScreen extends StatelessWidget {
               ),
             ),
             preferredSize: Size(
-              width,
-              height * 0.02,
+              size.width,
+              size.height * 0.02,
             ),
           ),
         ),

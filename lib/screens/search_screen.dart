@@ -12,8 +12,7 @@ class _SearchScreenState extends State<SearchScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final width = MediaQuery.of(context).size.width;
-    final height = MediaQuery.of(context).size.height;
+    final size = MediaQuery.of(context).size;
     return DefaultTabController(
       length: 3,
       initialIndex: 1,
@@ -25,12 +24,12 @@ class _SearchScreenState extends State<SearchScreen> {
               indicator: BoxDecoration(),
               labelColor: Theme.of(context).primaryColor,
               labelStyle: TextStyle(
-                fontSize: height * 0.03,
+                fontSize: size.height * 0.03,
                 fontWeight: FontWeight.bold,
               ),
               unselectedLabelColor: Colors.white,
               unselectedLabelStyle: TextStyle(
-                fontSize: height * 0.02,
+                fontSize: size.height * 0.02,
                 fontWeight: FontWeight.bold,
               ),
               tabs: [
@@ -40,8 +39,8 @@ class _SearchScreenState extends State<SearchScreen> {
               ],
             ),
             preferredSize: Size(
-              width,
-              -height * 0.03,
+              size.width,
+              -size.height * 0.03,
             ),
           ),
         ),

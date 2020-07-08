@@ -29,16 +29,15 @@ class _BottomTabsScreenState extends State<BottomTabsScreen> {
   File _profilePic;
   @override
   Widget build(BuildContext context) {
-    final height =
-        MediaQuery.of(context).size.height - MediaQuery.of(context).padding.top;
-    final width = MediaQuery.of(context).size.width;
+    final size = MediaQuery.of(context).size;
+    final top = MediaQuery.of(context).padding.top;
     return Scaffold(
       appBar: AppBar(
         title: Text('Cable Tv Book'),
         centerTitle: true,
         actions: <Widget>[
           Padding(
-            padding: EdgeInsets.all(height * 0.007),
+            padding: EdgeInsets.all((size.height - top) * 0.007),
             child: GestureDetector(
               child: CircleAvatar(
                 backgroundColor: Colors.white,
@@ -59,15 +58,15 @@ class _BottomTabsScreenState extends State<BottomTabsScreen> {
               Text(
                 widget.networkName,
                 style: TextStyle(
-                  fontSize: height * 0.025,
+                  fontSize: (size.height - top) * 0.025,
                   fontWeight: FontWeight.bold,
                   color: Colors.amber,
                 ),
               ),
               Padding(
                 padding: EdgeInsets.symmetric(
-                  horizontal: width * 0.02,
-                  vertical: width * 0.01,
+                  horizontal: size.width * 0.02,
+                  vertical: size.width * 0.01,
                 ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -75,7 +74,7 @@ class _BottomTabsScreenState extends State<BottomTabsScreen> {
                     Text(
                       widget.username,
                       style: TextStyle(
-                        fontSize: height * 0.023,
+                        fontSize: (size.height - top) * 0.023,
                         fontWeight: FontWeight.bold,
                         color: Colors.amber,
                       ),
@@ -83,7 +82,7 @@ class _BottomTabsScreenState extends State<BottomTabsScreen> {
                     Text(
                       widget.phoneNumber,
                       style: TextStyle(
-                        fontSize: height * 0.023,
+                        fontSize: (size.height - top) * 0.023,
                         fontWeight: FontWeight.bold,
                         color: Colors.amber,
                       ),
@@ -93,7 +92,7 @@ class _BottomTabsScreenState extends State<BottomTabsScreen> {
               ),
             ],
           ),
-          preferredSize: Size(width, height * 0.06),
+          preferredSize: Size(size.width, (size.height - top) * 0.06),
         ),
       ),
       drawer: HomeDrawer(image: _profilePic),

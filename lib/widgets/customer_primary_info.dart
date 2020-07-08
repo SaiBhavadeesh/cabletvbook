@@ -35,11 +35,10 @@ class CustomerPrimaryInfo extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final height = MediaQuery.of(context).size.height;
-    final width = MediaQuery.of(context).size.width;
+    final size = MediaQuery.of(context).size;
     return AnimatedContainer(
       duration: Duration(milliseconds: 300),
-      height: moreInfo ? width * 0.38 : width * 0.28,
+      height: moreInfo ? size.width * 0.38 : size.width * 0.28,
       decoration: BoxDecoration(
         color: Colors.yellow,
         borderRadius: BorderRadius.circular(15),
@@ -51,7 +50,8 @@ class CustomerPrimaryInfo extends StatelessWidget {
           child: RichText(
             text: TextSpan(
               text: 'Phone : ',
-              style: TextStyle(fontSize: width * 0.05, color: Colors.black54),
+              style:
+                  TextStyle(fontSize: size.width * 0.05, color: Colors.black54),
               children: [
                 TextSpan(
                   text: phoneNumber,
@@ -107,7 +107,7 @@ class CustomerPrimaryInfo extends StatelessWidget {
             ),
             AnimatedContainer(
               duration: Duration(milliseconds: 300),
-              height: moreInfo ? width * 0.10 : 0,
+              height: moreInfo ? size.width * 0.10 : 0,
               padding: const EdgeInsets.only(top: 4.0, left: 4.0, right: 4.0),
               child: TextFormField(
                 controller: moreInfoController,
@@ -127,7 +127,7 @@ class CustomerPrimaryInfo extends StatelessWidget {
         trailing: IconButton(
           icon: Icon(
             Icons.call,
-            size: height * 0.05,
+            size: size.height * 0.05,
             color: Theme.of(context).primaryColor,
           ),
           onPressed: () {},

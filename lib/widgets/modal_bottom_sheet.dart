@@ -34,6 +34,7 @@ class _ModalBottomSheetState extends State<ModalBottomSheet> {
     return Scaffold(
       backgroundColor: Colors.black45,
       body: Column(
+        mainAxisSize: MainAxisSize.min,
         children: <Widget>[
           Expanded(
             child: GestureDetector(
@@ -104,7 +105,8 @@ class _ModalBottomSheetState extends State<ModalBottomSheet> {
                   SizedBox(height: 5),
                   TextFormField(
                     controller: _addressEdit ? _addressController : null,
-                    initialValue: _addressEdit ? null : widget.customer.address,
+                    initialValue:
+                        _addressEdit ? null : widget.customer.address,
                     minLines: 1,
                     maxLines: 2,
                     keyboardType: TextInputType.multiline,
@@ -192,12 +194,12 @@ class _ModalBottomSheetState extends State<ModalBottomSheet> {
                     },
                     validator: (value) {
                       if (value.isEmpty) {
-                        return 'Account number field is empty!';
+                        return 'MAC Id field is empty!';
                       }
                       return null;
                     },
                     decoration: InputDecoration(
-                      labelText: 'MAC number',
+                      labelText: 'MAC Id',
                       contentPadding: EdgeInsets.all(10),
                       prefixIcon: Icon(FlutterIcons.ethernet_cable_mco),
                       border: OutlineInputBorder(
@@ -214,9 +216,10 @@ class _ModalBottomSheetState extends State<ModalBottomSheet> {
                         widget.customer.name = _nameController.text == ''
                             ? widget.customer.name
                             : _nameController.text;
-                        widget.customer.address = _addressController.text == ''
-                            ? widget.customer.address
-                            : _addressController.text;
+                        widget.customer.address =
+                            _addressController.text == ''
+                                ? widget.customer.address
+                                : _addressController.text;
                         widget.customer.phoneNumber =
                             _phoneController.text == ''
                                 ? widget.customer.phoneNumber

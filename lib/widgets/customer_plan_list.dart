@@ -78,13 +78,18 @@ class _CustomerPlanListState extends State<CustomerPlanList> {
               alignment: Alignment.center,
               width: width * 0.35,
               height: width * 0.05,
-              child: Text(
-                widget.status,
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: width * 0.045,
-                ),
-              ),
+              child: widget.status == 'Completed'
+                  ? Icon(
+                      Icons.done,
+                      color: Colors.green,
+                    )
+                  : Text(
+                      widget.status,
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: width * 0.045,
+                      ),
+                    ),
             ),
           ],
         ),

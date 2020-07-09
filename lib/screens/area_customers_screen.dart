@@ -1,4 +1,5 @@
 import 'package:cableTvBook/models/customer.dart';
+import 'package:cableTvBook/models/operator.dart';
 import 'package:cableTvBook/widgets/search_screen_widget.dart';
 import 'package:flutter/material.dart';
 
@@ -19,7 +20,6 @@ class AreaCustomersScreen extends StatelessWidget {
             child: Container(
               color: Colors.amber[700],
               child: TabBar(
-                indicator: BoxDecoration(),
                 labelColor: Theme.of(context).primaryColor,
                 labelStyle: TextStyle(
                   fontSize: size.height * 0.03,

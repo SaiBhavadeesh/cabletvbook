@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_icons/flutter_icons.dart';
 
 import 'package:cableTvBook/models/customer.dart';
+import 'package:cableTvBook/models/operator.dart';
 import 'package:cableTvBook/widgets/customer_plan_list.dart';
 import 'package:cableTvBook/widgets/customer_primary_info.dart';
 import 'package:cableTvBook/widgets/modal_bottom_sheet.dart';
@@ -18,6 +19,17 @@ class CustomerDetailScreen extends StatefulWidget {
 
 class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
   bool _isEdit = false;
+  int _selectedYear = DateTime.now().year;
+
+  List<int> getAllYears(DateTime date) {
+    List<int> years = [];
+    final startyear = date.year;
+    final endYear = DateTime.now().year;
+    for (int i = startyear; i <= endYear + 10; i++) {
+      years.add(i);
+    }
+    return years;
+  }
 
   void modalBottomSheet(BuildContext ctx, Customer data) {
     Navigator.of(ctx)
@@ -51,13 +63,15 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
   @override
   Widget build(BuildContext context) {
     final Customer customer = ModalRoute.of(context).settings.arguments;
+    final Operator operatorDetails = getOperatorDetails();
+    final years = getAllYears(customer.startDate);
     final size = MediaQuery.of(context).size;
     return DefaultTabController(
       length: 1,
       child: Scaffold(
         appBar: AppBar(
           backgroundColor: Colors.red[500],
-          title: Text('Service provider'),
+          title: Text(operatorDetails.networkName),
           bottom: PreferredSize(
             child: Padding(
               padding:
@@ -66,11 +80,11 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: <Widget>[
                   Text(
-                    'Service provider name',
+                    operatorDetails.name,
                     style: TextStyle(color: Colors.white),
                   ),
                   Text(
-                    'phone number',
+                    operatorDetails.phoneNumber,
                     style: TextStyle(color: Colors.white),
                   ),
                 ],
@@ -80,13 +94,26 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
           ),
           actions: <Widget>[
             DropdownButton(
+              
+              icon: Icon(Icons.keyboard_arrow_down),
               underline: SizedBox(),
+              value: _selectedYear,
               items: [
-                DropdownMenuItem(child: Text('2020')),
-                DropdownMenuItem(child: Text('2021')),
+                ...years.map((year) {
+                  return DropdownMenuItem(
+                    value: year,
+                    child: Text(
+                      year.toString(),
+                    ),
+                  );
+                }).toList()
               ],
-              onChanged: (value) {},
-            )
+              onChanged: (int value) {
+                setState(() {
+                  _selectedYear = value;
+                });
+              },
+            ),
           ],
         ),
         body: SingleChildScrollView(
@@ -107,7 +134,10 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
                       decoration: BoxDecoration(
                         color: Theme.of(context).primaryColor,
                         borderRadius: BorderRadius.vertical(
-                          bottom: Radius.elliptical(size.width * 0.2, size.height * 0.08),
+                          bottom: Radius.elliptical(
+                            size.width * 0.2,
+                            size.height * 0.08,
+                          ),
                         ),
                       ),
                       child: Row(

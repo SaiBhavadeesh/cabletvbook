@@ -14,7 +14,7 @@ class DefaultDialogBox {
             onPressed: () {
               Navigator.of(ctx).pop();
             },
-          )
+          ),
         ],
       ),
     );

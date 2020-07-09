@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:cableTvBook/screens/profile_screen.dart';
 
 class HomeDrawer extends StatelessWidget {
   final File image;
@@ -28,7 +29,8 @@ class HomeDrawer extends StatelessWidget {
           ),
           SizedBox(height: height * 0.01),
           FlatButton.icon(
-            onPressed: () {},
+            onPressed: () =>
+                Navigator.of(context).pushNamed(ProfileScreen.routeName),
             icon: Icon(Icons.account_circle),
             label: Text('Profile settings'),
           ),

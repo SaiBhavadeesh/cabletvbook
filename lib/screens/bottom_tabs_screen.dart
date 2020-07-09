@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:cableTvBook/helpers/image_getter.dart';
+import 'package:cableTvBook/models/operator.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_icons/flutter_icons.dart';
 
@@ -11,14 +12,6 @@ import 'package:cableTvBook/widgets/home_drawer.dart';
 
 class BottomTabsScreen extends StatefulWidget {
   static const routeName = '/bottomTabsScreen';
-  final networkName;
-  final username;
-  final phoneNumber;
-  BottomTabsScreen({
-    this.networkName = 'Sri Rama Cable Network',
-    this.username = 'Srinivasa Rao',
-    this.phoneNumber = '+ 91 8106263461',
-  });
 
   @override
   _BottomTabsScreenState createState() => _BottomTabsScreenState();
@@ -29,6 +22,7 @@ class _BottomTabsScreenState extends State<BottomTabsScreen> {
   File _profilePic;
   @override
   Widget build(BuildContext context) {
+    final Operator operatorDetails = getOperatorDetails();
     final size = MediaQuery.of(context).size;
     final top = MediaQuery.of(context).padding.top;
     return Scaffold(
@@ -52,48 +46,50 @@ class _BottomTabsScreenState extends State<BottomTabsScreen> {
             ),
           )
         ],
-        bottom: PreferredSize(
-          child: Column(
-            children: <Widget>[
-              Text(
-                widget.networkName,
-                style: TextStyle(
-                  fontSize: (size.height - top) * 0.025,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.amber,
-                ),
-              ),
-              Padding(
-                padding: EdgeInsets.symmetric(
-                  horizontal: size.width * 0.02,
-                  vertical: size.width * 0.01,
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        bottom: _currentIndex == 0
+            ? PreferredSize(
+                child: Column(
                   children: <Widget>[
                     Text(
-                      widget.username,
+                      operatorDetails.networkName,
                       style: TextStyle(
-                        fontSize: (size.height - top) * 0.023,
+                        fontSize: (size.height - top) * 0.025,
                         fontWeight: FontWeight.bold,
                         color: Colors.amber,
                       ),
                     ),
-                    Text(
-                      widget.phoneNumber,
-                      style: TextStyle(
-                        fontSize: (size.height - top) * 0.023,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.amber,
+                    Padding(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: size.width * 0.02,
+                        vertical: size.width * 0.01,
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: <Widget>[
+                          Text(
+                            operatorDetails.name,
+                            style: TextStyle(
+                              fontSize: (size.height - top) * 0.023,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.amber,
+                            ),
+                          ),
+                          Text(
+                            operatorDetails.phoneNumber,
+                            style: TextStyle(
+                              fontSize: (size.height - top) * 0.023,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.amber,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ],
                 ),
-              ),
-            ],
-          ),
-          preferredSize: Size(size.width, (size.height - top) * 0.06),
-        ),
+                preferredSize: Size(size.width, (size.height - top) * 0.06),
+              )
+            : null,
       ),
       drawer: HomeDrawer(image: _profilePic),
       body: [HomeScreen(), SearchScreen(), AddCustomerScreen()][_currentIndex],

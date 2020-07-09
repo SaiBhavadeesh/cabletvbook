@@ -1,9 +1,9 @@
 import 'dart:async';
 
+import 'package:cableTvBook/models/operator.dart';
 import 'package:flutter/material.dart';
 
 import 'package:cableTvBook/screens/area_customers_screen.dart';
-import 'package:cableTvBook/models/customer.dart';
 import 'package:flutter_icons/flutter_icons.dart';
 
 final List<Color> colors = [
@@ -25,7 +25,8 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   final _formKey = GlobalKey<FormState>();
-  int _year = DateTime.now().year.floor();
+  int _initYear = getOperatorDetails().startDate.year;
+  int _endYear = DateTime.now().year;
   int _selectedYear;
   bool _isLeftActive = true;
   bool _isRightActive = true;
@@ -35,14 +36,14 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
-    _selectedYear = _year;
+    _selectedYear = _endYear;
   }
 
   void _leftArrowClickAction() {
     setState(() {
       _animation = false;
     });
-    if (_year - _selectedYear + 1 <= 0) {
+    if (_initYear + 1 < _selectedYear) {
       setState(() {
         _isLeftActive = true;
         _isRightActive = true;
@@ -67,7 +68,7 @@ class _HomeScreenState extends State<HomeScreen> {
     setState(() {
       _animation = false;
     });
-    if (_year - _selectedYear - 1 >= 0) {
+    if (_endYear > _selectedYear) {
       setState(() {
         _isRightActive = true;
         _isLeftActive = true;
@@ -98,6 +99,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final List<AreaData> areas = getOperatorDetails().areas;
     final width = MediaQuery.of(context).size.width;
     return Scaffold(
       appBar: PreferredSize(
@@ -113,7 +115,7 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
               Expanded(
                 child: AnimatedDefaultTextStyle(
-                  curve: Curves.fastOutSlowIn,
+                  curve: Curves.easeOutSine,
                   duration: Duration(milliseconds: 300),
                   style: _animation
                       ? TextStyle(
@@ -123,10 +125,12 @@ class _HomeScreenState extends State<HomeScreen> {
                           letterSpacing: 2,
                         )
                       : TextStyle(fontSize: 0),
-                  child: Text(
-                    _selectedYear.toString(),
-                    textAlign: TextAlign.center,
-                  ),
+                  child: _animation
+                      ? Text(
+                          _selectedYear.toString(),
+                          textAlign: TextAlign.center,
+                        )
+                      : Text(''),
                 ),
               ),
               IconButton(

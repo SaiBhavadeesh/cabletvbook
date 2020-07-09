@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_icons/flutter_icons.dart';
+import 'package:validators/validators.dart' as validator;
 
 class ModalBottomSheet extends StatefulWidget {
   final customer;
@@ -10,24 +11,11 @@ class ModalBottomSheet extends StatefulWidget {
 
 class _ModalBottomSheetState extends State<ModalBottomSheet> {
   final _formKey = GlobalKey<FormState>();
-  final _nameController = TextEditingController();
-  final _addressController = TextEditingController();
-  final _phoneController = TextEditingController();
-  final _accountController = TextEditingController();
-  final _macController = TextEditingController();
-  bool _nameEdit = false;
-  bool _addressEdit = false;
-  bool _phoneEdit = false;
-  bool _accountEdit = false;
-  bool _macEdit = false;
-
-  void clearInputs() {
-    _nameController.clear();
-    _addressController.clear();
-    _phoneController.clear();
-    _accountController.clear();
-    _macController.clear();
-  }
+  String _name;
+  String _address;
+  String _phone;
+  String _account;
+  String _mac;
 
   @override
   Widget build(BuildContext context) {
@@ -76,22 +64,21 @@ class _ModalBottomSheetState extends State<ModalBottomSheet> {
                   ),
                   SizedBox(height: 10),
                   TextFormField(
-                    controller: _nameEdit ? _nameController : null,
-                    initialValue: _nameEdit ? null : widget.customer.name,
-                    onTap: () {
-                      setState(() {
-                        _nameEdit = true;
-                      });
-                    },
+                    initialValue: widget.customer.name,
                     validator: (value) {
                       if (value.isEmpty) {
-                        return 'Name field is empty!';
-                      } else if (value.length > 25) {
-                        return 'Name is too long!';
-                      } else if (!RegExp(r'^[A-Za-z]').hasMatch(value)) {
-                        return 'Name must start with a letter!';
+                        return 'Invalid input!';
                       }
-                      return null;
+                      String error;
+                      final sub = value.split(' ');
+                      sub.forEach((element) {
+                        if (!validator.isAlphanumeric(element)) {
+                          error = 'Must be a combination of alphabet & number!';
+                        } else if (value.length > 25) {
+                          error = 'Name is too long!';
+                        }
+                      });
+                      return error;
                     },
                     decoration: InputDecoration(
                       labelText: 'Customer name',
@@ -101,23 +88,19 @@ class _ModalBottomSheetState extends State<ModalBottomSheet> {
                         borderRadius: BorderRadius.circular(15),
                       ),
                     ),
-                  ),
-                  SizedBox(height: 5),
-                  TextFormField(
-                    controller: _addressEdit ? _addressController : null,
-                    initialValue:
-                        _addressEdit ? null : widget.customer.address,
-                    minLines: 1,
-                    maxLines: 2,
-                    keyboardType: TextInputType.multiline,
-                    onTap: () {
-                      setState(() {
-                        _addressEdit = true;
-                      });
+                    onSaved: (newValue) {
+                      _name = newValue;
                     },
+                  ),
+                  SizedBox(height: 10),
+                  TextFormField(
+                    initialValue: widget.customer.address,
+                    keyboardType: TextInputType.text,
                     validator: (value) {
                       if (value.isEmpty) {
                         return 'Address field is empty!';
+                      } else if (value.length > 50) {
+                        return 'Address is too long!';
                       }
                       return null;
                     },
@@ -129,21 +112,17 @@ class _ModalBottomSheetState extends State<ModalBottomSheet> {
                         borderRadius: BorderRadius.circular(15),
                       ),
                     ),
-                  ),
-                  SizedBox(height: 5),
-                  TextFormField(
-                    controller: _phoneEdit ? _phoneController : null,
-                    initialValue:
-                        _phoneEdit ? null : widget.customer.phoneNumber,
-                    keyboardType: TextInputType.phone,
-                    onTap: () {
-                      setState(() {
-                        _phoneEdit = true;
-                      });
+                    onSaved: (newValue) {
+                      _address = newValue;
                     },
+                  ),
+                  SizedBox(height: 10),
+                  TextFormField(
+                    initialValue: widget.customer.phoneNumber,
+                    keyboardType: TextInputType.phone,
                     validator: (value) {
-                      if (value.isEmpty) {
-                        return 'Phone number field is empty!';
+                      if (!validator.isNumeric(value)) {
+                        return 'Phone number is Invalid!';
                       }
                       return null;
                     },
@@ -155,18 +134,14 @@ class _ModalBottomSheetState extends State<ModalBottomSheet> {
                         borderRadius: BorderRadius.circular(15),
                       ),
                     ),
-                  ),
-                  SizedBox(height: 5),
-                  TextFormField(
-                    controller: _accountEdit ? _accountController : null,
-                    initialValue:
-                        _accountEdit ? null : widget.customer.accountNumber,
-                    keyboardType: TextInputType.number,
-                    onTap: () {
-                      setState(() {
-                        _accountEdit = true;
-                      });
+                    onSaved: (newValue) {
+                      _phone = newValue;
                     },
+                  ),
+                  SizedBox(height: 10),
+                  TextFormField(
+                    initialValue: widget.customer.accountNumber,
+                    keyboardType: TextInputType.number,
                     validator: (value) {
                       if (value.isEmpty) {
                         return 'Account number field is empty!';
@@ -182,16 +157,13 @@ class _ModalBottomSheetState extends State<ModalBottomSheet> {
                         borderRadius: BorderRadius.circular(15),
                       ),
                     ),
-                  ),
-                  SizedBox(height: 5),
-                  TextFormField(
-                    controller: _macEdit ? _macController : null,
-                    initialValue: _macEdit ? null : widget.customer.macId,
-                    onTap: () {
-                      setState(() {
-                        _macEdit = true;
-                      });
+                    onSaved: (newValue) {
+                      _account = newValue;
                     },
+                  ),
+                  SizedBox(height: 10),
+                  TextFormField(
+                    initialValue: widget.customer.macId,
                     validator: (value) {
                       if (value.isEmpty) {
                         return 'MAC Id field is empty!';
@@ -206,6 +178,9 @@ class _ModalBottomSheetState extends State<ModalBottomSheet> {
                         borderRadius: BorderRadius.circular(15),
                       ),
                     ),
+                    onSaved: (newValue) {
+                      _mac = newValue;
+                    },
                   ),
                   SizedBox(height: 10),
                   FloatingActionButton.extended(
@@ -213,25 +188,11 @@ class _ModalBottomSheetState extends State<ModalBottomSheet> {
                     onPressed: () {
                       if (_formKey.currentState.validate()) {
                         _formKey.currentState.save();
-                        widget.customer.name = _nameController.text == ''
-                            ? widget.customer.name
-                            : _nameController.text;
-                        widget.customer.address =
-                            _addressController.text == ''
-                                ? widget.customer.address
-                                : _addressController.text;
-                        widget.customer.phoneNumber =
-                            _phoneController.text == ''
-                                ? widget.customer.phoneNumber
-                                : _phoneController.text;
-                        widget.customer.accountNumber =
-                            _accountController.text == ''
-                                ? widget.customer.accountNumber
-                                : _accountController.text;
-                        widget.customer.macId = _macController.text == ''
-                            ? widget.customer.macId
-                            : _macController.text;
-                        clearInputs();
+                        widget.customer.name = _name;
+                        widget.customer.address = _address;
+                        widget.customer.phoneNumber = _phone;
+                        widget.customer.accountNumber = _account;
+                        widget.customer.macId = _mac;
                         Navigator.of(context).pop();
                       }
                     },

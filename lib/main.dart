@@ -10,6 +10,7 @@ import 'package:cableTvBook/screens/area_customers_screen.dart';
 import 'package:cableTvBook/screens/home_screen.dart';
 import 'package:cableTvBook/screens/search_screen.dart';
 import 'package:cableTvBook/screens/bottom_tabs_screen.dart';
+import 'package:cableTvBook/screens/profile_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -57,7 +58,7 @@ class MyApp extends StatelessWidget {
         dialogTheme: DialogTheme(
           elevation: 5,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(30),
+            borderRadius: BorderRadius.circular(15),
           ),
           titleTextStyle: TextStyle(
             color: Color.fromRGBO(14, 137, 234, 1),
@@ -76,6 +77,7 @@ class MyApp extends StatelessWidget {
         AddCustomerScreen.routeName: (ctx) => AddCustomerScreen(),
         AreaCustomersScreen.routeName: (ctx) => AreaCustomersScreen(),
         CustomerDetailScreen.routeName: (ctx) => CustomerDetailScreen(),
+        ProfileScreen.routeName: (ctx) => ProfileScreen(),
       },
     );
   }

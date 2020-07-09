@@ -1,79 +1,68 @@
-import 'package:flutter/cupertino.dart';
 import 'package:intl/intl.dart';
+import 'package:flutter/foundation.dart';
 
-class AreaData {
-  String areaName;
-  int totalAccounts;
-  int activeAccounts;
-  int inActiveAccounts;
-  AreaData({
-    @required this.areaName,
-    this.totalAccounts = 0,
-    this.activeAccounts = 0,
-    this.inActiveAccounts = 0,
-  });
-}
+import 'package:cableTvBook/models/operator.dart';
 
 List<List> plan = [
   [
     DateFormat('d/M').format(DateTime(2020, 1)),
-    plans[0].toString(),
-    'Active',
+    getOperatorDetails().plans[0].toString(),
+    'Completed',
   ],
   [
     DateFormat('d/M').format(DateTime(2020, 2)),
-    plans[0].toString(),
-    'Active',
+    getOperatorDetails().plans[0].toString(),
+    'Completed',
   ],
   [
     DateFormat('d/M').format(DateTime(2020, 3)),
-    plans[0].toString(),
-    'Active',
+    getOperatorDetails().plans[0].toString(),
+    'Completed',
   ],
   [
     DateFormat('d/M').format(DateTime(2020, 4)),
-    plans[1].toString(),
-    'Active',
+    getOperatorDetails().plans[1].toString(),
+    'Completed',
   ],
   [
     DateFormat('d/M').format(DateTime(2020, 5)),
-    plans[1].toString(),
-    'Active',
+    getOperatorDetails().plans[1].toString(),
+    'Completed',
   ],
   [
     DateFormat('d/M').format(DateTime(2020, 6)),
-    plans[1].toString(),
+    getOperatorDetails().plans[1].toString(),
+    'Active',
+  ],
+  [
+    '',
+    '',
     'Inactive',
   ],
   [
-    DateFormat('d/M').format(DateTime(2020, 7)),
-    plans[2].toString(),
-    'Inactive',
+    '',
+    '',
+    '',
   ],
   [
-    DateFormat('d/M').format(DateTime(2020, 8)),
-    plans[2].toString(),
-    'Not Started',
+    '',
+    '',
+    '',
   ],
   [
-    DateFormat('d/M').format(DateTime(2020, 9)),
-    plans[2].toString(),
-    'Not Started',
+    '',
+    '',
+    '',
   ],
   [
-    DateFormat('d/M').format(DateTime(2020, 10)),
-    plans[3].toString(),
-    'Not Started',
+    '',
+    '',
+    '',
   ],
   [
-    DateFormat('d/M').format(DateTime(2020, 11)),
-    plans[3].toString(),
-    'Not Started',
-  ],
-  [
-    DateFormat('d/M').format(DateTime(2020, 12)),
-    plans[3].toString(),
-    'Not Started',
+    '',
+    '',
+    '',
   ],
 ];
 
@@ -86,7 +75,7 @@ class Plan {
     this.monthCode,
     this.date,
     this.plan,
-    this.status = 'Not started',
+    this.status = '',
   });
 }
 
@@ -120,35 +109,6 @@ class Customer {
   });
 }
 
-List<AreaData> areas = [
-  AreaData(
-    areaName: 'North',
-    totalAccounts: 2,
-    activeAccounts: 0,
-    inActiveAccounts: 2,
-  ),
-  AreaData(
-    areaName: 'East',
-    totalAccounts: 2,
-    activeAccounts: 2,
-    inActiveAccounts: 0,
-  ),
-  AreaData(
-    areaName: 'West',
-    totalAccounts: 2,
-    activeAccounts: 0,
-    inActiveAccounts: 2,
-  ),
-  AreaData(
-    areaName: 'South',
-    totalAccounts: 2,
-    activeAccounts: 2,
-    inActiveAccounts: 0,
-  ),
-];
-
-List<int> plans = [200, 250, 300, 350];
-
 List<Customer> customers = [
   Customer(
     id: '0',
@@ -158,7 +118,7 @@ List<Customer> customers = [
     accountNumber: '87654321',
     macId: '12DS345678',
     networkProviderName: 'Sri Rama Cable Network',
-    startDate: DateTime.now(),
+    startDate: DateTime.now().subtract(Duration(days: 730)),
     area: 'North',
     currentPlan: 200,
     currentStatus: 'Inactive',
@@ -171,7 +131,7 @@ List<Customer> customers = [
     accountNumber: '87654321',
     macId: '12DS345678',
     networkProviderName: 'Sri Rama Cable Network',
-    startDate: DateTime.now(),
+    startDate: DateTime.now().subtract(Duration(days: 730)),
     area: 'East',
     currentPlan: 250,
     currentStatus: 'Active',
@@ -184,7 +144,7 @@ List<Customer> customers = [
     accountNumber: '87654321',
     macId: '12DS345678',
     networkProviderName: 'Sri Rama Cable Network',
-    startDate: DateTime.now(),
+    startDate: DateTime.now().subtract(Duration(days: 730)),
     area: 'West',
     currentPlan: 300,
     currentStatus: 'Inactive',
@@ -197,7 +157,7 @@ List<Customer> customers = [
     accountNumber: '87654321',
     macId: '12DS345678',
     networkProviderName: 'Sri Rama Cable Network',
-    startDate: DateTime.now(),
+    startDate: DateTime.now().subtract(Duration(days: 730)),
     area: 'South',
     currentPlan: 350,
     currentStatus: 'Active',
@@ -210,7 +170,7 @@ List<Customer> customers = [
     accountNumber: '87654321',
     macId: '12DS345678',
     networkProviderName: 'Sri Rama Cable Network',
-    startDate: DateTime.now(),
+    startDate: DateTime.now().subtract(Duration(days: 730)),
     area: 'North',
     currentPlan: 200,
     currentStatus: 'Inactive',
@@ -223,7 +183,7 @@ List<Customer> customers = [
     accountNumber: '87654321',
     macId: '12DS345678',
     networkProviderName: 'Sri Rama Cable Network',
-    startDate: DateTime.now(),
+    startDate: DateTime.now().subtract(Duration(days: 730)),
     area: 'East',
     currentPlan: 250,
     currentStatus: 'Active',
@@ -236,7 +196,7 @@ List<Customer> customers = [
     accountNumber: '87654321',
     macId: '12DS345678',
     networkProviderName: 'Sri Rama Cable Network',
-    startDate: DateTime.now(),
+    startDate: DateTime.now().subtract(Duration(days: 730)),
     area: 'West',
     currentPlan: 300,
     currentStatus: 'Inactive',
@@ -249,7 +209,7 @@ List<Customer> customers = [
     accountNumber: '87654321',
     macId: '12DS345678',
     networkProviderName: 'Sri Rama Cable Network',
-    startDate: DateTime.now(),
+    startDate: DateTime.now().subtract(Duration(days: 730)),
     area: 'South',
     currentPlan: 350,
     currentStatus: 'Active',

@@ -1,11 +1,13 @@
 import 'dart:io';
 
-import 'package:cableTvBook/helpers/image_getter.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_icons/flutter_icons.dart';
+import 'package:validators/validators.dart' as validator;
 
-import 'package:cableTvBook/widgets/default_dialog_box.dart';
+import 'package:cableTvBook/helpers/image_getter.dart';
 import 'package:cableTvBook/models/customer.dart';
+import 'package:cableTvBook/models/operator.dart';
+import 'package:cableTvBook/widgets/default_dialog_box.dart';
 
 class AddCustomerScreen extends StatefulWidget {
   static const routeName = '/addCustomerScreen';
@@ -39,6 +41,9 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final List<AreaData> areas = getOperatorDetails().areas;
+    final List<int> plans = getOperatorDetails().plans;
+
     return Form(
       key: _formKey,
       child: Stack(
@@ -83,13 +88,18 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
                     controller: _nameController,
                     validator: (value) {
                       if (value.isEmpty) {
-                        return 'Name field is empty!';
-                      } else if (value.length > 25) {
-                        return 'Name is too long!';
-                      } else if (!RegExp(r'^[A-Za-z]').hasMatch(value)) {
-                        return 'Name must start with a letter!';
+                        return 'Invalid input!';
                       }
-                      return null;
+                      String error;
+                      final sub = value.split(' ');
+                      sub.forEach((element) {
+                        if (!validator.isAlphanumeric(element)) {
+                          error = 'Must be a combination of alphabet & number!';
+                        } else if (value.length > 25) {
+                          error = 'Name is too long!';
+                        }
+                      });
+                      return error;
                     },
                     decoration: InputDecoration(
                       labelText: 'Customer name',
@@ -103,12 +113,12 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
                   SizedBox(height: 5),
                   TextFormField(
                     controller: _addressController,
-                    minLines: 1,
-                    maxLines: 2,
-                    keyboardType: TextInputType.multiline,
+                    keyboardType: TextInputType.text,
                     validator: (value) {
                       if (value.isEmpty) {
                         return 'Address field is empty!';
+                      } else if (value.length > 50) {
+                        return 'Address is too long!';
                       }
                       return null;
                     },
@@ -126,14 +136,15 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
                     controller: _phoneController,
                     keyboardType: TextInputType.phone,
                     validator: (value) {
-                      if (value.isEmpty) {
-                        return 'Phone number field is empty!';
+                      if (!validator.isNumeric(value)) {
+                        return 'Phone number is Invalid!';
                       }
                       return null;
                     },
                     decoration: InputDecoration(
                       labelText: 'Phone number',
                       contentPadding: EdgeInsets.all(10),
+                      prefixText: '+ 91 ',
                       prefixIcon: Icon(Icons.phone),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(15),
@@ -264,7 +275,7 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
                           address: _addressController.text.trim(),
                           accountNumber: _accountController.text.trim(),
                           macId: _macController.text.trim(),
-                          networkProviderName: 'Sri Rama Cable Network',
+                          networkProviderName: getOperatorDetails().networkName,
                           startDate: DateTime.now(),
                           area: _selectedArea,
                           currentPlan: _selectedPlan,

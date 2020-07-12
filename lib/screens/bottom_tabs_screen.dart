@@ -22,16 +22,13 @@ class _BottomTabsScreenState extends State<BottomTabsScreen> {
   File _profilePic;
   @override
   Widget build(BuildContext context) {
-    final Operator operatorDetails = getOperatorDetails();
-    final size = MediaQuery.of(context).size;
-    final top = MediaQuery.of(context).padding.top;
     return Scaffold(
       appBar: AppBar(
         title: Text('Cable Tv Book'),
         centerTitle: true,
         actions: <Widget>[
           Padding(
-            padding: EdgeInsets.all((size.height - top) * 0.007),
+            padding: EdgeInsets.all(8),
             child: GestureDetector(
               child: CircleAvatar(
                 backgroundColor: Colors.white,
@@ -46,55 +43,12 @@ class _BottomTabsScreenState extends State<BottomTabsScreen> {
             ),
           )
         ],
-        bottom: _currentIndex == 0
-            ? PreferredSize(
-                child: Column(
-                  children: <Widget>[
-                    Text(
-                      operatorDetails.networkName,
-                      style: TextStyle(
-                        fontSize: (size.height - top) * 0.025,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.amber,
-                      ),
-                    ),
-                    Padding(
-                      padding: EdgeInsets.symmetric(
-                        horizontal: size.width * 0.02,
-                        vertical: size.width * 0.01,
-                      ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: <Widget>[
-                          Text(
-                            operatorDetails.name,
-                            style: TextStyle(
-                              fontSize: (size.height - top) * 0.023,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.amber,
-                            ),
-                          ),
-                          Text(
-                            operatorDetails.phoneNumber,
-                            style: TextStyle(
-                              fontSize: (size.height - top) * 0.023,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.amber,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-                preferredSize: Size(size.width, (size.height - top) * 0.06),
-              )
-            : null,
       ),
       drawer: HomeDrawer(image: _profilePic),
       body: [HomeScreen(), SearchScreen(), AddCustomerScreen()][_currentIndex],
       bottomNavigationBar: BottomNavigationBar(
         elevation: 10,
+        showUnselectedLabels: false,
         onTap: (value) {
           setState(() {
             _currentIndex = value;

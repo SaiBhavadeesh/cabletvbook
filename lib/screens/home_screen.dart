@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:ui';
 
 import 'package:cableTvBook/models/operator.dart';
 import 'package:flutter/material.dart';
@@ -99,58 +100,105 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final List<AreaData> areas = getOperatorDetails().areas;
-    final width = MediaQuery.of(context).size.width;
+    final Operator operatorDetails = getOperatorDetails();
+    final size = MediaQuery.of(context).size;
+    final top = MediaQuery.of(context).padding.top;
+    DateTime.now().toIso8601String();
     return Scaffold(
-      appBar: PreferredSize(
-        child: Padding(
-          padding: EdgeInsets.symmetric(vertical: width * 0.01),
-          child: Row(
+      backgroundColor: Colors.white,
+      appBar: AppBar(
+        leading: SizedBox(),
+        elevation: 0,
+        bottom: PreferredSize(
+          child: Column(
             children: <Widget>[
-              IconButton(
-                disabledColor: Colors.black,
-                color: Theme.of(context).primaryColor,
-                icon: Icon(Icons.arrow_back_ios),
-                onPressed: _isLeftActive ? _leftArrowClickAction : null,
-              ),
-              Expanded(
-                child: AnimatedDefaultTextStyle(
-                  curve: Curves.easeOutSine,
-                  duration: Duration(milliseconds: 300),
-                  style: _animation
-                      ? TextStyle(
-                          color: Theme.of(context).primaryColor,
-                          fontWeight: FontWeight.bold,
-                          fontSize: width * 0.06,
-                          letterSpacing: 2,
-                        )
-                      : TextStyle(fontSize: 0),
-                  child: _animation
-                      ? Text(
-                          _selectedYear.toString(),
-                          textAlign: TextAlign.center,
-                        )
-                      : Text(''),
+              Text(
+                operatorDetails.networkName,
+                style: TextStyle(
+                  fontSize: (size.height - top) * 0.025,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.amber,
                 ),
               ),
-              IconButton(
-                disabledColor: Colors.black,
-                color: Theme.of(context).primaryColor,
-                icon: Icon(Icons.arrow_forward_ios),
-                onPressed: _isRightActive ? _rightArrowClickAction : null,
+              Padding(
+                padding: EdgeInsets.symmetric(
+                  horizontal: size.width * 0.02,
+                  vertical: size.width * 0.01,
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: <Widget>[
+                    Text(
+                      operatorDetails.name,
+                      style: TextStyle(
+                        fontSize: (size.height - top) * 0.023,
+                        // fontWeight: FontWeight.bold,
+                        color: Colors.amber,
+                      ),
+                    ),
+                    Text(
+                      operatorDetails.phoneNumber,
+                      style: TextStyle(
+                        fontSize: (size.height - top) * 0.023,
+                        // fontWeight: FontWeight.bold,
+                        color: Colors.amber,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Container(
+                color: Colors.white,
+                padding: EdgeInsets.symmetric(vertical: size.width * 0.01),
+                child: Row(
+                  children: <Widget>[
+                    IconButton(
+                      disabledColor: Colors.black,
+                      color: Theme.of(context).primaryColor,
+                      icon: Icon(Icons.arrow_back_ios),
+                      onPressed: _isLeftActive ? _leftArrowClickAction : null,
+                    ),
+                    Expanded(
+                      child: AnimatedDefaultTextStyle(
+                        curve: Curves.easeOutSine,
+                        duration: Duration(milliseconds: 300),
+                        style: _animation
+                            ? TextStyle(
+                                color: Theme.of(context).primaryColor,
+                                fontWeight: FontWeight.bold,
+                                fontSize: size.width * 0.06,
+                                letterSpacing: 2,
+                              )
+                            : TextStyle(fontSize: 0),
+                        child: _animation
+                            ? Text(
+                                _selectedYear.toString(),
+                                textAlign: TextAlign.center,
+                              )
+                            : Text(''),
+                      ),
+                    ),
+                    IconButton(
+                      disabledColor: Colors.black,
+                      color: Theme.of(context).primaryColor,
+                      icon: Icon(Icons.arrow_forward_ios),
+                      onPressed: _isRightActive ? _rightArrowClickAction : null,
+                    ),
+                  ],
+                ),
               ),
             ],
           ),
+          preferredSize: Size(size.width, size.width * 0.15),
         ),
-        preferredSize: Size(width, width * 0.15),
       ),
       body: GridView.builder(
         physics: BouncingScrollPhysics(),
-        itemCount: areas.length,
+        itemCount: operatorDetails.areas.length,
         itemBuilder: (context, index) => GestureDetector(
           child: Container(
-            margin: EdgeInsets.all(width * 0.025),
-            padding: EdgeInsets.all(width * 0.04),
+            margin: EdgeInsets.all(size.width * 0.025),
+            padding: EdgeInsets.all(size.width * 0.04),
             decoration: BoxDecoration(
               backgroundBlendMode: BlendMode.darken,
               borderRadius: BorderRadius.circular(15),
@@ -177,34 +225,34 @@ class _HomeScreenState extends State<HomeScreen> {
             child: ListView(
               children: <Widget>[
                 Text(
-                  areas[index].areaName,
+                  operatorDetails.areas[index].areaName,
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
-                    fontSize: width * 0.06,
+                    fontSize: size.width * 0.06,
                     color: Colors.white,
                   ),
                 ),
                 Divider(color: Colors.black38),
                 Text(
-                  'Total customers : ${areas[index].totalAccounts}',
+                  'Total customers : ${operatorDetails.areas[index].totalAccounts}',
                   style: TextStyle(
-                    fontSize: width * 0.045,
+                    fontSize: size.width * 0.045,
                     color: Colors.white,
                   ),
                 ),
                 Divider(color: Colors.black38),
                 Text(
-                  'Active : ${areas[index].activeAccounts}',
+                  'Active : ${operatorDetails.areas[index].activeAccounts}',
                   style: TextStyle(
-                    fontSize: width * 0.045,
+                    fontSize: size.width * 0.045,
                     color: Colors.white,
                   ),
                 ),
                 Divider(color: Colors.black38),
                 Text(
-                  'In-Active : ${areas[index].inActiveAccounts}',
+                  'In-Active : ${operatorDetails.areas[index].inActiveAccounts}',
                   style: TextStyle(
-                    fontSize: width * 0.045,
+                    fontSize: size.width * 0.045,
                     color: Colors.white,
                   ),
                 ),
@@ -213,7 +261,7 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
           onTap: () => Navigator.of(context).pushNamed(
             AreaCustomersScreen.routeName,
-            arguments: areas[index],
+            arguments: operatorDetails.areas[index],
           ),
           onLongPress: () => showDialog(
             context: context,
@@ -221,79 +269,13 @@ class _HomeScreenState extends State<HomeScreen> {
               final textController = TextEditingController();
               return Form(
                 key: _formKey,
-                child: AlertDialog(
-                  title: Text(
-                    'Edit name',
-                  ),
-                  content: TextFormField(
-                    maxLength: 10,
-                    controller: textController,
-                    validator: (value) {
-                      if (value.isEmpty) {
-                        return 'Name is empty!';
-                      } else if (!RegExp(r'^[A-Za-z]').hasMatch(value)) {
-                        return 'Name must start with a letter!';
-                      } else {
-                        return null;
-                      }
-                    },
-                    decoration: InputDecoration(
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(15),
-                      ),
+                child: BackdropFilter(
+                  filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
+                  child: AlertDialog(
+                    title: Text(
+                      'Edit name',
                     ),
-                  ),
-                  actions: <Widget>[
-                    FlatButton.icon(
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.only(
-                          topLeft: Radius.circular(15),
-                          bottomRight: Radius.circular(15),
-                        ),
-                      ),
-                      onPressed: () {
-                        if (_formKey.currentState.validate()) {
-                          _formKey.currentState.save();
-                          setState(() {
-                            areas[index].areaName = textController.text;
-                          });
-                          Navigator.of(ctx).pop();
-                        }
-                      },
-                      icon: Icon(FlutterIcons.content_save_edit_mco),
-                      label: Text('save'),
-                      color: Theme.of(context).primaryColor,
-                    ),
-                  ],
-                ),
-              );
-            },
-          ),
-        ),
-        padding: EdgeInsets.symmetric(horizontal: width * 0.025),
-        gridDelegate:
-            SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 2),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () => showDialog(
-          context: context,
-          builder: (ctx) {
-            final textController = TextEditingController();
-            return Form(
-              key: _formKey,
-              child: AlertDialog(
-                title: Text('Add New Area'),
-                content: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  mainAxisSize: MainAxisSize.min,
-                  children: <Widget>[
-                    Text(
-                      'NOTE : This action cannot be undone, Please make sure before adding.\n',
-                      style: TextStyle(
-                        color: Theme.of(context).errorColor,
-                      ),
-                    ),
-                    TextFormField(
+                    content: TextFormField(
                       maxLength: 10,
                       controller: textController,
                       validator: (value) {
@@ -311,30 +293,104 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),
                       ),
                     ),
+                    actions: <Widget>[
+                      FlatButton.icon(
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.only(
+                            topLeft: Radius.circular(15),
+                            bottomRight: Radius.circular(15),
+                          ),
+                        ),
+                        onPressed: () {
+                          if (_formKey.currentState.validate()) {
+                            _formKey.currentState.save();
+                            setState(() {
+                              operatorDetails.areas[index].areaName =
+                                  textController.text;
+                            });
+                            Navigator.of(ctx).pop();
+                          }
+                        },
+                        icon: Icon(FlutterIcons.content_save_edit_mco),
+                        label: Text('save'),
+                        color: Theme.of(context).primaryColor,
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            },
+          ),
+        ),
+        padding: EdgeInsets.symmetric(horizontal: size.width * 0.025),
+        gridDelegate:
+            SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 2),
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () => showDialog(
+          context: context,
+          builder: (ctx) {
+            final textController = TextEditingController();
+            return Form(
+              key: _formKey,
+              child: BackdropFilter(
+                filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
+                child: AlertDialog(
+                  title: Text('Add New Area'),
+                  content: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    mainAxisSize: MainAxisSize.min,
+                    children: <Widget>[
+                      Text(
+                        'NOTE : This action cannot be undone, Please make sure before adding.\n',
+                        style: TextStyle(
+                          color: Theme.of(context).errorColor,
+                        ),
+                      ),
+                      TextFormField(
+                        maxLength: 10,
+                        controller: textController,
+                        validator: (value) {
+                          if (value.isEmpty) {
+                            return 'Name is empty!';
+                          } else if (!RegExp(r'^[A-Za-z]').hasMatch(value)) {
+                            return 'Name must start with a letter!';
+                          } else {
+                            return null;
+                          }
+                        },
+                        decoration: InputDecoration(
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(15),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  actions: <Widget>[
+                    FlatButton.icon(
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.only(
+                          topLeft: Radius.circular(15),
+                          bottomRight: Radius.circular(15),
+                        ),
+                      ),
+                      onPressed: () {
+                        if (_formKey.currentState.validate()) {
+                          _formKey.currentState.save();
+                          setState(() {
+                            operatorDetails.areas
+                                .add(AreaData(areaName: textController.text));
+                          });
+                          Navigator.of(ctx).pop();
+                        }
+                      },
+                      icon: Icon(FlutterIcons.content_save_mco),
+                      label: Text('save'),
+                      color: Theme.of(context).primaryColor,
+                    ),
                   ],
                 ),
-                actions: <Widget>[
-                  FlatButton.icon(
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.only(
-                        topLeft: Radius.circular(15),
-                        bottomRight: Radius.circular(15),
-                      ),
-                    ),
-                    onPressed: () {
-                      if (_formKey.currentState.validate()) {
-                        _formKey.currentState.save();
-                        setState(() {
-                          areas.add(AreaData(areaName: textController.text));
-                        });
-                        Navigator.of(ctx).pop();
-                      }
-                    },
-                    icon: Icon(FlutterIcons.content_save_mco),
-                    label: Text('save'),
-                    color: Theme.of(context).primaryColor,
-                  ),
-                ],
               ),
             );
           },

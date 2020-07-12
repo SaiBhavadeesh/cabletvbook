@@ -36,6 +36,35 @@ class Operator {
   });
 }
 
+List<AreaData> areas = [
+  AreaData(
+    areaName: 'North east',
+    totalAccounts: 2,
+    activeAccounts: 0,
+    inActiveAccounts: 2,
+  ),
+  AreaData(
+    areaName: 'East',
+    totalAccounts: 2,
+    activeAccounts: 2,
+    inActiveAccounts: 0,
+  ),
+  AreaData(
+    areaName: 'West',
+    totalAccounts: 2,
+    activeAccounts: 0,
+    inActiveAccounts: 2,
+  ),
+  AreaData(
+    areaName: 'South',
+    totalAccounts: 2,
+    activeAccounts: 2,
+    inActiveAccounts: 0,
+  ),
+];
+
+List<int> plans = [200, 250, 300, 350];
+
 Operator getOperatorDetails() {
   return Operator(
     id: '1',
@@ -44,32 +73,7 @@ Operator getOperatorDetails() {
     networkName: 'Sri Rama Cable Network',
     phoneNumber: '+91 900092143',
     startDate: DateTime.now().subtract(Duration(days: 730)),
-    areas: [
-      AreaData(
-        areaName: 'North',
-        totalAccounts: 2,
-        activeAccounts: 0,
-        inActiveAccounts: 2,
-      ),
-      AreaData(
-        areaName: 'East',
-        totalAccounts: 2,
-        activeAccounts: 2,
-        inActiveAccounts: 0,
-      ),
-      AreaData(
-        areaName: 'West',
-        totalAccounts: 2,
-        activeAccounts: 0,
-        inActiveAccounts: 2,
-      ),
-      AreaData(
-        areaName: 'South',
-        totalAccounts: 2,
-        activeAccounts: 2,
-        inActiveAccounts: 0,
-      ),
-    ],
-    plans: [200, 250, 300, 350],
+    areas: areas,
+    plans: plans,
   );
 }

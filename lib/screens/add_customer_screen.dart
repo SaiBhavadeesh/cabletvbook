@@ -257,56 +257,75 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
                       ),
                     ],
                   ),
-                  FloatingActionButton.extended(
-                    label: Text(
-                      'Submit',
-                      style: TextStyle(color: Colors.white),
+                  Ink(
+                    decoration: BoxDecoration(
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black26,
+                          offset: Offset(0, 4),
+                          blurRadius: 3,
+                        ),
+                      ],
+                      borderRadius: BorderRadius.circular(30),
+                      gradient: LinearGradient(colors: [
+                        Theme.of(context).primaryColor.withRed(200),
+                        Theme.of(context).primaryColor.withRed(400),
+                        Theme.of(context).primaryColor.withRed(600),
+                      ]),
                     ),
-                    backgroundColor: Theme.of(context).primaryColor,
-                    onPressed: () {
-                      if (_formKey.currentState.validate() &&
-                          _selectedArea != null &&
-                          _selectedPlan != null) {
-                        _formKey.currentState.save();
-                        final newCustomer = Customer(
-                          id: DateTime.now().toString(),
-                          name: _nameController.text.trim(),
-                          phoneNumber: _phoneController.text.trim(),
-                          address: _addressController.text.trim(),
-                          accountNumber: _accountController.text.trim(),
-                          macId: _macController.text.trim(),
-                          networkProviderName: getOperatorDetails().networkName,
-                          startDate: DateTime.now(),
-                          area: _selectedArea,
-                          currentPlan: _selectedPlan,
-                        );
-                        areas.forEach((element) {
-                          if (element.areaName == _selectedArea) {
-                            element.totalAccounts++;
-                            element.inActiveAccounts++;
-                          }
-                        });
-                        customers.add(newCustomer);
-                        _nameController.clear();
-                        _phoneController.clear();
-                        _addressController.clear();
-                        _accountController.clear();
-                        _macController.clear();
-                        setState(() {
-                          _selectedArea = null;
-                          _selectedPlan = null;
-                        });
-                      } else if (_selectedArea == null ||
-                          _selectedPlan == null) {
-                        String msg;
-                        if (_selectedArea == null && _selectedPlan == null)
-                          msg = 'area and plan';
-                        else
-                          msg = _selectedArea == null ? 'area' : 'plan';
-                        DefaultDialogBox.errorDialog(
-                            context, 'Alert', 'Please select $msg');
-                      }
-                    },
+                    child: FloatingActionButton.extended(
+                      label: Text(
+                        'Submit',
+                        style: TextStyle(color: Colors.white),
+                      ),
+                      elevation: 0,
+                      backgroundColor: Colors.transparent,
+                      onPressed: () {
+                        if (_formKey.currentState.validate() &&
+                            _selectedArea != null &&
+                            _selectedPlan != null) {
+                          _formKey.currentState.save();
+                          final newCustomer = Customer(
+                            id: DateTime.now().toString(),
+                            name: _nameController.text.trim(),
+                            phoneNumber: _phoneController.text.trim(),
+                            address: _addressController.text.trim(),
+                            accountNumber: _accountController.text.trim(),
+                            macId: _macController.text.trim(),
+                            networkProviderName:
+                                getOperatorDetails().networkName,
+                            startDate: DateTime.now(),
+                            area: _selectedArea,
+                            currentPlan: _selectedPlan,
+                          );
+                          areas.forEach((element) {
+                            if (element.areaName == _selectedArea) {
+                              element.totalAccounts++;
+                              element.inActiveAccounts++;
+                            }
+                          });
+                          customers.add(newCustomer);
+                          _nameController.clear();
+                          _phoneController.clear();
+                          _addressController.clear();
+                          _accountController.clear();
+                          _macController.clear();
+                          setState(() {
+                            _selectedArea = null;
+                            _selectedPlan = null;
+                          });
+                        } else if (_selectedArea == null ||
+                            _selectedPlan == null) {
+                          String msg;
+                          if (_selectedArea == null && _selectedPlan == null)
+                            msg = 'area and plan';
+                          else
+                            msg = _selectedArea == null ? 'area' : 'plan';
+                          DefaultDialogBox.errorDialog(
+                              context, 'Alert', 'Please select $msg');
+                        }
+                      },
+                    ),
                   ),
                 ],
               ),

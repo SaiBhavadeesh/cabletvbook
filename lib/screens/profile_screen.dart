@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_icons/flutter_icons.dart';
@@ -55,7 +56,20 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final size = MediaQuery.of(context).size;
     return Scaffold(
       appBar: AppBar(
-        title: Text(operatorDetails.name),
+        title: Text(
+          'Profile',
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            letterSpacing: 1,
+          ),
+        ),
+        // title: Text(
+        //   operatorDetails.name,
+        //   style: TextStyle(
+        //     fontWeight: FontWeight.bold,
+        //     letterSpacing: 0.5,
+        //   ),
+        // ),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -114,6 +128,56 @@ class _ProfileScreenState extends State<ProfileScreen> {
             SizedBox(height: 10),
             getTitleValueEdit('Email', operatorDetails.email, null),
             SizedBox(height: 10),
+            getTitleValueEdit('Phone number', operatorDetails.phoneNumber, null
+                // () => showDialog(
+                //   context: context,
+                //   builder: (ctx) {
+                //     final formKey = GlobalKey<FormState>();
+                //     String phoneNumber;
+                //     return AlertDialog(
+                //       content: Form(
+                //         key: formKey,
+                //         child: TextFormField(
+                //           initialValue: operatorDetails.phoneNumber.substring(4),
+                //           keyboardType: TextInputType.phone,
+                //           validator: (value) {
+                //             if (!validator.isNumeric(value)) {
+                //               return 'Phone number is Invalid!';
+                //             }
+                //             return null;
+                //           },
+                //           decoration: InputDecoration(
+                //             labelText: 'Edit Phone number',
+                //             prefixText: '+ 91 ',
+                //           ),
+                //           onSaved: (value) {
+                //             phoneNumber = '+ 91 ' + value;
+                //           },
+                //         ),
+                //       ),
+                //       actions: <Widget>[
+                //         FlatButton(
+                //           onPressed: () => Navigator.of(ctx).pop(),
+                //           child: Text('Cancel'),
+                //         ),
+                //         FlatButton(
+                //           onPressed: () {
+                //             if (formKey.currentState.validate()) {
+                //               formKey.currentState.save();
+                //               setState(() {
+                //                 operatorDetails.phoneNumber = phoneNumber;
+                //               });
+                //               Navigator.of(context).pop();
+                //             }
+                //           },
+                //           child: Text('Save'),
+                //         ),
+                //       ],
+                //     );
+                //   },
+                // ),
+                ),
+            SizedBox(height: 10),
             getTitleValueEdit(
               'Name',
               operatorDetails.name,
@@ -122,53 +186,56 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 builder: (ctx) {
                   final formKey = GlobalKey<FormState>();
                   String name;
-                  return AlertDialog(
-                    content: Form(
-                      key: formKey,
-                      child: TextFormField(
-                        initialValue: operatorDetails.name,
-                        validator: (value) {
-                          if (value.isEmpty) {
-                            return 'Invalid input!';
-                          }
-                          String error;
-                          final sub = value.split(' ');
-                          sub.forEach((element) {
-                            if (!validator.isAlphanumeric(element)) {
-                              error =
-                                  'Must be a combination of alphabet & number';
-                            } else if (value.length > 25) {
-                              error = 'Name is too long!';
+                  return BackdropFilter(
+                    filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
+                    child: AlertDialog(
+                      content: Form(
+                        key: formKey,
+                        child: TextFormField(
+                          initialValue: operatorDetails.name,
+                          validator: (value) {
+                            if (value.isEmpty) {
+                              return 'Invalid input!';
                             }
-                          });
-                          return error;
-                        },
-                        decoration: InputDecoration(
-                          labelText: 'Edit Name',
-                        ),
-                        onSaved: (value) {
-                          name = value;
-                        },
-                      ),
-                    ),
-                    actions: <Widget>[
-                      FlatButton(
-                        onPressed: () => Navigator.of(ctx).pop(),
-                        child: Text('Cancel'),
-                      ),
-                      FlatButton(
-                        onPressed: () {
-                          if (formKey.currentState.validate()) {
-                            formKey.currentState.save();
-                            setState(() {
-                              operatorDetails.name = name;
+                            String error;
+                            final sub = value.split(' ');
+                            sub.forEach((element) {
+                              if (!validator.isAlphanumeric(element)) {
+                                error =
+                                    'Must be a combination of alphabet & number';
+                              } else if (value.length > 25) {
+                                error = 'Name is too long!';
+                              }
                             });
-                            Navigator.of(context).pop();
-                          }
-                        },
-                        child: Text('Save'),
+                            return error;
+                          },
+                          decoration: InputDecoration(
+                            labelText: 'Edit Name',
+                          ),
+                          onSaved: (value) {
+                            name = value;
+                          },
+                        ),
                       ),
-                    ],
+                      actions: <Widget>[
+                        FlatButton(
+                          onPressed: () => Navigator.of(ctx).pop(),
+                          child: Text('Cancel'),
+                        ),
+                        FlatButton(
+                          onPressed: () {
+                            if (formKey.currentState.validate()) {
+                              formKey.currentState.save();
+                              setState(() {
+                                operatorDetails.name = name;
+                              });
+                              Navigator.of(context).pop();
+                            }
+                          },
+                          child: Text('Save'),
+                        ),
+                      ],
+                    ),
                   );
                 },
               ),
@@ -182,106 +249,186 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 builder: (ctx) {
                   final formKey = GlobalKey<FormState>();
                   String networkName;
-                  return AlertDialog(
-                    content: Form(
-                      key: formKey,
-                      child: TextFormField(
-                        initialValue: operatorDetails.networkName,
-                        validator: (value) {
-                          if (value.isEmpty) {
-                            return 'Invalid input!';
-                          }
-                          String error;
-                          final sub = value.split(' ');
-                          sub.forEach((element) {
-                            if (!validator.isAlpha(element)) {
-                              error = 'Must be an alphabet';
-                            } else if (value.length > 40) {
-                              error = 'Name is too long!';
+                  return BackdropFilter(
+                    filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
+                    child: AlertDialog(
+                      content: Form(
+                        key: formKey,
+                        child: TextFormField(
+                          initialValue: operatorDetails.networkName,
+                          validator: (value) {
+                            if (value.isEmpty) {
+                              return 'Invalid input!';
                             }
-                          });
-                          return error;
-                        },
-                        decoration: InputDecoration(
-                          labelText: 'Edit Network name',
-                        ),
-                        onSaved: (value) {
-                          networkName = value;
-                        },
-                      ),
-                    ),
-                    actions: <Widget>[
-                      FlatButton(
-                        onPressed: () => Navigator.of(ctx).pop(),
-                        child: Text('Cancel'),
-                      ),
-                      FlatButton(
-                        onPressed: () {
-                          if (formKey.currentState.validate()) {
-                            formKey.currentState.save();
-                            setState(() {
-                              operatorDetails.networkName = networkName;
+                            String error;
+                            final sub = value.split(' ');
+                            sub.forEach((element) {
+                              if (!validator.isAlpha(element)) {
+                                error = 'Must be an alphabet';
+                              } else if (value.length > 40) {
+                                error = 'Name is too long!';
+                              }
                             });
-                            Navigator.of(context).pop();
-                          }
-                        },
-                        child: Text('Save'),
+                            return error;
+                          },
+                          decoration: InputDecoration(
+                            labelText: 'Edit Network name',
+                          ),
+                          onSaved: (value) {
+                            networkName = value;
+                          },
+                        ),
                       ),
-                    ],
+                      actions: <Widget>[
+                        FlatButton(
+                          onPressed: () => Navigator.of(ctx).pop(),
+                          child: Text('Cancel'),
+                        ),
+                        FlatButton(
+                          onPressed: () {
+                            if (formKey.currentState.validate()) {
+                              formKey.currentState.save();
+                              setState(() {
+                                operatorDetails.networkName = networkName;
+                              });
+                              Navigator.of(context).pop();
+                            }
+                          },
+                          child: Text('Save'),
+                        ),
+                      ],
+                    ),
                   );
                 },
               ),
             ),
+            SizedBox(height: 30),
+            SizedBox(
+              width: size.width,
+              child: Text(
+                'Secondary Info : ',
+                style: TextStyle(
+                  color: Colors.orange,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 20,
+                ),
+              ),
+            ),
+            Divider(
+              indent: 0,
+              endIndent: size.width * 0.75,
+              thickness: 2,
+              color: Theme.of(context).primaryColor,
+            ),
             SizedBox(height: 10),
-            getTitleValueEdit(
-              'Phone number',
-              operatorDetails.phoneNumber,
-              () => showDialog(
-                context: context,
-                builder: (ctx) {
-                  final formKey = GlobalKey<FormState>();
-                  String phoneNumber;
-                  return AlertDialog(
-                    content: Form(
-                      key: formKey,
-                      child: TextFormField(
-                        initialValue: operatorDetails.phoneNumber.substring(4),
-                        keyboardType: TextInputType.phone,
-                        validator: (value) {
-                          if (!validator.isNumeric(value)) {
-                            return 'Phone number is Invalid!';
-                          }
-                          return null;
-                        },
-                        decoration: InputDecoration(
-                          labelText: 'Edit Phone number',
-                          prefixText: '+ 91 ',
-                        ),
-                        onSaved: (value) {
-                          phoneNumber = '+ 91 ' + value;
-                        },
-                      ),
+            Padding(
+              padding: const EdgeInsets.only(left: 8.0, bottom: 4.0),
+              child: Text(
+                'Areas',
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16,
+                ),
+              ),
+            ),
+            GridView.builder(
+              physics: NeverScrollableScrollPhysics(),
+              shrinkWrap: true,
+              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 5,
+              ),
+              itemBuilder: (context, index) {
+                return Container(
+                  margin: const EdgeInsets.all(8),
+                  padding: const EdgeInsets.all(8),
+                  alignment: Alignment.center,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(20),
+                    gradient: SweepGradient(colors: [
+                      Theme.of(context).primaryColor,
+                      Theme.of(context).primaryColor.withOpacity(0.5),
+                      Theme.of(context).primaryColor.withOpacity(0.7),
+                    ]),
+                  ),
+                  child: Text(
+                    operatorDetails.areas[index].areaName,
+                    style: TextStyle(color: Colors.white),
+                  ),
+                );
+              },
+              itemCount: operatorDetails.areas.length,
+            ),
+            SizedBox(height: 10),
+            Padding(
+              padding: const EdgeInsets.only(left: 8.0, bottom: 4.0),
+              child: Text(
+                'Plans',
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16,
+                ),
+              ),
+            ),
+            GridView.builder(
+              physics: NeverScrollableScrollPhysics(),
+              shrinkWrap: true,
+              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 5,
+              ),
+              itemBuilder: (context, index) {
+                return InkResponse(
+                  onTap: () {},
+                  child: Container(
+                    margin: const EdgeInsets.all(8),
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(20),
+                      gradient: SweepGradient(colors: [
+                        Theme.of(context).primaryColor,
+                        Theme.of(context).primaryColor.withOpacity(0.5),
+                        Theme.of(context).primaryColor.withOpacity(0.7),
+                      ]),
                     ),
-                    actions: <Widget>[
-                      FlatButton(
-                        onPressed: () => Navigator.of(ctx).pop(),
-                        child: Text('Cancel'),
-                      ),
-                      FlatButton(
-                        onPressed: () {
-                          if (formKey.currentState.validate()) {
-                            formKey.currentState.save();
-                            setState(() {
-                              operatorDetails.phoneNumber = phoneNumber;
-                            });
-                            Navigator.of(context).pop();
-                          }
-                        },
-                        child: Text('Save'),
-                      ),
-                    ],
-                  );
-                },
+                    child: Text(
+                      operatorDetails.plans[index].toString(),
+                      style: TextStyle(color: Colors.white),
+                    ),
+                  ),
+                );
+              },
+              itemCount: operatorDetails.plans.length,
+            ),
+            SizedBox(height: 10),
+            Align(
+              alignment: Alignment.centerRight,
+              child: Ink(
+                decoration: BoxDecoration(
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black26,
+                      offset: Offset(0, 4),
+                      blurRadius: 3,
+                    ),
+                  ],
+                  borderRadius: BorderRadius.circular(30),
+                  gradient: LinearGradient(colors: [
+                    Theme.of(context).primaryColor.withRed(200),
+                    Theme.of(context).primaryColor.withRed(400),
+                    Theme.of(context).primaryColor.withRed(600),
+                  ]),
+                ),
+                child: FloatingActionButton.extended(
+                  onPressed: () {},
+                  label: Text(
+                    'Add Plan',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  elevation: 0,
+                  backgroundColor: Colors.transparent,
+                ),
               ),
             ),
           ],

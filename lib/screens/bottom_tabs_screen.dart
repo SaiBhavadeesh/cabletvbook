@@ -1,7 +1,6 @@
 import 'dart:io';
 
 import 'package:cableTvBook/helpers/image_getter.dart';
-import 'package:cableTvBook/models/operator.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_icons/flutter_icons.dart';
 
@@ -12,14 +11,23 @@ import 'package:cableTvBook/widgets/home_drawer.dart';
 
 class BottomTabsScreen extends StatefulWidget {
   static const routeName = '/bottomTabsScreen';
+  final int index;
+  BottomTabsScreen({this.index = 0});
 
   @override
   _BottomTabsScreenState createState() => _BottomTabsScreenState();
 }
 
 class _BottomTabsScreenState extends State<BottomTabsScreen> {
-  int _currentIndex = 0;
+  int _currentIndex;
   File _profilePic;
+
+  @override
+  void initState() {
+    super.initState();
+    _currentIndex = widget.index;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(

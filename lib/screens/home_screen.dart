@@ -1,19 +1,20 @@
 import 'dart:async';
 import 'dart:ui';
 
-import 'package:cableTvBook/models/operator.dart';
 import 'package:flutter/material.dart';
-
-import 'package:cableTvBook/screens/area_customers_screen.dart';
 import 'package:flutter_icons/flutter_icons.dart';
+
+import 'package:cableTvBook/models/operator.dart';
+import 'package:cableTvBook/screens/area_customers_screen.dart';
+import 'package:validators/validators.dart' as validator;
 
 final List<Color> colors = [
   Colors.red,
   Colors.blue,
   Colors.purple,
   Colors.pink,
-  Colors.green,
   Colors.indigo,
+  Colors.green,
   Colors.brown,
   Colors.orange,
 ];
@@ -222,7 +223,8 @@ class _HomeScreenState extends State<HomeScreen> {
                 end: Alignment.bottomRight,
               ),
             ),
-            child: ListView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
                 Text(
                   operatorDetails.areas[index].areaName,
@@ -233,27 +235,36 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                 ),
                 Divider(color: Colors.black38),
-                Text(
-                  'Total customers : ${operatorDetails.areas[index].totalAccounts}',
-                  style: TextStyle(
-                    fontSize: size.width * 0.045,
-                    color: Colors.white,
+                Flexible(
+                  fit: FlexFit.loose,
+                  child: Text(
+                    'Total customers : ${operatorDetails.areas[index].totalAccounts}',
+                    style: TextStyle(
+                      fontSize: size.width * 0.045,
+                      color: Colors.white,
+                    ),
                   ),
                 ),
                 Divider(color: Colors.black38),
-                Text(
-                  'Active : ${operatorDetails.areas[index].activeAccounts}',
-                  style: TextStyle(
-                    fontSize: size.width * 0.045,
-                    color: Colors.white,
+                Flexible(
+                  fit: FlexFit.loose,
+                  child: Text(
+                    'Active : ${operatorDetails.areas[index].activeAccounts}',
+                    style: TextStyle(
+                      fontSize: size.width * 0.045,
+                      color: Colors.white,
+                    ),
                   ),
                 ),
                 Divider(color: Colors.black38),
-                Text(
-                  'In-Active : ${operatorDetails.areas[index].inActiveAccounts}',
-                  style: TextStyle(
-                    fontSize: size.width * 0.045,
-                    color: Colors.white,
+                Flexible(
+                  fit: FlexFit.loose,
+                  child: Text(
+                    'In-Active : ${operatorDetails.areas[index].inActiveAccounts}',
+                    style: TextStyle(
+                      fontSize: size.width * 0.045,
+                      color: Colors.white,
+                    ),
                   ),
                 ),
               ],
@@ -280,12 +291,19 @@ class _HomeScreenState extends State<HomeScreen> {
                       controller: textController,
                       validator: (value) {
                         if (value.isEmpty) {
-                          return 'Name is empty!';
-                        } else if (!RegExp(r'^[A-Za-z]').hasMatch(value)) {
-                          return 'Name must start with a letter!';
-                        } else {
-                          return null;
+                          return 'Invalid input!';
                         }
+                        String error;
+                        final sub = value.split(' ');
+                        sub.forEach((element) {
+                          if (!validator.isAlphanumeric(element)) {
+                            error =
+                                'Must be a combination of alphabet & number!';
+                          } else if (value.length > 10) {
+                            error = 'Name is too long!';
+                          }
+                        });
+                        return error;
                       },
                       decoration: InputDecoration(
                         border: OutlineInputBorder(
@@ -323,10 +341,11 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ),
         padding: EdgeInsets.symmetric(horizontal: size.width * 0.025),
-        gridDelegate:
-            SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 2),
+        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: 2,
+        ),
       ),
-      floatingActionButton: FloatingActionButton(
+      floatingActionButton: FloatingActionButton.extended(
         onPressed: () => showDialog(
           context: context,
           builder: (ctx) {
@@ -352,12 +371,19 @@ class _HomeScreenState extends State<HomeScreen> {
                         controller: textController,
                         validator: (value) {
                           if (value.isEmpty) {
-                            return 'Name is empty!';
-                          } else if (!RegExp(r'^[A-Za-z]').hasMatch(value)) {
-                            return 'Name must start with a letter!';
-                          } else {
-                            return null;
+                            return 'Invalid input!';
                           }
+                          String error;
+                          final sub = value.split(' ');
+                          sub.forEach((element) {
+                            if (!validator.isAlphanumeric(element)) {
+                              error =
+                                  'Must be a combination of alphabet & number!';
+                            } else if (value.length > 10) {
+                              error = 'Name is too long!';
+                            }
+                          });
+                          return error;
                         },
                         decoration: InputDecoration(
                           border: OutlineInputBorder(
@@ -395,10 +421,17 @@ class _HomeScreenState extends State<HomeScreen> {
             );
           },
         ),
-        child: Icon(
-          FlutterIcons.add_to_list_ent,
+        icon: Icon(
+          Icons.add_location,
           color: Theme.of(context).accentColor,
         ),
+        label: Text(
+          'Add Area',
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        foregroundColor: Colors.white,
         backgroundColor: Theme.of(context).primaryColor,
       ),
     );

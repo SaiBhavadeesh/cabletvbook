@@ -1,6 +1,9 @@
 import 'dart:io';
+import 'dart:ui';
 
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter_icons/flutter_icons.dart';
 import 'package:validators/validators.dart' as validator;
 
@@ -276,7 +279,10 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
                     child: FloatingActionButton.extended(
                       label: Text(
                         'Submit',
-                        style: TextStyle(color: Colors.white),
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                       elevation: 0,
                       backgroundColor: Colors.transparent,

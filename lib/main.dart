@@ -1,17 +1,19 @@
 import 'dart:ui';
 
-import 'package:cableTvBook/screens/crop_image_screen.dart';
-import 'package:cableTvBook/screens/customer_detail_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-import 'package:cableTvBook/helpers/custom_transition.dart';
-import 'package:cableTvBook/screens/add_customer_screen.dart';
+import 'package:cableTvBook/screens/customer_detail_screen.dart';
 import 'package:cableTvBook/screens/area_customers_screen.dart';
-import 'package:cableTvBook/screens/home_screen.dart';
-import 'package:cableTvBook/screens/search_screen.dart';
+import 'package:cableTvBook/screens/add_customer_screen.dart';
 import 'package:cableTvBook/screens/bottom_tabs_screen.dart';
+import 'package:cableTvBook/helpers/custom_transition.dart';
+import 'package:cableTvBook/screens/crop_image_screen.dart';
+import 'package:cableTvBook/screens/collection_screen.dart';
+import 'package:cableTvBook/screens/settings_screen.dart';
 import 'package:cableTvBook/screens/profile_screen.dart';
+import 'package:cableTvBook/screens/search_screen.dart';
+import 'package:cableTvBook/screens/home_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -80,6 +82,8 @@ class MyApp extends StatelessWidget {
         CustomerDetailScreen.routeName: (ctx) => CustomerDetailScreen(),
         ProfileScreen.routeName: (ctx) => ProfileScreen(),
         CropImageScreen.routeName: (ctx) => CropImageScreen(),
+        SettingsScreen.routeName: (ctx) => SettingsScreen(),
+        CollectionScreen.routeName: (ctx) => CollectionScreen(),
       },
     );
   }

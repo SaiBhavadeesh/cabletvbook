@@ -19,6 +19,30 @@ class _ProfileScreenState extends State<ProfileScreen> {
   File _selectedImageFile;
   final Operator operatorDetails = getOperatorDetails();
 
+  Widget getTitle(String title, Size size) {
+    return Column(
+      children: <Widget>[
+        SizedBox(
+          width: size.width,
+          child: Text(
+            title,
+            style: TextStyle(
+              color: Colors.orange,
+              fontWeight: FontWeight.bold,
+              fontSize: 20,
+            ),
+          ),
+        ),
+        Divider(
+          indent: 0,
+          endIndent: size.width * 0.75,
+          thickness: 2,
+          color: Theme.of(context).primaryColor,
+        ),
+      ],
+    );
+  }
+
   Widget getTitleValueEdit(String title, String value, Function function) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -63,13 +87,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
             letterSpacing: 1,
           ),
         ),
-        // title: Text(
-        //   operatorDetails.name,
-        //   style: TextStyle(
-        //     fontWeight: FontWeight.bold,
-        //     letterSpacing: 0.5,
-        //   ),
-        // ),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -108,23 +125,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ),
             ),
             SizedBox(height: 20),
-            SizedBox(
-              width: size.width,
-              child: Text(
-                'Primary Info : ',
-                style: TextStyle(
-                  color: Colors.orange,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 20,
-                ),
-              ),
-            ),
-            Divider(
-              indent: 0,
-              endIndent: size.width * 0.75,
-              thickness: 2,
-              color: Theme.of(context).primaryColor,
-            ),
+            getTitle('Primary Info : ', size),
             SizedBox(height: 10),
             getTitleValueEdit('Email', operatorDetails.email, null),
             SizedBox(height: 10),
@@ -303,23 +304,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ),
             ),
             SizedBox(height: 30),
-            SizedBox(
-              width: size.width,
-              child: Text(
-                'Secondary Info : ',
-                style: TextStyle(
-                  color: Colors.orange,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 20,
-                ),
-              ),
-            ),
-            Divider(
-              indent: 0,
-              endIndent: size.width * 0.75,
-              thickness: 2,
-              color: Theme.of(context).primaryColor,
-            ),
+            getTitle('Secondary Info : ', size),
             SizedBox(height: 10),
             Padding(
               padding: const EdgeInsets.only(left: 8.0, bottom: 4.0),

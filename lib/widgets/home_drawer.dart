@@ -1,10 +1,22 @@
 import 'dart:io';
 
+import 'package:cableTvBook/screens/collection_screen.dart';
+import 'package:cableTvBook/screens/settings_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:cableTvBook/screens/profile_screen.dart';
 
 class HomeDrawer extends StatelessWidget {
   final File image;
+
+  Widget styledTitleText(String title) {
+    return Text(
+      title,
+      style: TextStyle(
+        fontWeight: FontWeight.w600,
+      ),
+    );
+  }
+
   HomeDrawer({@required this.image});
   @override
   Widget build(BuildContext context) {
@@ -32,25 +44,27 @@ class HomeDrawer extends StatelessWidget {
             onPressed: () =>
                 Navigator.of(context).pushNamed(ProfileScreen.routeName),
             icon: Icon(Icons.account_circle),
-            label: Text('Profile settings'),
+            label: styledTitleText('Profile'),
           ),
           Divider(),
           FlatButton.icon(
-            onPressed: () {},
+            onPressed: () =>
+                Navigator.of(context).pushNamed(CollectionScreen.routeName),
             icon: Icon(Icons.collections_bookmark),
-            label: Text('Collection Information'),
+            label: styledTitleText('Collection Information'),
           ),
           Divider(),
           FlatButton.icon(
-            onPressed: () {},
+            onPressed: () =>
+                Navigator.of(context).pushNamed(SettingsScreen.routeName),
             icon: Icon(Icons.settings),
-            label: Text('Settings'),
+            label: styledTitleText('Settings'),
           ),
           Divider(),
           FlatButton.icon(
             onPressed: () {},
             icon: Icon(Icons.power_settings_new),
-            label: Text('Logout'),
+            label: styledTitleText('Logout'),
           ),
         ],
       ),

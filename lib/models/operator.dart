@@ -38,7 +38,7 @@ class Operator {
 
 List<AreaData> areas = [
   AreaData(
-    areaName: 'North east',
+    areaName: 'North',
     totalAccounts: 2,
     activeAccounts: 0,
     inActiveAccounts: 2,

@@ -17,6 +17,14 @@ import 'package:cableTvBook/screens/home_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
+    statusBarColor: Colors.transparent,
+    statusBarBrightness: Brightness.dark,
+    statusBarIconBrightness: Brightness.dark,
+    systemNavigationBarColor: Color.fromRGBO(14, 137, 234, 1),
+    systemNavigationBarDividerColor: Colors.grey,
+    systemNavigationBarIconBrightness: Brightness.light,
+  ));
   await SystemChrome.setPreferredOrientations([
     DeviceOrientation.portraitUp,
     DeviceOrientation.portraitDown,

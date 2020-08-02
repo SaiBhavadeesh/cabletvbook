@@ -24,10 +24,12 @@ dependencies:
   flutter:
     sdk: flutter
   intl: ^0.16.1
-  flutter_icons: ^1.1.0
-  image_picker: ^0.6.7+4
   validators: ^2.0.1
   image_crop: ^0.3.2
+  flutter_icons: ^1.1.0
+  image_picker: ^0.6.7+4
+  loading_indicator: ^1.2.0
+  progress_indicators: ^0.1.5
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
@@ -62,6 +64,7 @@ flutter:
     - assets/images/drawer.jpg
     - assets/images/profile_icon.png
     - assets/images/default_profile.jpg
+    - assets/images/google.png
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware.

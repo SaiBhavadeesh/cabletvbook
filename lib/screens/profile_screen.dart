@@ -7,6 +7,7 @@ import 'package:validators/validators.dart' as validator;
 
 import 'package:cableTvBook/models/operator.dart';
 import 'package:cableTvBook/helpers/image_getter.dart';
+import 'package:cableTvBook/global/box_decoration.dart';
 
 class ProfileScreen extends StatefulWidget {
   static const routeName = '/profileScreen';
@@ -19,25 +20,23 @@ class _ProfileScreenState extends State<ProfileScreen> {
   File _selectedImageFile;
   final Operator operatorDetails = getOperatorDetails();
 
-  Widget getTitle(String title, Size size) {
+  Widget getTitle(BuildContext context, String title) {
     return Column(
       children: <Widget>[
-        SizedBox(
-          width: size.width,
+        Container(
+          padding: EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(10),
+            color: Theme.of(context).primaryColor,
+          ),
           child: Text(
             title,
             style: TextStyle(
-              color: Colors.orange,
+              color: Colors.white,
               fontWeight: FontWeight.bold,
-              fontSize: 20,
+              fontSize: 16,
             ),
           ),
-        ),
-        Divider(
-          indent: 0,
-          endIndent: size.width * 0.75,
-          thickness: 2,
-          color: Theme.of(context).primaryColor,
         ),
       ],
     );
@@ -125,7 +124,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ),
             ),
             SizedBox(height: 20),
-            getTitle('Primary Info : ', size),
+            getTitle(context, 'Primary Information'),
             SizedBox(height: 10),
             getTitleValueEdit('Email', operatorDetails.email, null),
             SizedBox(height: 10),
@@ -304,7 +303,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ),
             ),
             SizedBox(height: 30),
-            getTitle('Secondary Info : ', size),
+            getTitle(context, 'Secondary Information'),
             SizedBox(height: 10),
             Padding(
               padding: const EdgeInsets.only(left: 8.0, bottom: 4.0),
@@ -327,14 +326,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   margin: const EdgeInsets.all(8),
                   padding: const EdgeInsets.all(8),
                   alignment: Alignment.center,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(20),
-                    gradient: SweepGradient(colors: [
-                      Theme.of(context).primaryColor,
-                      Theme.of(context).primaryColor.withOpacity(0.5),
-                      Theme.of(context).primaryColor.withOpacity(0.7),
-                    ]),
-                  ),
+                  decoration: sweepGradientDecoration(context),
                   child: Text(
                     operatorDetails.areas[index].areaName,
                     style: TextStyle(color: Colors.white),
@@ -366,14 +358,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   child: Container(
                     margin: const EdgeInsets.all(8),
                     alignment: Alignment.center,
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(20),
-                      gradient: SweepGradient(colors: [
-                        Theme.of(context).primaryColor,
-                        Theme.of(context).primaryColor.withOpacity(0.5),
-                        Theme.of(context).primaryColor.withOpacity(0.7),
-                      ]),
-                    ),
+                    decoration: sweepGradientDecoration(context),
                     child: Text(
                       operatorDetails.plans[index].toString(),
                       style: TextStyle(color: Colors.white),
@@ -387,21 +372,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             Align(
               alignment: Alignment.centerRight,
               child: Ink(
-                decoration: BoxDecoration(
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black26,
-                      offset: Offset(0, 4),
-                      blurRadius: 3,
-                    ),
-                  ],
-                  borderRadius: BorderRadius.circular(30),
-                  gradient: LinearGradient(colors: [
-                    Theme.of(context).primaryColor.withRed(200),
-                    Theme.of(context).primaryColor.withRed(400),
-                    Theme.of(context).primaryColor.withRed(600),
-                  ]),
-                ),
+                decoration: defaultBoxDecoration(context, true),
                 child: FloatingActionButton.extended(
                   onPressed: () {},
                   label: Text(

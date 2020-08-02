@@ -1,5 +1,6 @@
 import 'dart:ui';
 
+import 'package:cableTvBook/screens/login_register_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -79,19 +80,19 @@ class MyApp extends StatelessWidget {
         ),
         fontFamily: 'Roboto',
       ),
-      home: BottomTabsScreen(),
-      initialRoute: BottomTabsScreen.routeName,
+      home: LoginRegisterScreen(),
       routes: {
-        BottomTabsScreen.routeName: (ctx) => BottomTabsScreen(),
         HomeScreen.routeName: (ctx) => HomeScreen(),
         SearchScreen.routeName: (ctx) => SearchScreen(),
+        ProfileScreen.routeName: (ctx) => ProfileScreen(),
+        SettingsScreen.routeName: (ctx) => SettingsScreen(),
+        CropImageScreen.routeName: (ctx) => CropImageScreen(),
+        CollectionScreen.routeName: (ctx) => CollectionScreen(),
+        BottomTabsScreen.routeName: (ctx) => BottomTabsScreen(),
         AddCustomerScreen.routeName: (ctx) => AddCustomerScreen(),
+        LoginRegisterScreen.routeName: (ctx) => LoginRegisterScreen(),
         AreaCustomersScreen.routeName: (ctx) => AreaCustomersScreen(),
         CustomerDetailScreen.routeName: (ctx) => CustomerDetailScreen(),
-        ProfileScreen.routeName: (ctx) => ProfileScreen(),
-        CropImageScreen.routeName: (ctx) => CropImageScreen(),
-        SettingsScreen.routeName: (ctx) => SettingsScreen(),
-        CollectionScreen.routeName: (ctx) => CollectionScreen(),
       },
     );
   }

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:progress_indicators/progress_indicators.dart';
 
 class CollectionScreen extends StatelessWidget {
   static const routeName = '/collectionScreen';
@@ -10,7 +11,7 @@ class CollectionScreen extends StatelessWidget {
       ),
       body: Center(
         child: Container(
-          child: Text('Comming soon...'),
+          child: FadingText('Coming soon...'),
         ),
       ),
     );

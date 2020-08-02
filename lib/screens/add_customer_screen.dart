@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'dart:ui';
 
+import 'package:cableTvBook/global/box_decoration.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
@@ -261,21 +262,7 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
                     ],
                   ),
                   Ink(
-                    decoration: BoxDecoration(
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black26,
-                          offset: Offset(0, 4),
-                          blurRadius: 3,
-                        ),
-                      ],
-                      borderRadius: BorderRadius.circular(30),
-                      gradient: LinearGradient(colors: [
-                        Theme.of(context).primaryColor.withRed(200),
-                        Theme.of(context).primaryColor.withRed(400),
-                        Theme.of(context).primaryColor.withRed(600),
-                      ]),
-                    ),
+                    decoration: defaultBoxDecoration(context, true),
                     child: FloatingActionButton.extended(
                       label: Text(
                         'Submit',
@@ -328,7 +315,9 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
                           else
                             msg = _selectedArea == null ? 'area' : 'plan';
                           DefaultDialogBox.errorDialog(
-                              context, 'Alert', 'Please select $msg');
+                              title: 'Alert',
+                              content: 'Please select $msg',
+                              context: context);
                         }
                       },
                     ),

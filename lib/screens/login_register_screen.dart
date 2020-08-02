@@ -1,9 +1,10 @@
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
-import 'package:cableTvBook/global/box_decoration.dart';
 import 'package:flutter_icons/flutter_icons.dart';
+import 'package:cableTvBook/global/box_decoration.dart';
 import 'package:validators/validators.dart' as validator;
+import 'package:regexed_validator/regexed_validator.dart' as validate;
 
 class LoginRegisterScreen extends StatefulWidget {
   static const routeName = 'loginRegisterScreen';
@@ -109,6 +110,10 @@ class _LoginRegisterScreenState extends State<LoginRegisterScreen> {
                         getTextWidget('Password', 16, Colors.white, false),
                         SizedBox(height: top * 0.25),
                         TextFormField(
+                          validator: (value) {
+                            if (validate.validator.password(value)) return null;
+                            return 'must contain atleast 1 number,1 special character,\n1 capital letter and 1 small letter !';
+                          },
                           controller: _passwordController,
                           obscureText: true,
                           cursorColor: Colors.black,
@@ -191,6 +196,11 @@ class _LoginRegisterScreenState extends State<LoginRegisterScreen> {
                                   'Re-enter password', 16, Colors.white, false),
                               SizedBox(height: top * 0.25),
                               TextFormField(
+                                validator: (value) {
+                                  if (value == _passwordController.text)
+                                    return null;
+                                  return 'password did not match !';
+                                },
                                 obscureText: true,
                                 cursorColor: Colors.black,
                                 decoration: defaultInputDecoration(
@@ -213,7 +223,9 @@ class _LoginRegisterScreenState extends State<LoginRegisterScreen> {
                                 keyboardType: TextInputType.phone,
                                 cursorColor: Colors.black,
                                 decoration: defaultInputDecoration(
-                                    icon: Icons.phone, hint: 'phone number',prefixText: '+91 '),
+                                    icon: Icons.phone,
+                                    hint: 'phone number',
+                                    prefixText: '+91 '),
                               ),
                               SizedBox(height: top),
                               Align(

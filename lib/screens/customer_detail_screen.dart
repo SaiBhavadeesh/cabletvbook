@@ -1,3 +1,6 @@
+import 'dart:io';
+
+import 'package:cableTvBook/helpers/image_getter.dart';
 import 'package:intl/intl.dart';
 
 import 'package:flutter/material.dart';
@@ -6,8 +9,8 @@ import 'package:flutter_icons/flutter_icons.dart';
 
 import 'package:cableTvBook/models/customer.dart';
 import 'package:cableTvBook/models/operator.dart';
+
 import 'package:cableTvBook/widgets/customer_plan_list.dart';
-import 'package:cableTvBook/widgets/customer_primary_info.dart';
 import 'package:cableTvBook/widgets/modal_bottom_sheet.dart';
 
 class CustomerDetailScreen extends StatefulWidget {
@@ -18,8 +21,11 @@ class CustomerDetailScreen extends StatefulWidget {
 }
 
 class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
-  bool _isEdit = false;
+  final moreInfoController = TextEditingController();
+  Size size;
   int _selectedYear = DateTime.now().year;
+  bool _isEdit = false;
+  File _pickedImage;
 
   List<int> getAllYears(DateTime date) {
     List<int> years = [];
@@ -29,6 +35,12 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
       years.add(i);
     }
     return years;
+  }
+
+  void onMoreInfo() {
+    setState(() {
+      _isEdit = !_isEdit;
+    });
   }
 
   void modalBottomSheet(BuildContext ctx, Customer data) {
@@ -60,12 +72,81 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
     );
   }
 
+  Widget richText(String title, String value) {
+    return RichText(
+      text: TextSpan(
+        text: title,
+        style: TextStyle(
+          color: Theme.of(context).primaryColor,
+          fontSize: 18,
+          fontWeight: FontWeight.bold,
+        ),
+        children: [
+          TextSpan(
+            text: value,
+            style: TextStyle(
+              fontWeight: FontWeight.normal,
+              fontSize: 14,
+              color: Colors.black,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget copyValueWidget(
+      BuildContext context, String title, String value, String display) {
+    return GestureDetector(
+      onTap: () => copyTextOnLongTap(context, value, display),
+      child: Card(
+        color: Colors.black12,
+        child: Padding(
+          padding: const EdgeInsets.all(4.0),
+          child: RichText(
+            text: TextSpan(
+              text: title,
+              children: [
+                TextSpan(
+                  text: value,
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget floatingButton(Object tag, Function function, String title) {
+    return FloatingActionButton.extended(
+      heroTag: tag,
+      onPressed: function,
+      label: SizedBox(
+        width: size.width * 0.25,
+        child: Center(
+          child: Text(
+            title,
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: size.height * 0.025,
+              fontWeight: FontWeight.bold,
+              letterSpacing: 1,
+            ),
+          ),
+        ),
+      ),
+      backgroundColor: Colors.red,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final Customer customer = ModalRoute.of(context).settings.arguments;
     final Operator operatorDetails = getOperatorDetails();
     final years = getAllYears(customer.startDate);
-    final size = MediaQuery.of(context).size;
+    size = MediaQuery.of(context).size;
     return DefaultTabController(
       length: 1,
       child: Scaffold(
@@ -94,7 +175,6 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
           ),
           actions: <Widget>[
             DropdownButton(
-              
               icon: Icon(Icons.keyboard_arrow_down),
               underline: SizedBox(),
               value: _selectedYear,
@@ -119,144 +199,131 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
         body: SingleChildScrollView(
           child: Column(
             children: <Widget>[
-              AnimatedContainer(
-                duration: Duration(milliseconds: 300),
-                height: _isEdit ? size.height * 0.355 : size.height * 0.3,
-                child: Stack(
-                  children: <Widget>[
-                    Container(
-                      height: size.height * 0.2,
-                      width: size.width,
-                      padding: EdgeInsets.symmetric(
-                        horizontal: size.height * 0.01,
-                        vertical: size.height * 0.01,
-                      ),
-                      decoration: BoxDecoration(
-                        color: Theme.of(context).primaryColor,
-                        borderRadius: BorderRadius.vertical(
-                          bottom: Radius.elliptical(
-                            size.width * 0.2,
-                            size.height * 0.08,
-                          ),
-                        ),
-                      ),
-                      child: Row(
+              Container(
+                width: size.width,
+                padding: EdgeInsets.symmetric(
+                  horizontal: size.width * 0.02,
+                  vertical: size.height * 0.01,
+                ),
+                decoration: BoxDecoration(
+                  color: Colors.yellow,
+                ),
+                child: Builder(
+                  builder: (context) => Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: <Widget>[
+                      Row(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: <Widget>[
+                          SizedBox(
+                            width: size.width * 0.75,
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: <Widget>[
+                                Text(customer.name,
+                                    style: TextStyle(fontSize: 20)),
+                                Padding(
+                                    padding: const EdgeInsets.all(8.0),
+                                    child: richText(
+                                        'Start Date : ',
+                                        DateFormat('MMMM d, y / EEEE')
+                                            .format(customer.startDate))),
+                                Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 8.0),
+                                    child: richText(
+                                        'Address : ', customer.address)),
+                                Padding(
+                                    padding: const EdgeInsets.all(8.0),
+                                    child: richText(
+                                        'Phone : ', customer.phoneNumber)),
+                                copyValueWidget(context, 'Account no : ',
+                                    customer.accountNumber, 'Account number'),
+                                copyValueWidget(context, 'MAC Id : ',
+                                    customer.macId, 'MAC-ID'),
+                              ],
+                            ),
+                          ),
                           Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: <Widget>[
-                              Text(
-                                customer.name,
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 20,
+                              GestureDetector(
+                                onTap: () async {
+                                  _pickedImage =
+                                      await ImageGetter.getImageFromDevice(
+                                          context);
+                                },
+                                child: CircleAvatar(
+                                  radius: size.width * 0.1,
+                                  backgroundImage: _pickedImage == null
+                                      ? AssetImage(
+                                          'assets/images/default_profile.jpg')
+                                      : FileImage(_pickedImage),
                                 ),
                               ),
-                              Padding(
-                                padding: const EdgeInsets.all(8.0),
-                                child: RichText(
-                                  text: TextSpan(
-                                    text: 'Address : ',
-                                    style: TextStyle(
-                                      color: Colors.yellow,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                    children: [
-                                      TextSpan(
-                                        text: customer.address,
-                                        style: TextStyle(
-                                          fontWeight: FontWeight.normal,
-                                          color: Colors.white,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
+                              IconButton(
+                                icon: Icon(
+                                  Icons.call,
+                                  size: size.height * 0.05,
+                                  color: Theme.of(context).primaryColor,
                                 ),
+                                onPressed: () {},
                               ),
-                              Padding(
-                                padding:
-                                    const EdgeInsets.symmetric(horizontal: 8.0),
-                                child: RichText(
-                                  text: TextSpan(
-                                    text: 'Start Date : ',
-                                    style: TextStyle(
-                                      color: Colors.yellow,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                    children: [
-                                      TextSpan(
-                                        text: DateFormat('MMMM d, y / EEEE')
-                                            .format(customer.startDate),
-                                        style: TextStyle(
-                                          fontWeight: FontWeight.normal,
-                                          color: Colors.white,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
+                              AnimatedCrossFade(
+                                duration: Duration(seconds: 1),
+                                crossFadeState: _isEdit
+                                    ? CrossFadeState.showSecond
+                                    : CrossFadeState.showFirst,
+                                firstChild: IconButton(
+                                    onPressed: onMoreInfo,
+                                    icon: Icon(FlutterIcons.edit_ant)),
+                                secondChild: IconButton(
+                                    onPressed: onMoreInfo,
+                                    icon: Icon(Icons.delete)),
                               ),
                             ],
                           ),
-                          CircleAvatar(
-                            radius: size.width * 0.075,
-                            backgroundImage:
-                                AssetImage('assets/images/default_profile.jpg'),
-                          ),
                         ],
                       ),
-                    ),
-                    Positioned(
-                      top: size.height * 0.13,
-                      left: size.width * 0.08,
-                      right: size.width * 0.08,
-                      child: CustomerPrimaryInfo(
-                        phoneNumber: customer.phoneNumber,
-                        accountNumber: customer.accountNumber,
-                        macId: customer.macId,
-                        moreInfo: _isEdit,
-                      ),
-                    ),
-                    Positioned(
-                      top: size.height * 0.215,
-                      right: size.width * 0.1,
-                      child: AnimatedCrossFade(
-                        duration: Duration(seconds: 1),
-                        crossFadeState: _isEdit
-                            ? CrossFadeState.showSecond
-                            : CrossFadeState.showFirst,
-                        firstChild: IconButton(
-                          onPressed: () {
-                            setState(() {
-                              _isEdit = !_isEdit;
-                            });
-                          },
-                          icon: Icon(FlutterIcons.edit_ant),
-                        ),
-                        secondChild: IconButton(
-                          onPressed: () {
-                            setState(() {
-                              _isEdit = !_isEdit;
-                            });
-                          },
-                          icon: Icon(Icons.delete),
+                      AnimatedContainer(
+                        duration: Duration(milliseconds: 300),
+                        width: size.width,
+                        height: _isEdit ? size.width * 0.10 : 0,
+                        padding: const EdgeInsets.only(
+                            top: 4.0, left: 4.0, right: 4.0),
+                        child: TextFormField(
+                          controller: moreInfoController,
+                          enabled: _isEdit,
+                          decoration: InputDecoration(
+                            disabledBorder: OutlineInputBorder(
+                              borderSide: BorderSide(color: Colors.yellow),
+                            ),
+                            labelText: _isEdit ? 'Temperory Info' : null,
+                            border: OutlineInputBorder(),
+                            contentPadding: EdgeInsets.all(10),
+                          ),
                         ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
               Divider(
+                height: 0,
+                endIndent: 0,
+                indent: 0,
                 thickness: 3,
                 color: Theme.of(context).primaryColor,
               ),
-              CustomerPlanList(),
+              Padding(
+                padding: const EdgeInsets.only(top: 8),
+                child: CustomerPlanList(),
+              ),
               Divider(
-                thickness: 3,
-                color: Theme.of(context).primaryColor,
-              ),
+                  endIndent: 0,
+                  indent: 0,
+                  thickness: 3,
+                  color: Theme.of(context).primaryColor),
               ListView.builder(
                 shrinkWrap: true,
                 physics: NeverScrollableScrollPhysics(),
@@ -277,45 +344,9 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
                 child: Row(
                   children: <Widget>[
                     SizedBox(width: 10),
-                    FloatingActionButton.extended(
-                      heroTag: 0,
-                      onPressed: () {},
-                      label: SizedBox(
-                        width: size.width * 0.25,
-                        child: Center(
-                          child: Text(
-                            'Activate',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: size.height * 0.025,
-                              fontWeight: FontWeight.bold,
-                              letterSpacing: 1,
-                            ),
-                          ),
-                        ),
-                      ),
-                      backgroundColor: Colors.green,
-                    ),
+                    floatingButton(0, () {}, 'Activate'),
                     Expanded(child: SizedBox()),
-                    FloatingActionButton.extended(
-                      heroTag: 1,
-                      onPressed: () {},
-                      label: SizedBox(
-                        width: size.width * 0.25,
-                        child: Center(
-                          child: Text(
-                            'Deactivate',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: size.height * 0.025,
-                              fontWeight: FontWeight.bold,
-                              letterSpacing: 1,
-                            ),
-                          ),
-                        ),
-                      ),
-                      backgroundColor: Colors.red,
-                    ),
+                    floatingButton(1, () {}, 'Deactivate'),
                     SizedBox(width: 10),
                   ],
                 ),

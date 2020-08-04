@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:cableTvBook/screens/collection_screen.dart';
+import 'package:cableTvBook/screens/login_register_screen.dart';
 import 'package:cableTvBook/screens/settings_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:cableTvBook/screens/profile_screen.dart';
@@ -62,7 +63,8 @@ class HomeDrawer extends StatelessWidget {
           ),
           Divider(),
           FlatButton.icon(
-            onPressed: () {},
+            onPressed: () => Navigator.of(context).pushNamedAndRemoveUntil(
+                LoginRegisterScreen.routeName, (route) => false),
             icon: Icon(Icons.power_settings_new),
             label: styledTitleText('Logout'),
           ),

@@ -1,5 +1,6 @@
 import 'dart:ui';
 
+import 'package:cableTvBook/screens/bottom_tabs_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_icons/flutter_icons.dart';
 import 'package:cableTvBook/global/box_decoration.dart';
@@ -63,7 +64,7 @@ class _LoginRegisterScreenState extends State<LoginRegisterScreen> {
           SizedBox(
             height: size.height,
             width: size.width,
-            child: Image.asset('assets/images/app_icon.png', fit: BoxFit.cover),
+            child: Image.asset('assets/images/splash.png', fit: BoxFit.cover),
           ),
           BackdropFilter(
             filter: ImageFilter.blur(sigmaX: 2, sigmaY: 2),
@@ -104,7 +105,7 @@ class _LoginRegisterScreenState extends State<LoginRegisterScreen> {
                           cursorColor: Colors.black,
                           keyboardType: TextInputType.emailAddress,
                           decoration: defaultInputDecoration(
-                              icon: Icons.email, hint: 'example@gmail.com'),
+                              icon: Icons.email, hint: 'email'),
                         ),
                         SizedBox(height: top * 0.5),
                         getTextWidget('Password', 16, Colors.white, false),
@@ -135,7 +136,10 @@ class _LoginRegisterScreenState extends State<LoginRegisterScreen> {
                               ),
                               SizedBox(height: top),
                               FloatingActionButton.extended(
-                                onPressed: () {},
+                                heroTag: 'login',
+                                onPressed: () => Navigator.of(context)
+                                    .pushReplacementNamed(
+                                        BottomTabsScreen.routeName),
                                 label: getTextWidget(
                                     '${'\t' * 8}Log In${'\t' * 8}',
                                     20,
@@ -159,7 +163,10 @@ class _LoginRegisterScreenState extends State<LoginRegisterScreen> {
                                   'Sign In with', 18, Colors.white, true),
                               SizedBox(height: top * 0.5),
                               FloatingActionButton.extended(
-                                  onPressed: () {},
+                                  heroTag: 'google',
+                                  onPressed: () => Navigator.of(context)
+                                      .pushReplacementNamed(
+                                          BottomTabsScreen.routeName),
                                   icon: SizedBox(
                                       height: 25,
                                       child: Image.asset(
@@ -230,7 +237,10 @@ class _LoginRegisterScreenState extends State<LoginRegisterScreen> {
                               SizedBox(height: top),
                               Align(
                                 child: FloatingActionButton.extended(
-                                  onPressed: () {},
+                                  heroTag: 'register',
+                                  onPressed: () => Navigator.of(context)
+                                      .pushReplacementNamed(
+                                          BottomTabsScreen.routeName),
                                   label: getTextWidget(
                                       '${'\t' * 8}Register${'\t' * 8}',
                                       20,

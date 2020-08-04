@@ -63,6 +63,7 @@ flutter:
   assets:
     - assets/images/drawer.jpg
     - assets/images/google.png
+    - assets/images/splash.png
     - assets/images/app_icon.png
     - assets/images/profile_icon.png
     - assets/images/default_profile.jpg

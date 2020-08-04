@@ -1,11 +1,12 @@
 import 'dart:ui';
 
-import 'package:cableTvBook/screens/bottom_tabs_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_icons/flutter_icons.dart';
+
+import 'package:cableTvBook/screens/register.dart';
+import 'package:cableTvBook/global/validators.dart';
 import 'package:cableTvBook/global/box_decoration.dart';
-import 'package:validators/validators.dart' as validator;
-import 'package:regexed_validator/regexed_validator.dart' as validate;
+import 'package:cableTvBook/screens/bottom_tabs_screen.dart';
 
 class LoginRegisterScreen extends StatefulWidget {
   static const routeName = 'loginRegisterScreen';
@@ -28,27 +29,6 @@ class _LoginRegisterScreenState extends State<LoginRegisterScreen> {
         fontSize: size,
         fontWeight: isBold ? FontWeight.bold : FontWeight.normal,
         letterSpacing: 0.5,
-      ),
-    );
-  }
-
-  InputDecoration defaultInputDecoration(
-      {@required IconData icon,
-      String hint,
-      // ignore: avoid_init_to_null
-      String prefixText = null}) {
-    return InputDecoration(
-      fillColor: Theme.of(context).primaryColor.withRed(100),
-      filled: true,
-      hintText: hint,
-      prefixText: prefixText,
-      prefixIcon: Icon(icon, color: Colors.white),
-      contentPadding: const EdgeInsets.all(8),
-      focusedBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(15),
-      ),
-      border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(15),
       ),
     );
   }
@@ -97,29 +77,34 @@ class _LoginRegisterScreenState extends State<LoginRegisterScreen> {
                         getTextWidget('E-Mail', 16, Colors.white, false),
                         SizedBox(height: top * 0.25),
                         TextFormField(
-                          validator: (value) {
-                            if (validator.isEmail(value)) return null;
-                            return 'please enter valid email !';
-                          },
+                          validator: emailValidator,
                           controller: _emailController,
                           cursorColor: Colors.black,
                           keyboardType: TextInputType.emailAddress,
-                          decoration: defaultInputDecoration(
-                              icon: Icons.email, hint: 'email'),
+                          decoration: inputDecoration(
+                              filled: true,
+                              filledColor:
+                                  Theme.of(context).primaryColor.withRed(100),
+                              hint: 'email',
+                              icon: Icons.email,
+                              iconColor: Colors.white),
                         ),
                         SizedBox(height: top * 0.5),
                         getTextWidget('Password', 16, Colors.white, false),
                         SizedBox(height: top * 0.25),
                         TextFormField(
-                          validator: (value) {
-                            if (validate.validator.password(value)) return null;
-                            return 'must contain atleast 1 number,1 special character,\n1 capital letter and 1 small letter !';
-                          },
+                          validator: (value) =>
+                              passwordValidator(value, _isLogin),
                           controller: _passwordController,
                           obscureText: true,
                           cursorColor: Colors.black,
-                          decoration: defaultInputDecoration(
-                              icon: FlutterIcons.key_mco, hint: 'password'),
+                          decoration: inputDecoration(
+                              filled: true,
+                              filledColor:
+                                  Theme.of(context).primaryColor.withRed(100),
+                              hint: 'password',
+                              icon: FlutterIcons.key_mco,
+                              iconColor: Colors.white),
                         ),
                         AnimatedCrossFade(
                           duration: Duration(milliseconds: 500),
@@ -137,9 +122,11 @@ class _LoginRegisterScreenState extends State<LoginRegisterScreen> {
                               SizedBox(height: top),
                               FloatingActionButton.extended(
                                 heroTag: 'login',
-                                onPressed: () => Navigator.of(context)
-                                    .pushReplacementNamed(
-                                        BottomTabsScreen.routeName),
+                                onPressed: () {
+                                  if (_formKey.currentState.validate())
+                                    Navigator.of(context).pushReplacementNamed(
+                                        BottomTabsScreen.routeName);
+                                },
                                 label: getTextWidget(
                                     '${'\t' * 8}Log In${'\t' * 8}',
                                     20,
@@ -203,44 +190,47 @@ class _LoginRegisterScreenState extends State<LoginRegisterScreen> {
                                   'Re-enter password', 16, Colors.white, false),
                               SizedBox(height: top * 0.25),
                               TextFormField(
-                                validator: (value) {
-                                  if (value == _passwordController.text)
-                                    return null;
-                                  return 'password did not match !';
-                                },
+                                validator: (value) => reCheckValidator(
+                                    value, _passwordController.text),
                                 obscureText: true,
                                 cursorColor: Colors.black,
-                                decoration: defaultInputDecoration(
+                                decoration: inputDecoration(
+                                    filled: true,
+                                    filledColor: Theme.of(context)
+                                        .primaryColor
+                                        .withRed(100),
+                                    hint: 're-enter password',
                                     icon: FlutterIcons.key_mco,
-                                    hint: 'Re-enter password'),
+                                    iconColor: Colors.white),
                               ),
                               SizedBox(height: top * 0.5),
                               getTextWidget(
                                   'Phone number', 16, Colors.white, false),
                               SizedBox(height: top * 0.25),
                               TextFormField(
-                                validator: (value) {
-                                  if (!validator.isNumeric(value))
-                                    return 'please enter valid number!';
-                                  if (value.length != 10)
-                                    return 'Please enter valid number!';
-                                  return null;
-                                },
+                                validator: phoneValidator,
                                 controller: _phoneController,
                                 keyboardType: TextInputType.phone,
                                 cursorColor: Colors.black,
-                                decoration: defaultInputDecoration(
-                                    icon: Icons.phone,
+                                decoration: inputDecoration(
+                                    filled: true,
+                                    filledColor: Theme.of(context)
+                                        .primaryColor
+                                        .withRed(100),
                                     hint: 'phone number',
-                                    prefixText: '+91 '),
+                                    prefixText: '+91 ',
+                                    icon: Icons.phone,
+                                    iconColor: Colors.white),
                               ),
                               SizedBox(height: top),
                               Align(
                                 child: FloatingActionButton.extended(
                                   heroTag: 'register',
-                                  onPressed: () => Navigator.of(context)
-                                      .pushReplacementNamed(
-                                          BottomTabsScreen.routeName),
+                                  onPressed: () {
+                                    // if (_formKey.currentState.validate())
+                                      Navigator.of(context)
+                                          .pushNamed(Register.routeName);
+                                  },
                                   label: getTextWidget(
                                       '${'\t' * 8}Register${'\t' * 8}',
                                       20,

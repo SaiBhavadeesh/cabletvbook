@@ -93,3 +93,52 @@ class SettingsScreen extends StatelessWidget {
     );
   }
 }
+
+
+                // () => showDialog(
+                //   context: context,
+                //   builder: (ctx) {
+                //     final formKey = GlobalKey<FormState>();
+                //     String phoneNumber;
+                //     return AlertDialog(
+                //       content: Form(
+                //         key: formKey,
+                //         child: TextFormField(
+                //           initialValue: operatorDetails.phoneNumber.substring(4),
+                //           keyboardType: TextInputType.phone,
+                //           validator: (value) {
+                //             if (!validator.isNumeric(value)) {
+                //               return 'Phone number is Invalid!';
+                //             }
+                //             return null;
+                //           },
+                //           decoration: InputDecoration(
+                //             labelText: 'Edit Phone number',
+                //             prefixText: '+ 91 ',
+                //           ),
+                //           onSaved: (value) {
+                //             phoneNumber = '+ 91 ' + value;
+                //           },
+                //         ),
+                //       ),
+                //       actions: <Widget>[
+                //         FlatButton(
+                //           onPressed: () => Navigator.of(ctx).pop(),
+                //           child: Text('Cancel'),
+                //         ),
+                //         FlatButton(
+                //           onPressed: () {
+                //             if (formKey.currentState.validate()) {
+                //               formKey.currentState.save();
+                //               setState(() {
+                //                 operatorDetails.phoneNumber = phoneNumber;
+                //               });
+                //               Navigator.of(context).pop();
+                //             }
+                //           },
+                //           child: Text('Save'),
+                //         ),
+                //       ],
+                //     );
+                //   },
+                // ),

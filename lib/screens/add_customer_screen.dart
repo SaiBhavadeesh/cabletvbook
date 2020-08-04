@@ -1,16 +1,18 @@
 import 'dart:io';
 import 'dart:ui';
 
-import 'package:cableTvBook/global/box_decoration.dart';
-import 'package:flutter/cupertino.dart';
+import 'package:cableTvBook/global/default_buttons.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter_icons/flutter_icons.dart';
-import 'package:validators/validators.dart' as validator;
 
-import 'package:cableTvBook/helpers/image_getter.dart';
 import 'package:cableTvBook/models/customer.dart';
 import 'package:cableTvBook/models/operator.dart';
+import 'package:cableTvBook/global/validators.dart';
+import 'package:cableTvBook/helpers/image_getter.dart';
+import 'package:cableTvBook/global/box_decoration.dart';
+import 'package:cableTvBook/screens/bottom_tabs_screen.dart';
 import 'package:cableTvBook/widgets/default_dialog_box.dart';
 
 class AddCustomerScreen extends StatefulWidget {
@@ -43,6 +45,52 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
     });
   }
 
+  void saveDetails() {
+    if (_formKey.currentState.validate() &&
+        _selectedArea != null &&
+        _selectedPlan != null) {
+      _formKey.currentState.save();
+      final newCustomer = Customer(
+        id: DateTime.now().toString(),
+        name: _nameController.text.trim(),
+        phoneNumber: _phoneController.text.trim(),
+        address: _addressController.text.trim(),
+        accountNumber: _accountController.text.trim(),
+        macId: _macController.text.trim(),
+        networkProviderName: getOperatorDetails().networkName,
+        startDate: DateTime.now(),
+        area: _selectedArea,
+        currentPlan: _selectedPlan,
+      );
+      areas.forEach((element) {
+        if (element.areaName == _selectedArea) {
+          element.totalAccounts++;
+          element.inActiveAccounts++;
+        }
+      });
+      customers.add(newCustomer);
+      _nameController.clear();
+      _phoneController.clear();
+      _addressController.clear();
+      _accountController.clear();
+      _macController.clear();
+      setState(() {
+        _selectedArea = null;
+        _selectedPlan = null;
+      });
+      Navigator.of(context).pushNamedAndRemoveUntil(
+          BottomTabsScreen.routeName, (route) => false);
+    } else if (_selectedArea == null || _selectedPlan == null) {
+      String msg;
+      if (_selectedArea == null && _selectedPlan == null)
+        msg = 'area and plan';
+      else
+        msg = _selectedArea == null ? 'area' : 'plan';
+      DefaultDialogBox.errorDialog(
+          title: 'Alert', content: 'Please select $msg', context: context);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final List<AreaData> areas = getOperatorDetails().areas;
@@ -52,279 +100,155 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
       key: _formKey,
       child: Stack(
         children: <Widget>[
-          SingleChildScrollView(
+          ListView(
             physics: BouncingScrollPhysics(),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8.0),
-              child: Column(
-                children: <Widget>[
-                  SizedBox(height: 40),
-                  Stack(
-                    children: <Widget>[
-                      CircleAvatar(
-                        radius: 60,
-                        backgroundImage: _selectedImageFile == null
-                            ? AssetImage(
-                                'assets/images/profile_icon.png',
-                              )
-                            : FileImage(_selectedImageFile),
-                      ),
-                      Positioned(
-                        bottom: 5,
-                        left: 0,
-                        child: CircleAvatar(
-                          backgroundColor: Colors.green,
-                          child: IconButton(
-                            color: Colors.white,
-                            icon: Icon(FlutterIcons.ios_camera_ion),
-                            onPressed: () async {
-                              _selectedImageFile =
-                                  await ImageGetter.getImageFromDevice(context);
-                              setState(() {});
-                            },
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                  SizedBox(height: 5),
-                  TextFormField(
-                    controller: _nameController,
-                    validator: (value) {
-                      if (value.isEmpty) {
-                        return 'Invalid input!';
-                      }
-                      String error;
-                      final sub = value.split(' ');
-                      sub.forEach((element) {
-                        if (!validator.isAlphanumeric(element)) {
-                          error = 'Must be a combination of alphabet & number!';
-                        } else if (value.length > 25) {
-                          error = 'Name is too long!';
-                        }
-                      });
-                      return error;
-                    },
-                    decoration: InputDecoration(
-                      labelText: 'Customer name',
-                      contentPadding: EdgeInsets.all(10),
-                      prefixIcon: Icon(FlutterIcons.ios_person_ion),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(15),
-                      ),
+            padding: const EdgeInsets.symmetric(horizontal: 8.0),
+            children: <Widget>[
+              SizedBox(height: 45),
+              Align(
+                alignment: Alignment.center,
+                child: Stack(
+                  children: <Widget>[
+                    CircleAvatar(
+                      radius: 60,
+                      backgroundImage: _selectedImageFile == null
+                          ? AssetImage(
+                              'assets/images/profile_icon.png',
+                            )
+                          : FileImage(_selectedImageFile),
                     ),
-                  ),
-                  SizedBox(height: 5),
-                  TextFormField(
-                    controller: _addressController,
-                    keyboardType: TextInputType.text,
-                    validator: (value) {
-                      if (value.isEmpty) {
-                        return 'Address field is empty!';
-                      } else if (value.length > 50) {
-                        return 'Address is too long!';
-                      }
-                      return null;
-                    },
-                    decoration: InputDecoration(
-                      labelText: 'Address',
-                      contentPadding: EdgeInsets.all(10),
-                      prefixIcon: Icon(FlutterIcons.address_ent),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(15),
-                      ),
-                    ),
-                  ),
-                  SizedBox(height: 5),
-                  TextFormField(
-                    controller: _phoneController,
-                    keyboardType: TextInputType.phone,
-                    validator: (value) {
-                      if (!validator.isNumeric(value)) {
-                        return 'Phone number is Invalid!';
-                      }
-                      return null;
-                    },
-                    decoration: InputDecoration(
-                      labelText: 'Phone number',
-                      contentPadding: EdgeInsets.all(10),
-                      prefixText: '+ 91 ',
-                      prefixIcon: Icon(Icons.phone),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(15),
-                      ),
-                    ),
-                  ),
-                  SizedBox(height: 5),
-                  TextFormField(
-                    controller: _accountController,
-                    keyboardType: TextInputType.number,
-                    validator: (value) {
-                      if (value.isEmpty) {
-                        return 'Account number field is empty!';
-                      }
-                      return null;
-                    },
-                    decoration: InputDecoration(
-                      labelText: 'Account number',
-                      contentPadding: EdgeInsets.all(10),
-                      prefixIcon:
-                          Icon(FlutterIcons.account_badge_horizontal_mco),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(15),
-                      ),
-                    ),
-                  ),
-                  SizedBox(height: 5),
-                  TextFormField(
-                    controller: _macController,
-                    validator: (value) {
-                      if (value.isEmpty) {
-                        return 'MAC Id field is empty!';
-                      }
-                      return null;
-                    },
-                    decoration: InputDecoration(
-                      labelText: 'MAC Id',
-                      contentPadding: EdgeInsets.all(10),
-                      prefixIcon: Icon(FlutterIcons.ethernet_cable_mco),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(15),
-                      ),
-                    ),
-                  ),
-                  SizedBox(height: 10),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceAround,
-                    children: <Widget>[
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: <Widget>[
-                          Text(
-                            'Select Area : ',
-                            style: TextStyle(
-                              color: Theme.of(context).primaryColor,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 18,
-                              letterSpacing: 1,
-                            ),
-                          ),
-                          ...areas.map(
-                            (area) {
-                              return Row(
-                                children: <Widget>[
-                                  Radio(
-                                    materialTapTargetSize:
-                                        MaterialTapTargetSize.shrinkWrap,
-                                    activeColor: Theme.of(context).primaryColor,
-                                    value: area.areaName,
-                                    groupValue: _selectedArea,
-                                    onChanged: _selectAreaField,
-                                  ),
-                                  Text(area.areaName),
-                                ],
-                              );
-                            },
-                          ).toList(),
-                        ],
-                      ),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: <Widget>[
-                          Text(
-                            'Select Plan : ',
-                            style: TextStyle(
-                              color: Theme.of(context).primaryColor,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 18,
-                              letterSpacing: 1,
-                            ),
-                          ),
-                          ...plans.map(
-                            (plan) {
-                              return Row(
-                                children: <Widget>[
-                                  Radio(
-                                    materialTapTargetSize:
-                                        MaterialTapTargetSize.shrinkWrap,
-                                    activeColor: Theme.of(context).primaryColor,
-                                    value: plan,
-                                    groupValue: _selectedPlan,
-                                    onChanged: _selectPlanField,
-                                  ),
-                                  Text('\u20B9 ' + plan.toString()),
-                                ],
-                              );
-                            },
-                          ).toList(),
-                        ],
-                      ),
-                    ],
-                  ),
-                  Ink(
-                    decoration: defaultBoxDecoration(context, true),
-                    child: FloatingActionButton.extended(
-                      label: Text(
-                        'Submit',
-                        style: TextStyle(
+                    Positioned(
+                      bottom: 5,
+                      left: 0,
+                      child: CircleAvatar(
+                        backgroundColor: Colors.green,
+                        child: IconButton(
                           color: Colors.white,
-                          fontWeight: FontWeight.bold,
+                          icon: Icon(FlutterIcons.ios_camera_ion),
+                          onPressed: () async {
+                            _selectedImageFile =
+                                await ImageGetter.getImageFromDevice(context);
+                            setState(() {});
+                          },
                         ),
                       ),
-                      elevation: 0,
-                      backgroundColor: Colors.transparent,
-                      onPressed: () {
-                        if (_formKey.currentState.validate() &&
-                            _selectedArea != null &&
-                            _selectedPlan != null) {
-                          _formKey.currentState.save();
-                          final newCustomer = Customer(
-                            id: DateTime.now().toString(),
-                            name: _nameController.text.trim(),
-                            phoneNumber: _phoneController.text.trim(),
-                            address: _addressController.text.trim(),
-                            accountNumber: _accountController.text.trim(),
-                            macId: _macController.text.trim(),
-                            networkProviderName:
-                                getOperatorDetails().networkName,
-                            startDate: DateTime.now(),
-                            area: _selectedArea,
-                            currentPlan: _selectedPlan,
-                          );
-                          areas.forEach((element) {
-                            if (element.areaName == _selectedArea) {
-                              element.totalAccounts++;
-                              element.inActiveAccounts++;
-                            }
-                          });
-                          customers.add(newCustomer);
-                          _nameController.clear();
-                          _phoneController.clear();
-                          _addressController.clear();
-                          _accountController.clear();
-                          _macController.clear();
-                          setState(() {
-                            _selectedArea = null;
-                            _selectedPlan = null;
-                          });
-                        } else if (_selectedArea == null ||
-                            _selectedPlan == null) {
-                          String msg;
-                          if (_selectedArea == null && _selectedPlan == null)
-                            msg = 'area and plan';
-                          else
-                            msg = _selectedArea == null ? 'area' : 'plan';
-                          DefaultDialogBox.errorDialog(
-                              title: 'Alert',
-                              content: 'Please select $msg',
-                              context: context);
-                        }
-                      },
                     ),
+                  ],
+                ),
+              ),
+              SizedBox(height: 5),
+              TextFormField(
+                controller: _nameController,
+                validator: nameValidator,
+                decoration: inputDecoration(
+                    icon: FlutterIcons.ios_person_ion, label: 'Customer name'),
+              ),
+              SizedBox(height: 5),
+              TextFormField(
+                controller: _addressController,
+                keyboardType: TextInputType.text,
+                validator: addressValidator,
+                decoration: inputDecoration(
+                    icon: FlutterIcons.address_ent, label: 'Address'),
+              ),
+              SizedBox(height: 5),
+              TextFormField(
+                controller: _phoneController,
+                keyboardType: TextInputType.phone,
+                validator: phoneValidator,
+                decoration: inputDecoration(
+                    icon: Icons.phone,
+                    label: 'Phone number',
+                    prefixText: '+91 '),
+              ),
+              SizedBox(height: 5),
+              TextFormField(
+                controller: _accountController,
+                keyboardType: TextInputType.number,
+                validator: defaultValidator,
+                decoration: inputDecoration(
+                    icon: FlutterIcons.account_badge_horizontal_mco,
+                    label: 'Account number'),
+              ),
+              SizedBox(height: 5),
+              TextFormField(
+                controller: _macController,
+                validator: defaultValidator,
+                decoration: inputDecoration(
+                    icon: FlutterIcons.ethernet_cable_mco, label: 'MAC Id'),
+              ),
+              SizedBox(height: 10),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: <Widget>[
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: <Widget>[
+                      Text(
+                        'Select Area : ',
+                        style: TextStyle(
+                          color: Theme.of(context).primaryColor,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 18,
+                          letterSpacing: 1,
+                        ),
+                      ),
+                      ...areas.map(
+                        (area) {
+                          return Row(
+                            children: <Widget>[
+                              Radio(
+                                materialTapTargetSize:
+                                    MaterialTapTargetSize.shrinkWrap,
+                                activeColor: Theme.of(context).primaryColor,
+                                value: area.areaName,
+                                groupValue: _selectedArea,
+                                onChanged: _selectAreaField,
+                              ),
+                              Text(area.areaName),
+                            ],
+                          );
+                        },
+                      ).toList(),
+                    ],
+                  ),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: <Widget>[
+                      Text(
+                        'Select Plan : ',
+                        style: TextStyle(
+                          color: Theme.of(context).primaryColor,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 18,
+                          letterSpacing: 1,
+                        ),
+                      ),
+                      ...plans.map(
+                        (plan) {
+                          return Row(
+                            children: <Widget>[
+                              Radio(
+                                materialTapTargetSize:
+                                    MaterialTapTargetSize.shrinkWrap,
+                                activeColor: Theme.of(context).primaryColor,
+                                value: plan,
+                                groupValue: _selectedPlan,
+                                onChanged: _selectPlanField,
+                              ),
+                              Text('\u20B9 ' + plan.toString()),
+                            ],
+                          );
+                        },
+                      ).toList(),
+                    ],
                   ),
                 ],
               ),
-            ),
+              SizedBox(height: 10),
+              defaultbutton(
+                  context: context, function: saveDetails, title: 'Submit'),
+            ],
           ),
           Positioned(
             top: 0,

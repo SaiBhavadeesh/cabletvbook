@@ -1,6 +1,4 @@
 import 'dart:io';
-
-import 'package:cableTvBook/helpers/image_getter.dart';
 import 'package:intl/intl.dart';
 
 import 'package:flutter/material.dart';
@@ -9,7 +7,7 @@ import 'package:flutter_icons/flutter_icons.dart';
 
 import 'package:cableTvBook/models/customer.dart';
 import 'package:cableTvBook/models/operator.dart';
-
+import 'package:cableTvBook/helpers/image_getter.dart';
 import 'package:cableTvBook/widgets/customer_plan_list.dart';
 import 'package:cableTvBook/widgets/modal_bottom_sheet.dart';
 
@@ -65,7 +63,7 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
     Scaffold.of(ctx).showSnackBar(
       SnackBar(
         behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
         duration: Duration(milliseconds: 300),
         content: Text('$text copied to Clipboard'),
       ),
@@ -86,7 +84,7 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
             text: value,
             style: TextStyle(
               fontWeight: FontWeight.normal,
-              fontSize: 14,
+              fontSize: 16,
               color: Colors.black,
             ),
           ),
@@ -119,7 +117,7 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
     );
   }
 
-  Widget floatingButton(Object tag, Function function, String title) {
+  Widget floatingButton(Object tag, Function function, String title,Color color) {
     return FloatingActionButton.extended(
       heroTag: tag,
       onPressed: function,
@@ -137,7 +135,7 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
           ),
         ),
       ),
-      backgroundColor: Colors.red,
+      backgroundColor: color,
     );
   }
 
@@ -344,9 +342,9 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
                 child: Row(
                   children: <Widget>[
                     SizedBox(width: 10),
-                    floatingButton(0, () {}, 'Activate'),
+                    floatingButton(0, () {}, 'Activate',Colors.green),
                     Expanded(child: SizedBox()),
-                    floatingButton(1, () {}, 'Deactivate'),
+                    floatingButton(1, () {}, 'Deactivate',Colors.red),
                     SizedBox(width: 10),
                   ],
                 ),

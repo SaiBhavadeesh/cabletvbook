@@ -59,7 +59,7 @@ class _CustomerTileState extends State<CustomerTile> {
     Scaffold.of(ctx).showSnackBar(
       SnackBar(
         behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
         duration: Duration(milliseconds: 300),
         content: Text('$text copied to Clipboard'),
       ),

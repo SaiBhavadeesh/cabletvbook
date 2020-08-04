@@ -1,13 +1,14 @@
-import 'dart:async';
 import 'dart:ui';
+import 'dart:async';
 
-import 'package:cableTvBook/widgets/default_dialog_box.dart';
+import 'package:cableTvBook/global/default_buttons.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_icons/flutter_icons.dart';
 
 import 'package:cableTvBook/models/operator.dart';
+import 'package:cableTvBook/global/validators.dart';
+import 'package:cableTvBook/global/box_decoration.dart';
 import 'package:cableTvBook/screens/area_customers_screen.dart';
-import 'package:validators/validators.dart' as validator;
 
 final List<Color> colors = [
   Colors.red,
@@ -100,7 +101,8 @@ class _HomeScreenState extends State<HomeScreen> {
     } catch (error) {}
   }
 
-  Future<dynamic> showEditAreaDialog(Operator operatorDetails, int index) {
+  Future<dynamic> showEditOrAddDialog(
+      {Operator operatorDetails, int index = -1}) {
     return showDialog(
       context: context,
       builder: (ctx) {
@@ -111,32 +113,32 @@ class _HomeScreenState extends State<HomeScreen> {
             filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
             child: AlertDialog(
               title: Text(
-                'Edit name',
+                index < 0 ? 'Add new area' : 'Edit area name',
               ),
-              content: TextFormField(
-                maxLength: 10,
-                controller: textController,
-                validator: (value) {
-                  if (value.isEmpty) {
-                    return 'Invalid input!';
-                  }
-                  String error;
-                  final sub = value.split(' ');
-                  sub.forEach((element) {
-                    if (!validator.isAlphanumeric(element)) {
-                      error = 'Must be a combination of alphabet & number!';
-                    } else if (value.length > 10) {
-                      error = 'Name is too long!';
-                    }
-                  });
-                  return error;
-                },
-                decoration: InputDecoration(
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(15),
-                  ),
-                ),
-              ),
+              content: index < 0
+                  ? Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: <Widget>[
+                        Text(
+                          'NOTE : This action cannot be undone, Please make sure before adding.\n',
+                          style: TextStyle(
+                            color: Theme.of(context).errorColor,
+                          ),
+                        ),
+                        TextFormField(
+                          maxLength: 10,
+                          controller: textController,
+                          validator: nameValidator,
+                          decoration: inputDecoration(),
+                        ),
+                      ],
+                    )
+                  : TextFormField(
+                      maxLength: 10,
+                      controller: textController,
+                      validator: nameValidator,
+                      decoration: inputDecoration(),
+                    ),
               actions: <Widget>[
                 FlatButton.icon(
                   shape: RoundedRectangleBorder(
@@ -149,90 +151,17 @@ class _HomeScreenState extends State<HomeScreen> {
                     if (_formKey.currentState.validate()) {
                       _formKey.currentState.save();
                       setState(() {
-                        operatorDetails.areas[index].areaName =
-                            textController.text;
+                        if (index < 0)
+                          operatorDetails.areas
+                              .add(AreaData(areaName: textController.text));
+                        else
+                          operatorDetails.areas[index].areaName =
+                              textController.text;
                       });
                       Navigator.of(ctx).pop();
                     }
                   },
                   icon: Icon(FlutterIcons.content_save_edit_mco),
-                  label: Text('save'),
-                  color: Theme.of(context).primaryColor,
-                ),
-              ],
-            ),
-          ),
-        );
-      },
-    );
-  }
-
-  Future<dynamic> showAddAreaDialog(Operator operatorDetails) {
-    return showDialog(
-      context: context,
-      builder: (ctx) {
-        final textController = TextEditingController();
-        return Form(
-          key: _formKey,
-          child: BackdropFilter(
-            filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
-            child: AlertDialog(
-              title: Text('Add New Area'),
-              content: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                mainAxisSize: MainAxisSize.min,
-                children: <Widget>[
-                  Text(
-                    'NOTE : This action cannot be undone, Please make sure before adding.\n',
-                    style: TextStyle(
-                      color: Theme.of(context).errorColor,
-                    ),
-                  ),
-                  TextFormField(
-                    maxLength: 10,
-                    controller: textController,
-                    validator: (value) {
-                      if (value.isEmpty) {
-                        return 'Invalid input!';
-                      }
-                      String error;
-                      final sub = value.split(' ');
-                      sub.forEach((element) {
-                        if (!validator.isAlphanumeric(element)) {
-                          error = 'Must be a combination of alphabet & number!';
-                        } else if (value.length > 10) {
-                          error = 'Name is too long!';
-                        }
-                      });
-                      return error;
-                    },
-                    decoration: InputDecoration(
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(15),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              actions: <Widget>[
-                FlatButton.icon(
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.only(
-                      topLeft: Radius.circular(15),
-                      bottomRight: Radius.circular(15),
-                    ),
-                  ),
-                  onPressed: () {
-                    if (_formKey.currentState.validate()) {
-                      _formKey.currentState.save();
-                      setState(() {
-                        operatorDetails.areas
-                            .add(AreaData(areaName: textController.text));
-                      });
-                      Navigator.of(ctx).pop();
-                    }
-                  },
-                  icon: Icon(FlutterIcons.content_save_mco),
                   label: Text('save'),
                   color: Theme.of(context).primaryColor,
                 ),
@@ -417,28 +346,21 @@ class _HomeScreenState extends State<HomeScreen> {
             AreaCustomersScreen.routeName,
             arguments: operatorDetails.areas[index],
           ),
-          onLongPress: () => showEditAreaDialog(operatorDetails, index),
+          onLongPress: () => showEditOrAddDialog(
+              index: index, operatorDetails: operatorDetails),
         ),
         padding: EdgeInsets.symmetric(horizontal: size.width * 0.025),
         gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
           crossAxisCount: 2,
         ),
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => showAddAreaDialog(operatorDetails),
-        icon: Icon(
-          Icons.add_location,
-          color: Theme.of(context).accentColor,
-        ),
-        label: Text(
-          'Add Area',
-          style: TextStyle(
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        foregroundColor: Colors.white,
-        backgroundColor: Theme.of(context).primaryColor,
-      ),
+      floatingActionButton: defaultbutton(
+          context: context,
+          function: () => showEditOrAddDialog(operatorDetails: operatorDetails),
+          title: 'Add Area',
+          height: 12,
+          width: 18,
+          icon: Icons.add_location),
     );
   }
 }

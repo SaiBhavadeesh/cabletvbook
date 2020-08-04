@@ -1,8 +1,10 @@
 import 'dart:ui';
 
+import 'package:cableTvBook/global/validators.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_icons/flutter_icons.dart';
-import 'package:validators/validators.dart' as validator;
+
+import 'package:cableTvBook/global/box_decoration.dart';
 
 class ModalBottomSheet extends StatefulWidget {
   final customer;
@@ -69,30 +71,10 @@ class _ModalBottomSheetState extends State<ModalBottomSheet> {
                     SizedBox(height: 10),
                     TextFormField(
                       initialValue: widget.customer.name,
-                      validator: (value) {
-                        if (value.isEmpty) {
-                          return 'Invalid input!';
-                        }
-                        String error;
-                        final sub = value.split(' ');
-                        sub.forEach((element) {
-                          if (!validator.isAlphanumeric(element)) {
-                            error =
-                                'Must be a combination of alphabet & number!';
-                          } else if (value.length > 25) {
-                            error = 'Name is too long!';
-                          }
-                        });
-                        return error;
-                      },
-                      decoration: InputDecoration(
-                        labelText: 'Customer name',
-                        contentPadding: EdgeInsets.all(10),
-                        prefixIcon: Icon(FlutterIcons.ios_person_ion),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(15),
-                        ),
-                      ),
+                      validator: nameValidator,
+                      decoration: inputDecoration(
+                          label: 'Customer name',
+                          icon: FlutterIcons.ios_person_ion),
                       onSaved: (newValue) {
                         _name = newValue;
                       },
@@ -109,14 +91,8 @@ class _ModalBottomSheetState extends State<ModalBottomSheet> {
                         }
                         return null;
                       },
-                      decoration: InputDecoration(
-                        labelText: 'Address',
-                        contentPadding: EdgeInsets.all(10),
-                        prefixIcon: Icon(FlutterIcons.address_ent),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(15),
-                        ),
-                      ),
+                      decoration: inputDecoration(
+                          label: 'Address', icon: FlutterIcons.address_ent),
                       onSaved: (newValue) {
                         _address = newValue;
                       },
@@ -125,20 +101,9 @@ class _ModalBottomSheetState extends State<ModalBottomSheet> {
                     TextFormField(
                       initialValue: widget.customer.phoneNumber,
                       keyboardType: TextInputType.phone,
-                      validator: (value) {
-                        if (!validator.isNumeric(value)) {
-                          return 'Phone number is Invalid!';
-                        }
-                        return null;
-                      },
-                      decoration: InputDecoration(
-                        labelText: 'Phone number',
-                        contentPadding: EdgeInsets.all(10),
-                        prefixIcon: Icon(Icons.phone),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(15),
-                        ),
-                      ),
+                      validator: phoneValidator,
+                      decoration: inputDecoration(
+                          label: 'Phone number', icon: Icons.phone),
                       onSaved: (newValue) {
                         _phone = newValue;
                       },
@@ -147,21 +112,10 @@ class _ModalBottomSheetState extends State<ModalBottomSheet> {
                     TextFormField(
                       initialValue: widget.customer.accountNumber,
                       keyboardType: TextInputType.number,
-                      validator: (value) {
-                        if (value.isEmpty) {
-                          return 'Account number field is empty!';
-                        }
-                        return null;
-                      },
-                      decoration: InputDecoration(
-                        labelText: 'Account number',
-                        contentPadding: EdgeInsets.all(10),
-                        prefixIcon:
-                            Icon(FlutterIcons.account_badge_horizontal_mco),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(15),
-                        ),
-                      ),
+                      validator: defaultValidator,
+                      decoration: inputDecoration(
+                          label: 'Account number',
+                          icon: FlutterIcons.account_badge_horizontal_mco),
                       onSaved: (newValue) {
                         _account = newValue;
                       },
@@ -169,20 +123,10 @@ class _ModalBottomSheetState extends State<ModalBottomSheet> {
                     SizedBox(height: 10),
                     TextFormField(
                       initialValue: widget.customer.macId,
-                      validator: (value) {
-                        if (value.isEmpty) {
-                          return 'MAC Id field is empty!';
-                        }
-                        return null;
-                      },
-                      decoration: InputDecoration(
-                        labelText: 'MAC Id',
-                        contentPadding: EdgeInsets.all(10),
-                        prefixIcon: Icon(FlutterIcons.ethernet_cable_mco),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(15),
-                        ),
-                      ),
+                      validator: defaultValidator,
+                      decoration: inputDecoration(
+                          label: 'MAC Id',
+                          icon: FlutterIcons.ethernet_cable_mco),
                       onSaved: (newValue) {
                         _mac = newValue;
                       },

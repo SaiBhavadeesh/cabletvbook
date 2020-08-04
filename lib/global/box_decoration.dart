@@ -48,3 +48,29 @@ BoxDecoration sweepGradientDecoration(BuildContext context) {
     ]),
   );
 }
+
+InputDecoration inputDecoration(
+    {String label,
+    String prefixText,
+    IconData icon,
+    Color filledColor,
+    bool filled = false,
+    String hint,
+    Color iconColor}) {
+  return InputDecoration(
+    counter: SizedBox(),
+    fillColor: filledColor,
+    filled: filled,
+    hintText: hint,
+    focusedBorder: filled
+        ? OutlineInputBorder(borderRadius: BorderRadius.circular(15))
+        : null,
+    labelText: label,
+    contentPadding: const EdgeInsets.all(8),
+    prefixText: prefixText,
+    prefixIcon: icon == null ? null : Icon(icon, color: iconColor),
+    border: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(15),
+    ),
+  );
+}

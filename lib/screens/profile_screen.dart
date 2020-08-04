@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'dart:ui';
 
+import 'package:cableTvBook/global/default_buttons.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_icons/flutter_icons.dart';
 import 'package:validators/validators.dart' as validator;
@@ -128,55 +129,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
             SizedBox(height: 10),
             getTitleValueEdit('Email', operatorDetails.email, null),
             SizedBox(height: 10),
-            getTitleValueEdit('Phone number', operatorDetails.phoneNumber, null
-                // () => showDialog(
-                //   context: context,
-                //   builder: (ctx) {
-                //     final formKey = GlobalKey<FormState>();
-                //     String phoneNumber;
-                //     return AlertDialog(
-                //       content: Form(
-                //         key: formKey,
-                //         child: TextFormField(
-                //           initialValue: operatorDetails.phoneNumber.substring(4),
-                //           keyboardType: TextInputType.phone,
-                //           validator: (value) {
-                //             if (!validator.isNumeric(value)) {
-                //               return 'Phone number is Invalid!';
-                //             }
-                //             return null;
-                //           },
-                //           decoration: InputDecoration(
-                //             labelText: 'Edit Phone number',
-                //             prefixText: '+ 91 ',
-                //           ),
-                //           onSaved: (value) {
-                //             phoneNumber = '+ 91 ' + value;
-                //           },
-                //         ),
-                //       ),
-                //       actions: <Widget>[
-                //         FlatButton(
-                //           onPressed: () => Navigator.of(ctx).pop(),
-                //           child: Text('Cancel'),
-                //         ),
-                //         FlatButton(
-                //           onPressed: () {
-                //             if (formKey.currentState.validate()) {
-                //               formKey.currentState.save();
-                //               setState(() {
-                //                 operatorDetails.phoneNumber = phoneNumber;
-                //               });
-                //               Navigator.of(context).pop();
-                //             }
-                //           },
-                //           child: Text('Save'),
-                //         ),
-                //       ],
-                //     );
-                //   },
-                // ),
-                ),
+            getTitleValueEdit(
+                'Phone number', operatorDetails.phoneNumber, null),
             SizedBox(height: 10),
             getTitleValueEdit(
               'Name',
@@ -371,21 +325,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
             SizedBox(height: 10),
             Align(
               alignment: Alignment.centerRight,
-              child: Ink(
-                decoration: defaultBoxDecoration(context, true),
-                child: FloatingActionButton.extended(
-                  onPressed: () {},
-                  label: Text(
-                    'Add Plan',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  elevation: 0,
-                  backgroundColor: Colors.transparent,
-                ),
-              ),
+              child: defaultbutton(
+                  context: context,
+                  function: () {},
+                  title: 'Add Plan',
+                  width: 18,
+                  height: 12),
             ),
           ],
         ),

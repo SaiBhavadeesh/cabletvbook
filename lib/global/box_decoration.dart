@@ -56,12 +56,14 @@ InputDecoration inputDecoration(
     Color filledColor,
     bool filled = false,
     String hint,
-    Color iconColor}) {
+    Color iconColor,
+    Color hintColor = Colors.black}) {
   return InputDecoration(
     counter: SizedBox(),
     fillColor: filledColor,
     filled: filled,
     hintText: hint,
+    hintStyle: TextStyle(color: hintColor),
     focusedBorder: filled
         ? OutlineInputBorder(borderRadius: BorderRadius.circular(15))
         : null,

@@ -86,8 +86,8 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
         msg = 'area and plan';
       else
         msg = _selectedArea == null ? 'area' : 'plan';
-      DefaultDialogBox.errorDialog(
-          title: 'Alert', content: 'Please select $msg', context: context);
+      DefaultDialogBox.errorDialog(context,
+          title: 'Alert', content: 'Please select $msg');
     }
   }
 

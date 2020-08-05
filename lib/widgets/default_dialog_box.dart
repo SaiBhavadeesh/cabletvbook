@@ -12,14 +12,13 @@ enum SelectLoader {
 }
 
 class DefaultDialogBox {
-  static Future<dynamic> errorDialog(
-      {@required BuildContext context,
-      String title = 'Failed !',
+  static Future<dynamic> errorDialog(BuildContext context,
+      {String title = 'Failed !',
       String content = 'Something went wrong !\nPlease try again.'}) {
     return showDialog(
       context: context,
       builder: (ctx) => BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
+        filter: ImageFilter.blur(sigmaX: 2, sigmaY: 2),
         child: AlertDialog(
           title: Text(title),
           content: Text(content),
@@ -34,21 +33,24 @@ class DefaultDialogBox {
     );
   }
 
-  static Future<dynamic> loadingDialog(
-      {@required BuildContext context, SelectLoader loaderType, String title}) {
+  static Future<dynamic> loadingDialog(BuildContext context,
+      {SelectLoader loaderType, String title}) {
     return showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (ctx) => WillPopScope(
-        onWillPop: () async => Future.value(false),
-        child: AlertDialog(
-          elevation: 0,
-          backgroundColor: Colors.transparent,
-          title: title == null ? null : Text(title),
-          content: SizedBox(
-            height: 100,
-            width: 100,
-            child: LoadingIndicator(
+      builder: (ctx) => BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 2,sigmaY: 2),
+              child: WillPopScope(
+          onWillPop: () async => Future.value(false),
+          child: AlertDialog(
+            elevation: 0,
+            contentPadding: EdgeInsets.all(
+                loaderType == SelectLoader.ballClipRotateMultiple
+                    ? MediaQuery.of(context).size.width * 0.2
+                    : MediaQuery.of(context).size.width * 0.3),
+            backgroundColor: Colors.transparent,
+            title: title == null ? null : Text(title),
+            content: LoadingIndicator(
               indicatorType: loaderType == SelectLoader.ballClipRotateMultiple
                   ? Indicator.ballClipRotateMultiple
                   : loaderType == SelectLoader.ballScaleRippleMultiple

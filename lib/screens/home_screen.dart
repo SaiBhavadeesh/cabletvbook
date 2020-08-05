@@ -107,10 +107,12 @@ class _HomeScreenState extends State<HomeScreen> {
       context: context,
       builder: (ctx) {
         final textController = TextEditingController();
+        if (index >= 0)
+          textController.text = operatorDetails.areas[index].areaName;
         return Form(
           key: _formKey,
           child: BackdropFilter(
-            filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
+            filter: ImageFilter.blur(sigmaX: 2, sigmaY: 2),
             child: AlertDialog(
               title: Text(
                 index < 0 ? 'Add new area' : 'Edit area name',
@@ -129,7 +131,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           maxLength: 10,
                           controller: textController,
                           validator: nameValidator,
-                          decoration: inputDecoration(),
+                          decoration: inputDecoration(icon: Icons.add_location),
                         ),
                       ],
                     )
@@ -137,16 +139,15 @@ class _HomeScreenState extends State<HomeScreen> {
                       maxLength: 10,
                       controller: textController,
                       validator: nameValidator,
-                      decoration: inputDecoration(),
+                      decoration: inputDecoration(icon: Icons.edit_location),
                     ),
               actions: <Widget>[
-                FlatButton.icon(
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.only(
-                      topLeft: Radius.circular(15),
-                      bottomRight: Radius.circular(15),
-                    ),
-                  ),
+                FlatButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: Text('cancel'),
+                  textColor: Theme.of(context).errorColor,
+                ),
+                FlatButton(
                   onPressed: () {
                     if (_formKey.currentState.validate()) {
                       _formKey.currentState.save();
@@ -161,8 +162,10 @@ class _HomeScreenState extends State<HomeScreen> {
                       Navigator.of(ctx).pop();
                     }
                   },
-                  icon: Icon(FlutterIcons.content_save_edit_mco),
-                  label: Text('save'),
+                  child: Text(
+                    'save',
+                    style: TextStyle(fontSize: 16),
+                  ),
                   color: Theme.of(context).primaryColor,
                 ),
               ],

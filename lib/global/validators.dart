@@ -25,26 +25,26 @@ String passwordValidator(String value, bool isLogin) {
 String reCheckValidator(String value, String otherValue) {
   if (value.isEmpty) return 'This field is required !';
   if (value == otherValue) return null;
-  return 'password did not match !';
+  return 'password\'s did not match !';
 }
 
 String phoneValidator(String value) {
   if (value.isEmpty) return 'This field is required !';
   if (!validate.isNumeric(value)) return 'please enter valid number !';
-  if (value.length != 10) return 'Please enter valid number !';
+  if (value.length != 10) return 'please enter valid number !';
   return null;
 }
 
-String nameValidator(String value) {
+String nameValidator(String value, {int maxLength = 25}) {
   if (value.isEmpty) return 'This field is required !';
   if (validator.name(value)) return null;
   String error;
   final sub = value.split(' ');
   sub.forEach((element) {
     if (!validate.isAlphanumeric(element)) {
-      error = 'Must be a combination of alphabet & number !';
-    } else if (value.length > 25) {
-      error = 'Name is too long !';
+      error = 'must be a combination of alphabet & number !';
+    } else if (value.length > maxLength) {
+      error = 'name is too long !';
     }
   });
   return error;
@@ -52,6 +52,13 @@ String nameValidator(String value) {
 
 String addressValidator(String value) {
   if (value.isEmpty) return 'This field is required !';
-  if (value.length > 50) return 'Address is too long !';
+  if (value.length > 50) return 'address is too long !';
+  return null;
+}
+
+String planValidator(String value) {
+  if (value.isEmpty) return 'This field is required !';
+  if (!validate.isInt(value)) return 'not a valid number !';
+  if (value.length > 3) return 'amount is too high!';
   return null;
 }

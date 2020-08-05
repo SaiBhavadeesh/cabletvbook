@@ -11,6 +11,20 @@ class AreaData {
     this.activeAccounts = 0,
     this.inActiveAccounts = 0,
   });
+
+  AreaData.fromMap(Map<String, dynamic> doc) {
+    this.areaName = doc['areaName'];
+    this.totalAccounts = doc['totalAccounts'];
+    this.activeAccounts = doc['activeAccounts'];
+    this.inActiveAccounts = doc['inActiveAccounts'];
+  }
+
+  Map<String, dynamic> toJson() => {
+        'areaName': this.areaName,
+        'totalAccounts': this.totalAccounts,
+        'activeAccounts': this.activeAccounts,
+        'inActiveAccounts': this.inActiveAccounts,
+      };
 }
 
 class Operator {
@@ -34,6 +48,30 @@ class Operator {
     @required this.startDate,
     this.profileImageLink,
   });
+
+  Operator.fromMap(Map<String, dynamic> document) {
+    this.id = document['id'];
+    this.email = document['email'];
+    this.name = document['name'];
+    this.networkName = document['networkName'];
+    this.phoneNumber = document['phoneNumber'];
+    this.startDate = document['startDate'];
+    this.profileImageLink = document['profileImageLink'];
+    this.plans = document['plans'];
+    this.areas = document['areas'].map((e) => AreaData.fromMap(e)).toList();
+  }
+
+  Map<String, dynamic> toJson() => {
+        'id': this.id,
+        'email': this.email,
+        'name': this.name,
+        'networkName': this.networkName,
+        'profileImageLink': this.profileImageLink,
+        'phoneNumber': this.phoneNumber,
+        'startDate': this.startDate,
+        'areas': this.areas.map((e) => e.toJson()).toList(),
+        'plans': this.plans,
+      };
 }
 
 List<AreaData> areas = [

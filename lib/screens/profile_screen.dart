@@ -2,6 +2,7 @@ import 'dart:io';
 import 'dart:ui';
 
 import 'package:cableTvBook/global/default_buttons.dart';
+import 'package:cableTvBook/global/validators.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_icons/flutter_icons.dart';
 import 'package:validators/validators.dart' as validator;
@@ -326,11 +327,56 @@ class _ProfileScreenState extends State<ProfileScreen> {
             Align(
               alignment: Alignment.centerRight,
               child: defaultbutton(
-                  context: context,
-                  function: () {},
-                  title: 'Add Plan',
-                  width: 18,
-                  height: 12),
+                context: context,
+                title: 'Add Plan',
+                width: 18,
+                height: 12,
+                function: () {
+                  final _formKey = GlobalKey<FormState>();
+                  final _planController = TextEditingController();
+                  return showDialog(
+                    context: context,
+                    builder: (context) => Form(
+                      key: _formKey,
+                      child: BackdropFilter(
+                        filter: ImageFilter.blur(sigmaX: 2, sigmaY: 2),
+                        child: AlertDialog(
+                          title: Text('Add Plan'),
+                          content: TextFormField(
+                            controller: _planController,
+                            validator: planValidator,
+                            decoration: inputDecoration(
+                                icon: FlutterIcons.currency_inr_mco),
+                          ),
+                          actions: <Widget>[
+                            FlatButton(
+                              onPressed: () => Navigator.pop(context),
+                              child: Text('cancel'),
+                              textColor: Theme.of(context).errorColor,
+                            ),
+                            FlatButton(
+                              onPressed: () {
+                                if (_formKey.currentState.validate()) {
+                                  _formKey.currentState.save();
+                                  setState(() {
+                                    operatorDetails.plans
+                                        .add(int.parse(_planController.text));
+                                  });
+                                }
+                              },
+                              child: Text(
+                                'save',
+                                style: TextStyle(fontSize: 16),
+                              ),
+                              color: Theme.of(context).primaryColor,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  );
+                },
+              ),
             ),
           ],
         ),

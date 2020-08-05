@@ -25,8 +25,7 @@ class _CropImageScreenState extends State<CropImageScreen> {
           alwaysShowGrid: true,
           maximumScale: 1.0,
           onImageError: (exception, stackTrace) {
-            DefaultDialogBox.errorDialog(
-                context: context, content: 'Bad image file!');
+            DefaultDialogBox.errorDialog(context, content: 'Bad image file!');
           },
           image: FileImage(imageFile),
           aspectRatio: 1.0,
@@ -49,7 +48,7 @@ class _CropImageScreenState extends State<CropImageScreen> {
               final area = cropKey.currentState.area;
               final scale = cropKey.currentState.scale;
               if (area == null) {
-                DefaultDialogBox.errorDialog(context: context);
+                DefaultDialogBox.errorDialog(context);
                 return;
               }
               final File image = await ImageCrop.cropImage(

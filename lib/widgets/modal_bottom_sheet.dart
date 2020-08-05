@@ -26,7 +26,7 @@ class _ModalBottomSheetState extends State<ModalBottomSheet> {
     return Scaffold(
       backgroundColor: Colors.black45,
       body: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
+        filter: ImageFilter.blur(sigmaX: 2, sigmaY: 2),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: <Widget>[

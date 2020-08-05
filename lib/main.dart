@@ -1,19 +1,20 @@
 import 'dart:ui';
 
+import 'package:cableTvBook/screens/signup_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-import 'package:cableTvBook/screens/register.dart';
 import 'package:cableTvBook/screens/home_screen.dart';
+import 'package:cableTvBook/screens/signin_screen.dart';
 import 'package:cableTvBook/screens/search_screen.dart';
 import 'package:cableTvBook/screens/profile_screen.dart';
+import 'package:cableTvBook/screens/register_screen.dart';
 import 'package:cableTvBook/screens/settings_screen.dart';
 import 'package:cableTvBook/screens/crop_image_screen.dart';
 import 'package:cableTvBook/screens/collection_screen.dart';
 import 'package:cableTvBook/helpers/custom_transition.dart';
 import 'package:cableTvBook/screens/bottom_tabs_screen.dart';
 import 'package:cableTvBook/screens/add_customer_screen.dart';
-import 'package:cableTvBook/screens/login_register_screen.dart';
 import 'package:cableTvBook/screens/area_customers_screen.dart';
 import 'package:cableTvBook/screens/customer_detail_screen.dart';
 
@@ -81,18 +82,19 @@ class MyApp extends StatelessWidget {
         ),
         fontFamily: 'Roboto',
       ),
-      home: LoginRegisterScreen(),
+      home: SigninScreen(),
       routes: {
-        Register.routeName: (ctx) => Register(),
         HomeScreen.routeName: (ctx) => HomeScreen(),
+        SigninScreen.routeName: (ctx) => SigninScreen(),
+        SignupScreen.routeName: (ctx) => SignupScreen(),
         SearchScreen.routeName: (ctx) => SearchScreen(),
         ProfileScreen.routeName: (ctx) => ProfileScreen(),
+        RegisterScreen.routeName: (ctx) => RegisterScreen(),
         SettingsScreen.routeName: (ctx) => SettingsScreen(),
         CropImageScreen.routeName: (ctx) => CropImageScreen(),
         CollectionScreen.routeName: (ctx) => CollectionScreen(),
         BottomTabsScreen.routeName: (ctx) => BottomTabsScreen(),
         AddCustomerScreen.routeName: (ctx) => AddCustomerScreen(),
-        LoginRegisterScreen.routeName: (ctx) => LoginRegisterScreen(),
         AreaCustomersScreen.routeName: (ctx) => AreaCustomersScreen(),
         CustomerDetailScreen.routeName: (ctx) => CustomerDetailScreen(),
       },

@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "355805999771",
+    "firebase_url": "https://cable-tv-book.firebaseio.com",
+    "project_id": "cable-tv-book",
+    "storage_bucket": "cable-tv-book.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:355805999771:android:5222b6208d6c8cabfd4c3e",
+        "android_client_info": {
+          "package_name": "com.srinivasasoftwares.cableTvBook"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "355805999771-9vsld3ciept15m4jdhad6eoeug90sba5.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.srinivasasoftwares.cableTvBook",
+            "certificate_hash": "5de0db083b1f10f32337eaaef2f6da3c11832e7e"
+          }
+        },
+        {
+          "client_id": "355805999771-jmpdhufngfekkhgtkofhfpveg5driv0r.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDQob2FwyuEG9coNg4TdWISqH1CmMBMnYI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "355805999771-jmpdhufngfekkhgtkofhfpveg5driv0r.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

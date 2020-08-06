@@ -1,5 +1,7 @@
 import 'dart:ui';
 
+import 'package:cableTvBook/global/variables.dart';
+import 'package:cableTvBook/models/operator.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_icons/flutter_icons.dart';
 
@@ -7,7 +9,6 @@ import 'package:cableTvBook/global/validators.dart';
 import 'package:cableTvBook/global/box_decoration.dart';
 import 'package:cableTvBook/screens/signin_screen.dart';
 import 'package:cableTvBook/screens/register_screen.dart';
-import 'package:cableTvBook/widgets/default_dialog_box.dart';
 
 class SignupScreen extends StatefulWidget {
   static const routeName = '/signupScreen';
@@ -127,8 +128,12 @@ class _SignupScreenState extends State<SignupScreen> {
                         onPressed: () {
                           if (_formKey.currentState.validate()) {
                             _formKey.currentState.save();
-                            Navigator.of(context)
-                                .pushNamed(RegisterScreen.routeName);
+                            Navigator.of(context).pushNamed(
+                                RegisterScreen.routeName,
+                                arguments: {
+                                  'email': _emailController.text,
+                                  'password': _passwordController.text
+                                });
                           }
                         },
                         label: getTextWidget('${'\t' * 8}Register${'\t' * 8}',

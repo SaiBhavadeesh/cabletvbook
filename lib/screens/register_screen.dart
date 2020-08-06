@@ -1,3 +1,6 @@
+import 'package:cableTvBook/global/variables.dart';
+import 'package:cableTvBook/models/operator.dart';
+import 'package:cableTvBook/services/authentication.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_icons/flutter_icons.dart';
 
@@ -19,9 +22,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final _planController = TextEditingController();
   final _phoneController = TextEditingController();
   final _networkController = TextEditingController();
+  Map<String, dynamic> routeArguments;
 
   @override
   Widget build(BuildContext context) {
+    routeArguments = ModalRoute.of(context).settings.arguments;
     return Scaffold(
       appBar: AppBar(
         title: Text('Setup your Network'),
@@ -64,12 +69,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
               controller: _phoneController,
               validator: phoneValidator,
               keyboardType: TextInputType.phone,
-              decoration:
-                  inputDecoration(label: 'Phone number', icon: Icons.phone),
+              decoration: inputDecoration(
+                  label: 'Phone number', icon: Icons.phone, prefixText: '+91 '),
             ),
             SizedBox(height: 10),
             TextFormField(
-              // initialValue: email,
+              initialValue: routeArguments['email'],
               enabled: false,
               decoration: inputDecoration(label: 'E-Mail', icon: Icons.email),
             ),
@@ -105,10 +110,30 @@ class _RegisterScreenState extends State<RegisterScreen> {
             SizedBox(height: 20),
             defaultbutton(
                 context: context,
-                function: () => Navigator.of(context).push(PageRouteBuilder(
+                function: () {
+                  if (_formKey.currentState.validate()) {
+                    _formKey.currentState.save();
+                    operatorDetails = Operator(
+                        id: null,
+                        name: _nameController.text,
+                        email: routeArguments['email'],
+                        password: routeArguments['password'],
+                        networkName: _networkController.text,
+                        phoneNumber: '+ 91 ' + _phoneController.text,
+                        areas: [AreaData(areaName: _areaController.text)],
+                        plans: [double.parse(_planController.text)],
+                        startDate: null);
+                    Authentication.verifyPhoneNumberAndRegister(
+                        context: context,
+                        phoneNnumber: operatorDetails.phoneNumber,
+                        email: operatorDetails.email,
+                        password: operatorDetails.password);
+                    Navigator.of(context).push(PageRouteBuilder(
                       pageBuilder: (context, _, __) => VerifyPhonePopup(),
                       opaque: false,
-                    )),
+                    ));
+                  }
+                },
                 title: 'Submit'),
           ],
         ),

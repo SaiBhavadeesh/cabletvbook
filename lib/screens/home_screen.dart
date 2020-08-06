@@ -1,13 +1,14 @@
 import 'dart:ui';
 import 'dart:async';
 
-import 'package:cableTvBook/global/default_buttons.dart';
+import 'package:cableTvBook/global/variables.dart';
+import 'package:cableTvBook/services/databse_services.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_icons/flutter_icons.dart';
 
 import 'package:cableTvBook/models/operator.dart';
 import 'package:cableTvBook/global/validators.dart';
 import 'package:cableTvBook/global/box_decoration.dart';
+import 'package:cableTvBook/global/default_buttons.dart';
 import 'package:cableTvBook/screens/area_customers_screen.dart';
 
 final List<Color> colors = [
@@ -29,7 +30,7 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   final _formKey = GlobalKey<FormState>();
-  int _initYear = getOperatorDetails().startDate.year;
+  int _initYear = operatorDetails.startDate.year;
   int _endYear = DateTime.now().year;
   int _selectedYear;
   bool _isLeftActive = true;
@@ -41,6 +42,7 @@ class _HomeScreenState extends State<HomeScreen> {
   void initState() {
     super.initState();
     _selectedYear = _endYear;
+    if (_selectedYear == _initYear) _isLeftActive = false;
   }
 
   void _leftArrowClickAction() {
@@ -148,18 +150,26 @@ class _HomeScreenState extends State<HomeScreen> {
                   textColor: Theme.of(context).errorColor,
                 ),
                 FlatButton(
-                  onPressed: () {
+                  onPressed: () async {
                     if (_formKey.currentState.validate()) {
                       _formKey.currentState.save();
-                      setState(() {
-                        if (index < 0)
-                          operatorDetails.areas
-                              .add(AreaData(areaName: textController.text));
-                        else
-                          operatorDetails.areas[index].areaName =
-                              textController.text;
-                      });
+                      if (index < 0) {
+                        final tempList = operatorDetails.areas
+                          ..add(AreaData(areaName: textController.text));
+                        final list = tempList.map((e) => e.toJson()).toList();
+                        await DatabaseService.updateData(context, scaffoldKey,
+                            data: {'areas': list});
+                      } else {
+                        operatorDetails.areas[index].areaName =
+                            textController.text;
+                        final list = operatorDetails.areas
+                            .map((e) => e.toJson())
+                            .toList();
+                        await DatabaseService.updateData(context, scaffoldKey,
+                            data: {'areas': list});
+                      }
                       Navigator.of(ctx).pop();
+                      setState(() {});
                     }
                   },
                   child: Text(
@@ -176,13 +186,14 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  final scaffoldKey = GlobalKey<ScaffoldState>();
+
   @override
   Widget build(BuildContext context) {
-    final Operator operatorDetails = getOperatorDetails();
     final size = MediaQuery.of(context).size;
     final top = MediaQuery.of(context).padding.top;
-    DateTime.now().toIso8601String();
     return Scaffold(
+      key: scaffoldKey,
       backgroundColor: Colors.white,
       appBar: AppBar(
         leading: SizedBox(),
@@ -357,13 +368,16 @@ class _HomeScreenState extends State<HomeScreen> {
           crossAxisCount: 2,
         ),
       ),
-      floatingActionButton: defaultbutton(
-          context: context,
-          function: () => showEditOrAddDialog(operatorDetails: operatorDetails),
-          title: 'Add Area',
-          height: 12,
-          width: 18,
-          icon: Icons.add_location),
+      floatingActionButton: operatorDetails.areas.length < 16
+          ? defaultbutton(
+              context: context,
+              function: () =>
+                  showEditOrAddDialog(operatorDetails: operatorDetails),
+              title: 'Add Area',
+              height: 12,
+              width: 18,
+              icon: Icons.add_location)
+          : null,
     );
   }
 }

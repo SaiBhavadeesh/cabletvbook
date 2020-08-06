@@ -2,8 +2,8 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 
-import 'package:cableTvBook/screens/signin_screen.dart';
 import 'package:cableTvBook/screens/profile_screen.dart';
+import 'package:cableTvBook/services/authentication.dart';
 import 'package:cableTvBook/screens/settings_screen.dart';
 import 'package:cableTvBook/screens/collection_screen.dart';
 
@@ -31,16 +31,17 @@ class HomeDrawer extends StatelessWidget {
           Container(
             height: height * 0.25,
             width: double.infinity,
-            child: image == null
-                ? Image.asset(
-                    'assets/images/drawer.jpg',
-                    fit: BoxFit.cover,
-                  )
-                : Image.file(
-                    image,
-                    fit: BoxFit.cover,
-                  ),
+            child: Image.asset(
+              'assets/images/app_icon.png',
+              fit: BoxFit.cover,
+            ),
           ),
+          Divider(
+              height: 0,
+              thickness: 2,
+              endIndent: 0,
+              indent: 0,
+              color: Colors.black),
           SizedBox(height: height * 0.01),
           FlatButton.icon(
             onPressed: () =>
@@ -64,8 +65,7 @@ class HomeDrawer extends StatelessWidget {
           ),
           Divider(),
           FlatButton.icon(
-            onPressed: () => Navigator.of(context).pushNamedAndRemoveUntil(
-                SigninScreen.routeName, (route) => false),
+            onPressed: () => Authentication.signout(context),
             icon: Icon(Icons.power_settings_new),
             label: styledTitleText('Logout'),
           ),

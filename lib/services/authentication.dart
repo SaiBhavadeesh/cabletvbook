@@ -1,4 +1,6 @@
 import 'package:cableTvBook/screens/signin_screen.dart';
+import 'package:cableTvBook/services/databse_services.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -21,6 +23,7 @@ class Authentication {
       _authResult = await FirebaseAuth.instance
           .signInWithEmailAndPassword(email: email, password: password);
       firebaseUser = _authResult.user;
+      await DatabaseService.getuserData();
       Navigator.of(context).pushNamedAndRemoveUntil(
           BottomTabsScreen.routeName, (route) => false);
     } on PlatformException catch (error) {
@@ -47,12 +50,14 @@ class Authentication {
           await FirebaseAuth.instance.signInWithCredential(_googleCredential);
       firebaseUser = _authResult.user;
       isGoogleUser = true;
-      if (firebaseUser.phoneNumber != null)
+      if (firebaseUser.phoneNumber != null) {
+        await DatabaseService.getuserData();
         Navigator.of(context).pushNamedAndRemoveUntil(
             BottomTabsScreen.routeName, (route) => false);
-      else
+      } else
         Navigator.of(context).pushNamedAndRemoveUntil(
-            RegisterScreen.routeName, (route) => false);
+            RegisterScreen.routeName, (route) => false,
+            arguments: {'email': firebaseUser.email, 'password': null});
     } on PlatformException catch (error) {
       Navigator.pop(context);
       DefaultDialogBox.errorDialog(context, content: error.message);
@@ -95,6 +100,13 @@ class Authentication {
                   await _authResult.user.linkWithCredential(_phoneCredential);
             }
             firebaseUser = _authResult.user;
+            operatorDetails.id = firebaseUser.uid;
+            await Firestore.instance
+                .collection('users')
+                .document(firebaseUser.uid)
+                .setData(operatorDetails.toJson()
+                  ..['startDate'] = FieldValue.serverTimestamp());
+            await DatabaseService.getuserData();
             Navigator.of(context).pushNamedAndRemoveUntil(
                 BottomTabsScreen.routeName, (route) => false);
           } on PlatformException catch (error) {
@@ -164,6 +176,13 @@ class Authentication {
             await _authResult.user.linkWithCredential(_phoneCredential);
       }
       firebaseUser = _authResult.user;
+      operatorDetails.id = firebaseUser.uid;
+      await Firestore.instance
+          .collection('users')
+          .document(firebaseUser.uid)
+          .setData(operatorDetails.toJson()
+            ..['startDate'] = FieldValue.serverTimestamp());
+      await DatabaseService.getuserData();
       Navigator.of(context).pushNamedAndRemoveUntil(
           BottomTabsScreen.routeName, (route) => false);
     } on PlatformException catch (error) {
@@ -187,6 +206,7 @@ class Authentication {
       await FirebaseAuth.instance.signOut();
       firebaseUser = null;
       isGoogleUser = false;
+      operatorDetails = null;
       Navigator.of(context)
           .pushNamedAndRemoveUntil(SigninScreen.routeName, (route) => false);
     } on PlatformException catch (error) {

@@ -1,10 +1,13 @@
 import 'dart:ui';
 import 'dart:async';
 
-import 'package:cableTvBook/global/default_buttons.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:pin_code_fields/pin_code_fields.dart';
+
+import 'package:cableTvBook/global/variables.dart';
+import 'package:cableTvBook/global/default_buttons.dart';
+import 'package:cableTvBook/services/authentication.dart';
 
 class VerifyPhonePopup extends StatelessWidget {
   static String otp;
@@ -75,7 +78,14 @@ class VerifyPhonePopup extends StatelessWidget {
                         ResendTimerWidget(),
                         Expanded(
                           child: defaultbutton(
-                              context: context, function: null, title: 'Done'),
+                              context: context,
+                              function: () =>
+                                  Authentication.verifyOTPAndRegister(
+                                      context: context,
+                                      otp: otp,
+                                      email: operatorDetails.email,
+                                      password: null),
+                              title: 'Done'),
                         ),
                       ],
                     ),
@@ -171,6 +181,11 @@ class _ResendTimerWidgetState extends State<ResendTimerWidget> {
                     fontWeight: FontWeight.w400),
               ),
               onPressed: () {
+                Authentication.verifyPhoneNumberAndRegister(
+                    context: context,
+                    phoneNnumber: operatorDetails.phoneNumber,
+                    email: operatorDetails.email,
+                    password: null);
                 alterButton();
               },
             ),

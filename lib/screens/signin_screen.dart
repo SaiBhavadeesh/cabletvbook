@@ -18,8 +18,6 @@ class _SigninScreenState extends State<SigninScreen> {
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
-  // final _reterPasswordController = TextEditingController();
-  // bool _isLogin = true;
 
   Widget getTextWidget(String data, double size, Color color, bool isBold) {
     return Text(
@@ -111,11 +109,10 @@ class _SigninScreenState extends State<SigninScreen> {
                     Align(
                       child: FloatingActionButton.extended(
                         heroTag: 'login',
-                        onPressed: () async {
+                        onPressed: () {
                           if (_formKey.currentState.validate()) {
                             _formKey.currentState.save();
-                            await Authentication.signinWithEmailAndPassword(
-                                context,
+                            Authentication.signinWithEmailAndPassword(context,
                                 email: _emailController.text.trim(),
                                 password: _passwordController.text);
                           }

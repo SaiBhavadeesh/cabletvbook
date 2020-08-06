@@ -2,6 +2,8 @@ import 'dart:io';
 import 'dart:ui';
 
 import 'package:cableTvBook/global/default_buttons.dart';
+import 'package:cableTvBook/global/variables.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/cupertino.dart';
@@ -30,8 +32,9 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
   final _accountController = TextEditingController();
   final _macController = TextEditingController();
   String _selectedArea;
-  int _selectedPlan;
+  double _selectedPlan;
   File _selectedImageFile;
+  bool _checked = false;
 
   void _selectAreaField(String value) {
     setState(() {
@@ -39,47 +42,42 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
     });
   }
 
-  void _selectPlanField(int value) {
+  void _selectPlanField(double value) {
     setState(() {
       _selectedPlan = value;
     });
   }
 
-  void saveDetails() {
+  void uploadPhotoToDatabase() {}
+
+  void saveDetails() async {
     if (_formKey.currentState.validate() &&
         _selectedArea != null &&
         _selectedPlan != null) {
       _formKey.currentState.save();
       final newCustomer = Customer(
-        id: DateTime.now().toString(),
+        id: null,
         name: _nameController.text.trim(),
-        phoneNumber: _phoneController.text.trim(),
+        phoneNumber: '+ 91 ' + _phoneController.text.trim(),
         address: _addressController.text.trim(),
         accountNumber: _accountController.text.trim(),
         macId: _macController.text.trim(),
-        networkProviderName: getOperatorDetails().networkName,
-        startDate: DateTime.now(),
+        networkProviderId: operatorDetails.id,
+        startDate: null,
         area: _selectedArea,
         currentPlan: _selectedPlan,
+        currentStatus: _checked ? 'Active' : 'Inactive',
       );
-      areas.forEach((element) {
-        if (element.areaName == _selectedArea) {
-          element.totalAccounts++;
-          element.inActiveAccounts++;
-        }
-      });
-      customers.add(newCustomer);
-      _nameController.clear();
-      _phoneController.clear();
-      _addressController.clear();
-      _accountController.clear();
-      _macController.clear();
-      setState(() {
-        _selectedArea = null;
-        _selectedPlan = null;
-      });
-      Navigator.of(context).pushNamedAndRemoveUntil(
-          BottomTabsScreen.routeName, (route) => false);
+      print(newCustomer.toJson());
+      try {} catch (_) {}
+      // operatorDetails.areas.forEach((element) {
+      //   if (element.areaName == _selectedArea) {
+      //     element.totalAccounts++;
+      //     element.inActiveAccounts++;
+      //   }
+      // });
+      // Navigator.of(context).pushNamedAndRemoveUntil(
+      //     BottomTabsScreen.routeName, (route) => false);
     } else if (_selectedArea == null || _selectedPlan == null) {
       String msg;
       if (_selectedArea == null && _selectedPlan == null)
@@ -93,9 +91,6 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final List<AreaData> areas = getOperatorDetails().areas;
-    final List<int> plans = getOperatorDetails().plans;
-
     return Form(
       key: _formKey,
       child: Stack(
@@ -179,6 +174,7 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
               ),
               SizedBox(height: 10),
               Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: <Widget>[
                   Column(
@@ -193,7 +189,7 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
                           letterSpacing: 1,
                         ),
                       ),
-                      ...areas.map(
+                      ...operatorDetails.areas.map(
                         (area) {
                           return Row(
                             children: <Widget>[
@@ -224,7 +220,7 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
                           letterSpacing: 1,
                         ),
                       ),
-                      ...plans.map(
+                      ...operatorDetails.plans.map(
                         (plan) {
                           return Row(
                             children: <Widget>[
@@ -245,7 +241,18 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
                   ),
                 ],
               ),
-              SizedBox(height: 10),
+              Divider(height: 0),
+              CheckboxListTile(
+                activeColor: Colors.green,
+                controlAffinity: ListTileControlAffinity.leading,
+                value: _checked,
+                title: Text('Check this box, if already paid bill.'),
+                onChanged: (value) {
+                  setState(() {
+                    _checked = !_checked;
+                  });
+                },
+              ),
               defaultbutton(
                   context: context, function: saveDetails, title: 'Submit'),
             ],

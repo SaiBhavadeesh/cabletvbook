@@ -1,6 +1,7 @@
 import 'dart:ui';
 
 import 'package:cableTvBook/screens/signup_screen.dart';
+import 'package:cableTvBook/services/initial_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -82,7 +83,7 @@ class MyApp extends StatelessWidget {
         ),
         fontFamily: 'Roboto',
       ),
-      home: SigninScreen(),
+      home: InitialScreen(),
       routes: {
         HomeScreen.routeName: (ctx) => HomeScreen(),
         SigninScreen.routeName: (ctx) => SigninScreen(),

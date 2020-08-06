@@ -6,7 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_icons/flutter_icons.dart';
 
 import 'package:cableTvBook/models/customer.dart';
-import 'package:cableTvBook/models/operator.dart';
+import 'package:cableTvBook/global/variables.dart';
 import 'package:cableTvBook/helpers/image_getter.dart';
 import 'package:cableTvBook/widgets/customer_plan_list.dart';
 import 'package:cableTvBook/widgets/modal_bottom_sheet.dart';
@@ -142,7 +142,6 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
   @override
   Widget build(BuildContext context) {
     final Customer customer = ModalRoute.of(context).settings.arguments;
-    final Operator operatorDetails = getOperatorDetails();
     final years = getAllYears(customer.startDate);
     size = MediaQuery.of(context).size;
     return DefaultTabController(
@@ -326,16 +325,17 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
                 shrinkWrap: true,
                 physics: NeverScrollableScrollPhysics(),
                 itemBuilder: (context, index) {
-                  return CustomerPlanList(
-                    month: DateFormat('MMM').format(
-                      DateTime(2020, index + 1),
-                    ),
-                    billDate: plan[index][0],
-                    billAmount: plan[index][1],
-                    status: plan[index][2],
-                  );
+                  return Container();
+                  // return CustomerPlanList(
+                  //   month: DateFormat('MMM').format(
+                  //     DateTime(2020, index + 1),
+                  //   ),
+                  //   billDate: plan[index][0],
+                  //   billAmount: plan[index][1],
+                  //   status: plan[index][2],
+                  // );
                 },
-                itemCount: plan.length,
+                // itemCount: plan.length,
               ),
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: 20),

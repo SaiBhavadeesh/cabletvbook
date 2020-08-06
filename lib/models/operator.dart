@@ -29,89 +29,53 @@ class AreaData {
 
 class Operator {
   String id;
-  String email;
   String name;
+  String email;
+  String password;
   String networkName;
-  String profileImageLink;
   String phoneNumber;
   DateTime startDate;
+  List<double> plans;
   List<AreaData> areas;
-  List<int> plans;
+  String profileImageLink;
   Operator({
     @required this.id,
-    @required this.email,
     @required this.name,
+    @required this.email,
+    @required this.password,
     @required this.networkName,
     @required this.phoneNumber,
-    @required this.areas,
-    @required this.plans,
     @required this.startDate,
     this.profileImageLink,
+    @required this.areas,
+    @required this.plans,
   });
 
   Operator.fromMap(Map<String, dynamic> document) {
     this.id = document['id'];
-    this.email = document['email'];
     this.name = document['name'];
+    this.email = document['email'];
+    this.password = document['password'];
     this.networkName = document['networkName'];
     this.phoneNumber = document['phoneNumber'];
-    this.startDate = document['startDate'];
     this.profileImageLink = document['profileImageLink'];
-    this.plans = document['plans'];
-    this.areas = document['areas'].map((e) => AreaData.fromMap(e)).toList();
+    this.startDate = document['startDate'].toDate();
+    this.areas = [...document['areas']].map((e) => AreaData.fromMap(e)).toList();
+    this.plans = [...document['plans']];
   }
 
   Map<String, dynamic> toJson() => {
         'id': this.id,
-        'email': this.email,
         'name': this.name,
+        'email': this.email,
+        'password': this.password,
         'networkName': this.networkName,
         'profileImageLink': this.profileImageLink,
         'phoneNumber': this.phoneNumber,
         'startDate': this.startDate,
-        'areas': this.areas.map((e) => e.toJson()).toList(),
+        'areas': this.areas != null
+            ? this.areas.map((e) => e.toJson()).toList()
+            : null,
         'plans': this.plans,
       };
-}
-
-List<AreaData> areas = [
-  AreaData(
-    areaName: 'North',
-    totalAccounts: 2,
-    activeAccounts: 0,
-    inActiveAccounts: 2,
-  ),
-  AreaData(
-    areaName: 'East',
-    totalAccounts: 2,
-    activeAccounts: 2,
-    inActiveAccounts: 0,
-  ),
-  AreaData(
-    areaName: 'West',
-    totalAccounts: 2,
-    activeAccounts: 0,
-    inActiveAccounts: 2,
-  ),
-  AreaData(
-    areaName: 'South',
-    totalAccounts: 2,
-    activeAccounts: 2,
-    inActiveAccounts: 0,
-  ),
-];
-
-List<int> plans = [200, 250, 300, 350];
-
-Operator getOperatorDetails() {
-  return Operator(
-    id: '1',
-    email: 'ysr_yarlagadda@yahoo.com',
-    name: 'Srinivasa Rao Yarlagadda',
-    networkName: 'Sri Rama Cable Network',
-    phoneNumber: '+91 900092143',
-    startDate: DateTime.now().subtract(Duration(days: 730)),
-    areas: areas,
-    plans: plans,
-  );
 }

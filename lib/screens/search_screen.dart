@@ -1,8 +1,9 @@
 import 'dart:async';
 
-import 'package:cableTvBook/models/operator.dart';
-import 'package:cableTvBook/widgets/search_screen_widget.dart';
 import 'package:flutter/material.dart';
+
+import 'package:cableTvBook/global/variables.dart';
+import 'package:cableTvBook/widgets/search_screen_widget.dart';
 
 class SearchScreen extends StatefulWidget {
   static const routeName = '/searchScreen';
@@ -12,7 +13,7 @@ class SearchScreen extends StatefulWidget {
 
 class _SearchScreenState extends State<SearchScreen> {
   final searchController = TextEditingController();
-  int _initYear = getOperatorDetails().startDate.year;
+  int _initYear = operatorDetails.startDate.year;
   int _endYear = DateTime.now().year;
   int _selectedYear;
   bool _isLeftActive = true;
@@ -24,6 +25,7 @@ class _SearchScreenState extends State<SearchScreen> {
   void initState() {
     super.initState();
     _selectedYear = _endYear;
+    if (_selectedYear == _initYear) _isLeftActive = false;
   }
 
   void _leftArrowClickAction() {
@@ -131,7 +133,8 @@ class _SearchScreenState extends State<SearchScreen> {
                         disabledColor: Colors.black,
                         color: Theme.of(context).primaryColor,
                         icon: Icon(Icons.arrow_forward_ios),
-                        onPressed: _isRightActive ? _rightArrowClickAction : null,
+                        onPressed:
+                            _isRightActive ? _rightArrowClickAction : null,
                       ),
                     ],
                   ),

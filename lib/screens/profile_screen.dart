@@ -1,15 +1,16 @@
 import 'dart:io';
 import 'dart:ui';
 
-import 'package:cableTvBook/global/default_buttons.dart';
-import 'package:cableTvBook/global/validators.dart';
+import 'package:cableTvBook/services/databse_services.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_icons/flutter_icons.dart';
 import 'package:validators/validators.dart' as validator;
 
-import 'package:cableTvBook/models/operator.dart';
+import 'package:cableTvBook/global/variables.dart';
+import 'package:cableTvBook/global/validators.dart';
 import 'package:cableTvBook/helpers/image_getter.dart';
 import 'package:cableTvBook/global/box_decoration.dart';
+import 'package:cableTvBook/global/default_buttons.dart';
 
 class ProfileScreen extends StatefulWidget {
   static const routeName = '/profileScreen';
@@ -20,7 +21,6 @@ class ProfileScreen extends StatefulWidget {
 
 class _ProfileScreenState extends State<ProfileScreen> {
   File _selectedImageFile;
-  final Operator operatorDetails = getOperatorDetails();
 
   Widget getTitle(BuildContext context, String title) {
     return Column(
@@ -76,10 +76,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
+  final scaffolfKey = GlobalKey<ScaffoldState>();
+
   @override
   Widget build(BuildContext context) {
-    final size = MediaQuery.of(context).size;
     return Scaffold(
+      key: scaffolfKey,
       appBar: AppBar(
         title: Text(
           'Profile',
@@ -100,25 +102,30 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 children: <Widget>[
                   CircleAvatar(
                     radius: 60,
-                    backgroundImage: _selectedImageFile == null
-                        ? operatorDetails.profileImageLink == null
+                    backgroundImage: operatorDetails.profileImageLink == null
+                        ? _selectedImageFile == null
                             ? AssetImage('assets/images/profile_icon.png')
-                            : NetworkImage(operatorDetails.profileImageLink)
-                        : FileImage(_selectedImageFile),
+                            : FileImage(_selectedImageFile)
+                        : NetworkImage(operatorDetails.profileImageLink),
                   ),
                   Positioned(
                     bottom: 5,
                     left: 0,
-                    child: CircleAvatar(
-                      backgroundColor: Colors.green,
-                      child: IconButton(
-                        color: Colors.white,
-                        icon: Icon(FlutterIcons.ios_camera_ion),
-                        onPressed: () async {
-                          _selectedImageFile =
-                              await ImageGetter.getImageFromDevice(context);
-                          setState(() {});
-                        },
+                    child: Builder(
+                      builder: (context) => CircleAvatar(
+                        backgroundColor: Colors.green,
+                        child: IconButton(
+                          color: Colors.white,
+                          icon: Icon(FlutterIcons.ios_camera_ion),
+                          onPressed: () async {
+                            _selectedImageFile =
+                                await ImageGetter.getImageFromDevice(context);
+                            await DatabaseService.uploadProfilePicture(
+                                context, scaffolfKey,
+                                file: _selectedImageFile);
+                            setState(() {});
+                          },
+                        ),
                       ),
                     ),
                   ),
@@ -178,13 +185,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           child: Text('Cancel'),
                         ),
                         FlatButton(
-                          onPressed: () {
+                          onPressed: () async {
                             if (formKey.currentState.validate()) {
                               formKey.currentState.save();
-                              setState(() {
-                                operatorDetails.name = name;
-                              });
+                              await DatabaseService.updateData(
+                                  context, scaffolfKey,
+                                  data: {'name': name});
                               Navigator.of(context).pop();
+                              setState(() {});
                             }
                           },
                           child: Text('Save'),
@@ -240,13 +248,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           child: Text('Cancel'),
                         ),
                         FlatButton(
-                          onPressed: () {
+                          onPressed: () async {
                             if (formKey.currentState.validate()) {
                               formKey.currentState.save();
-                              setState(() {
-                                operatorDetails.networkName = networkName;
-                              });
+                              await DatabaseService.updateData(
+                                  context, scaffolfKey,
+                                  data: {'networkName': networkName});
                               Navigator.of(context).pop();
+                              setState(() {});
                             }
                           },
                           child: Text('Save'),
@@ -355,13 +364,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               textColor: Theme.of(context).errorColor,
                             ),
                             FlatButton(
-                              onPressed: () {
+                              onPressed: () async {
                                 if (_formKey.currentState.validate()) {
                                   _formKey.currentState.save();
-                                  setState(() {
-                                    operatorDetails.plans
-                                        .add(int.parse(_planController.text));
-                                  });
+                                  final list = operatorDetails.plans
+                                    ..add(double.parse(_planController.text));
+                                  await DatabaseService.updateData(
+                                      context, scaffolfKey,
+                                      data: {'plans': list});
+                                  Navigator.pop(context);
+                                  setState(() {});
                                 }
                               },
                               child: Text(

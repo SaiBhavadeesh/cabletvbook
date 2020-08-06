@@ -1,13 +1,15 @@
 import 'dart:io';
 
-import 'package:cableTvBook/helpers/image_getter.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_icons/flutter_icons.dart';
 
-import 'package:cableTvBook/screens/add_customer_screen.dart';
-import 'package:cableTvBook/screens/home_screen.dart';
-import 'package:cableTvBook/screens/search_screen.dart';
+import 'package:cableTvBook/global/variables.dart';
 import 'package:cableTvBook/widgets/home_drawer.dart';
+import 'package:cableTvBook/screens/home_screen.dart';
+import 'package:cableTvBook/helpers/image_getter.dart';
+import 'package:cableTvBook/screens/search_screen.dart';
+import 'package:cableTvBook/services/databse_services.dart';
+import 'package:cableTvBook/screens/add_customer_screen.dart';
 
 class BottomTabsScreen extends StatefulWidget {
   static const routeName = '/bottomTabsScreen';
@@ -28,9 +30,12 @@ class _BottomTabsScreenState extends State<BottomTabsScreen> {
     _currentIndex = widget.index;
   }
 
+  final scaffolfKey = GlobalKey<ScaffoldState>();
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      key: scaffolfKey,
       appBar: AppBar(
         title: Text('Cable Tv Book'),
         centerTitle: true,
@@ -40,12 +45,16 @@ class _BottomTabsScreenState extends State<BottomTabsScreen> {
             child: GestureDetector(
               child: CircleAvatar(
                 backgroundColor: Colors.white,
-                backgroundImage: _profilePic == null
-                    ? AssetImage('assets/images/drawer.jpg')
-                    : FileImage(_profilePic),
+                backgroundImage: operatorDetails.profileImageLink == null
+                    ? _profilePic == null
+                        ? AssetImage('assets/images/profile_icon.png')
+                        : FileImage(_profilePic)
+                    : NetworkImage(operatorDetails.profileImageLink),
               ),
               onTap: () async {
                 _profilePic = await ImageGetter.getImageFromDevice(context);
+                await DatabaseService.uploadProfilePicture(context, scaffolfKey,
+                    file: _profilePic);
                 setState(() {});
               },
             ),

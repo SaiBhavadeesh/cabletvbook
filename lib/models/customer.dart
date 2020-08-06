@@ -1,82 +1,34 @@
-import 'package:intl/intl.dart';
 import 'package:flutter/foundation.dart';
-
-import 'package:cableTvBook/models/operator.dart';
-
-List<List> plan = [
-  [
-    DateFormat('d/M').format(DateTime(2020, 1)),
-    getOperatorDetails().plans[0].toString(),
-    'Completed',
-  ],
-  [
-    DateFormat('d/M').format(DateTime(2020, 2)),
-    getOperatorDetails().plans[0].toString(),
-    'Completed',
-  ],
-  [
-    DateFormat('d/M').format(DateTime(2020, 3)),
-    getOperatorDetails().plans[0].toString(),
-    'Completed',
-  ],
-  [
-    DateFormat('d/M').format(DateTime(2020, 4)),
-    getOperatorDetails().plans[1].toString(),
-    'Completed',
-  ],
-  [
-    DateFormat('d/M').format(DateTime(2020, 5)),
-    getOperatorDetails().plans[1].toString(),
-    'Completed',
-  ],
-  [
-    DateFormat('d/M').format(DateTime(2020, 6)),
-    getOperatorDetails().plans[1].toString(),
-    'Active',
-  ],
-  [
-    '',
-    '',
-    'Inactive',
-  ],
-  [
-    '',
-    '',
-    '',
-  ],
-  [
-    '',
-    '',
-    '',
-  ],
-  [
-    '',
-    '',
-    '',
-  ],
-  [
-    '',
-    '',
-    '',
-  ],
-  [
-    '',
-    '',
-    '',
-  ],
-];
 
 class Plan {
   int monthCode;
-  String date;
+  DateTime date;
   String plan;
   String status;
+  String addInfo;
   Plan({
     this.monthCode,
     this.date,
     this.plan,
     this.status = '',
+    this.addInfo,
   });
+
+  Plan.fromMap(doc) {
+    this.monthCode = doc['monthCode'];
+    this.date = doc['date'].toDate();
+    this.plan = doc['plan'];
+    this.status = doc['status'];
+    this.addInfo = doc['addInfo'];
+  }
+
+  Map<String, dynamic> toJson() => {
+        'monthCode': this.monthCode,
+        'date': this.date,
+        'plan': this.plan,
+        'status': this.status,
+        'addInfo': this.addInfo,
+      };
 }
 
 class Customer {
@@ -86,27 +38,59 @@ class Customer {
   String address;
   String accountNumber;
   String macId;
-  String networkProviderName;
+  String networkProviderId;
   String area;
   DateTime startDate;
-  int currentPlan;
+  double currentPlan;
   String currentStatus;
   List<Plan> plans;
 
   Customer({
     @required this.id,
     @required this.name,
-    @required this.phoneNumber,
-    @required this.address,
-    @required this.accountNumber,
-    @required this.macId,
-    @required this.networkProviderName,
     @required this.area,
+    @required this.macId,
+    @required this.address,
     @required this.startDate,
     @required this.currentPlan,
-    this.currentStatus = 'Active',
+    @required this.phoneNumber,
+    @required this.accountNumber,
+    this.currentStatus = 'Inactive',
+    @required this.networkProviderId,
     this.plans,
   });
+
+  Customer.fromMap(documnet) {
+    this.id = documnet['id'];
+    this.name = documnet['name'];
+    this.area = documnet['area'];
+    this.macId = documnet['macId'];
+    this.address = documnet['address'];
+    this.startDate = documnet['startDate'].toDate();
+    this.currentPlan = documnet['currentPlan'];
+    this.phoneNumber = documnet['phoneNumber'];
+    this.accountNumber = documnet['accountNumber'];
+    this.currentStatus = documnet['currentStatus'];
+    this.networkProviderId = documnet['networkProviderId'];
+    this.plans = [...documnet['plans']].map((e) => Plan.fromMap(e)).toList();
+  }
+
+  Map<String, dynamic> toJson() => {
+        'id': this.id,
+        'name': this.name,
+        'area': this.area,
+        'macId': this.macId,
+        'address': this.address,
+        'startDate': this.startDate,
+        'currentPlan': this.currentPlan,
+        'phoneNumber': this.phoneNumber,
+        'accountNumber': this.accountNumber,
+        'currentStatus': this.currentStatus,
+        'networkProviderId': this.networkProviderId,
+        'plans': this.plans != null
+            ? this.plans.map((e) => e.toJson()).toList()
+            : null,
+      };
 }
 
 List<Customer> customers = [
@@ -117,7 +101,7 @@ List<Customer> customers = [
     address: 'address',
     accountNumber: '87654321',
     macId: '12DS345678',
-    networkProviderName: 'Sri Rama Cable Network',
+    networkProviderId: 'Sri Rama Cable Network',
     startDate: DateTime.now().subtract(Duration(days: 730)),
     area: 'North',
     currentPlan: 200,
@@ -130,7 +114,7 @@ List<Customer> customers = [
     address: 'address',
     accountNumber: '87654321',
     macId: '12DS345678',
-    networkProviderName: 'Sri Rama Cable Network',
+    networkProviderId: 'Sri Rama Cable Network',
     startDate: DateTime.now().subtract(Duration(days: 730)),
     area: 'East',
     currentPlan: 250,
@@ -143,7 +127,7 @@ List<Customer> customers = [
     address: 'address',
     accountNumber: '87654321',
     macId: '12DS345678',
-    networkProviderName: 'Sri Rama Cable Network',
+    networkProviderId: 'Sri Rama Cable Network',
     startDate: DateTime.now().subtract(Duration(days: 730)),
     area: 'West',
     currentPlan: 300,
@@ -156,7 +140,7 @@ List<Customer> customers = [
     address: 'address',
     accountNumber: '87654321',
     macId: '12DS345678',
-    networkProviderName: 'Sri Rama Cable Network',
+    networkProviderId: 'Sri Rama Cable Network',
     startDate: DateTime.now().subtract(Duration(days: 730)),
     area: 'South',
     currentPlan: 350,
@@ -169,7 +153,7 @@ List<Customer> customers = [
     address: 'address',
     accountNumber: '87654321',
     macId: '12DS345678',
-    networkProviderName: 'Sri Rama Cable Network',
+    networkProviderId: 'Sri Rama Cable Network',
     startDate: DateTime.now().subtract(Duration(days: 730)),
     area: 'North',
     currentPlan: 200,
@@ -182,7 +166,7 @@ List<Customer> customers = [
     address: 'address',
     accountNumber: '87654321',
     macId: '12DS345678',
-    networkProviderName: 'Sri Rama Cable Network',
+    networkProviderId: 'Sri Rama Cable Network',
     startDate: DateTime.now().subtract(Duration(days: 730)),
     area: 'East',
     currentPlan: 250,
@@ -195,7 +179,7 @@ List<Customer> customers = [
     address: 'address',
     accountNumber: '87654321',
     macId: '12DS345678',
-    networkProviderName: 'Sri Rama Cable Network',
+    networkProviderId: 'Sri Rama Cable Network',
     startDate: DateTime.now().subtract(Duration(days: 730)),
     area: 'West',
     currentPlan: 300,
@@ -208,7 +192,7 @@ List<Customer> customers = [
     address: 'address',
     accountNumber: '87654321',
     macId: '12DS345678',
-    networkProviderName: 'Sri Rama Cable Network',
+    networkProviderId: 'Sri Rama Cable Network',
     startDate: DateTime.now().subtract(Duration(days: 730)),
     area: 'South',
     currentPlan: 350,

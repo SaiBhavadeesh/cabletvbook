@@ -10,6 +10,9 @@ import 'package:cableTvBook/global/default_buttons.dart';
 import 'package:cableTvBook/services/authentication.dart';
 
 class VerifyPhonePopup extends StatelessWidget {
+  final bool isUpdate;
+  final String phoneNumber;
+  VerifyPhonePopup({this.isUpdate = false, this.phoneNumber});
   static String otp;
 
   @override
@@ -75,12 +78,14 @@ class VerifyPhonePopup extends StatelessWidget {
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: <Widget>[
-                        ResendTimerWidget(),
+                        ResendTimerWidget(isUpdate: isUpdate),
                         Expanded(
                           child: defaultbutton(
                               context: context,
-                              function: () =>
-                                  Authentication.verifyOTPAndRegister(
+                              function: () => isUpdate
+                                  ? Authentication.changeNumberWithOtp(context,
+                                      otp: otp)
+                                  : Authentication.verifyOTPAndRegister(
                                       context: context,
                                       otp: otp,
                                       email: operatorDetails.email,
@@ -101,6 +106,9 @@ class VerifyPhonePopup extends StatelessWidget {
 }
 
 class ResendTimerWidget extends StatefulWidget {
+  final bool isUpdate;
+  final String phoneNumber;
+  ResendTimerWidget({this.isUpdate = false, this.phoneNumber});
   @override
   _ResendTimerWidgetState createState() => _ResendTimerWidgetState();
 }
@@ -181,11 +189,14 @@ class _ResendTimerWidgetState extends State<ResendTimerWidget> {
                     fontWeight: FontWeight.w400),
               ),
               onPressed: () {
-                Authentication.verifyPhoneNumberAndRegister(
-                    context: context,
-                    phoneNnumber: operatorDetails.phoneNumber,
-                    email: operatorDetails.email,
-                    password: null);
+                widget.isUpdate
+                    ? Authentication.changePhoneNumber(context,
+                        phoneNumber: widget.phoneNumber)
+                    : Authentication.verifyPhoneNumberAndRegister(
+                        context: context,
+                        phoneNumber: operatorDetails.phoneNumber,
+                        email: operatorDetails.email,
+                        password: null);
                 alterButton();
               },
             ),

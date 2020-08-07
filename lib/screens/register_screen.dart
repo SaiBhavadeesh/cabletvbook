@@ -125,7 +125,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         startDate: null);
                     Authentication.verifyPhoneNumberAndRegister(
                         context: context,
-                        phoneNnumber: operatorDetails.phoneNumber,
+                        phoneNumber: operatorDetails.phoneNumber,
                         email: operatorDetails.email,
                         password: operatorDetails.password);
                     Navigator.of(context).push(PageRouteBuilder(

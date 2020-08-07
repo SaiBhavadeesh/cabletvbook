@@ -14,7 +14,8 @@ enum SelectLoader {
 class DefaultDialogBox {
   static Future<dynamic> errorDialog(BuildContext context,
       {String title = 'Failed !',
-      String content = 'Something went wrong !\nPlease try again.'}) {
+      String content = 'Something went wrong !\nPlease try again.',
+      Function function}) {
     return showDialog(
       context: context,
       builder: (ctx) => BackdropFilter(
@@ -25,7 +26,8 @@ class DefaultDialogBox {
           actions: <Widget>[
             IconButton(
               icon: Icon(FlutterIcons.check_circle_faw),
-              onPressed: () => Navigator.of(ctx).pop(),
+              onPressed:
+                  function != null ? function : () => Navigator.of(ctx).pop(),
             ),
           ],
         ),
@@ -39,8 +41,8 @@ class DefaultDialogBox {
       context: context,
       barrierDismissible: false,
       builder: (ctx) => BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 2,sigmaY: 2),
-              child: WillPopScope(
+        filter: ImageFilter.blur(sigmaX: 2, sigmaY: 2),
+        child: WillPopScope(
           onWillPop: () async => Future.value(false),
           child: AlertDialog(
             elevation: 0,

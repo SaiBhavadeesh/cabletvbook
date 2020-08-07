@@ -1,13 +1,13 @@
-import 'package:cableTvBook/screens/signin_screen.dart';
-import 'package:cableTvBook/services/databse_services.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 import 'package:cableTvBook/global/variables.dart';
+import 'package:cableTvBook/screens/signin_screen.dart';
 import 'package:cableTvBook/screens/register_screen.dart';
+import 'package:cableTvBook/services/databse_services.dart';
 import 'package:cableTvBook/screens/bottom_tabs_screen.dart';
 import 'package:cableTvBook/widgets/default_dialog_box.dart';
 
@@ -69,12 +69,12 @@ class Authentication {
 
   static void verifyPhoneNumberAndRegister(
       {@required BuildContext context,
-      @required String phoneNnumber,
+      @required String phoneNumber,
       @required String email,
       @required String password}) async {
     try {
       await FirebaseAuth.instance.verifyPhoneNumber(
-        phoneNumber: phoneNnumber,
+        phoneNumber: phoneNumber,
         timeout: Duration(seconds: 49),
         verificationCompleted: (phoneAuthCredential) async {
           try {
@@ -205,10 +205,156 @@ class Authentication {
       DefaultDialogBox.loadingDialog(context);
       await FirebaseAuth.instance.signOut();
       firebaseUser = null;
-      isGoogleUser = false;
       operatorDetails = null;
       Navigator.of(context)
           .pushNamedAndRemoveUntil(SigninScreen.routeName, (route) => false);
+    } on PlatformException catch (error) {
+      Navigator.pop(context);
+      DefaultDialogBox.errorDialog(context, content: error.message);
+    } catch (_) {
+      Navigator.pop(context);
+      DefaultDialogBox.errorDialog(context);
+    }
+  }
+
+  static void changePassword(BuildContext context,
+      {@required String password}) async {
+    Navigator.pop(context);
+    DefaultDialogBox.loadingDialog(context);
+    try {
+      firebaseUser = await FirebaseAuth.instance.currentUser();
+      await firebaseUser.updatePassword(password);
+      await Firestore.instance
+          .collection('users')
+          .document(firebaseUser.uid)
+          .updateData({'password': password});
+      Navigator.pop(context);
+    } on PlatformException catch (error) {
+      Navigator.pop(context);
+      if (error.code == 'ERROR_REQUIRES_RECENT_LOGIN')
+        await DefaultDialogBox.errorDialog(context,
+            title: error.message,
+            content: 'Do you want to proceed wih this action?',
+            function: () => Navigator.of(context).pushNamedAndRemoveUntil(
+                SigninScreen.routeName, (route) => false));
+      DefaultDialogBox.errorDialog(context, content: error.message);
+    } catch (_) {
+      Navigator.pop(context);
+      DefaultDialogBox.errorDialog(context);
+    }
+  }
+
+  static void changeEmailAddress(BuildContext context,
+      {@required String email}) async {
+    Navigator.pop(context);
+    DefaultDialogBox.loadingDialog(context);
+    try {
+      firebaseUser = await FirebaseAuth.instance.currentUser();
+      await firebaseUser.updateEmail(email);
+      firebaseUser = await FirebaseAuth.instance.currentUser();
+      await Firestore.instance
+          .collection('users')
+          .document(firebaseUser.uid)
+          .updateData({'email': firebaseUser.email});
+      Navigator.pop(context);
+    } on PlatformException catch (error) {
+      Navigator.pop(context);
+      if (error.code == 'ERROR_REQUIRES_RECENT_LOGIN')
+        await DefaultDialogBox.errorDialog(context,
+            title: error.message,
+            content: 'Do you want to proceed wih this action?',
+            function: () => Navigator.of(context).pushNamedAndRemoveUntil(
+                SigninScreen.routeName, (route) => false));
+      DefaultDialogBox.errorDialog(context, content: error.message);
+    } catch (_) {
+      Navigator.pop(context);
+      DefaultDialogBox.errorDialog(context);
+    }
+  }
+
+  static void changePhoneNumber(BuildContext context,
+      {@required String phoneNumber}) async {
+    try {
+      firebaseUser = await FirebaseAuth.instance.currentUser();
+      await FirebaseAuth.instance.verifyPhoneNumber(
+        phoneNumber: phoneNumber,
+        timeout: Duration(seconds: 60),
+        verificationCompleted: (phoneAuthCredential) async {
+          DefaultDialogBox.loadingDialog(context);
+          await firebaseUser.updatePhoneNumberCredential(phoneAuthCredential);
+          firebaseUser = await FirebaseAuth.instance.currentUser();
+          await Firestore.instance
+              .collection('users')
+              .document(firebaseUser.uid)
+              .updateData({'phoneNumber': firebaseUser.phoneNumber});
+          Navigator.pop(context);
+          Navigator.pop(context);
+        },
+        verificationFailed: (error) {
+          Navigator.pop(context);
+          DefaultDialogBox.errorDialog(context, content: error.message);
+        },
+        codeSent: (verificationId, [forceResendingToken]) {
+          _phoneVerificationId = verificationId;
+          // _phoneForceResendingToken = forceResendingToken;
+        },
+        codeAutoRetrievalTimeout: (verificationId) {},
+      );
+    } on PlatformException catch (error) {
+      Navigator.pop(context);
+      if (error.code == 'ERROR_REQUIRES_RECENT_LOGIN')
+        await DefaultDialogBox.errorDialog(context,
+            title: error.message,
+            content: 'Do you want to proceed wih this action?',
+            function: () => Navigator.of(context).pushNamedAndRemoveUntil(
+                SigninScreen.routeName, (route) => false));
+      DefaultDialogBox.errorDialog(context, content: error.message);
+    } catch (_) {
+      Navigator.pop(context);
+      DefaultDialogBox.errorDialog(context);
+    }
+  }
+
+  static void changeNumberWithOtp(BuildContext context,
+      {@required String otp}) async {
+    DefaultDialogBox.loadingDialog(context);
+    try {
+      firebaseUser = await FirebaseAuth.instance.currentUser();
+      _phoneCredential = PhoneAuthProvider.getCredential(
+          verificationId: _phoneVerificationId, smsCode: otp);
+      await firebaseUser.updatePhoneNumberCredential(_phoneCredential);
+      firebaseUser = await FirebaseAuth.instance.currentUser();
+      await Firestore.instance
+          .collection('users')
+          .document(firebaseUser.uid)
+          .updateData({'phoneNumber': firebaseUser.phoneNumber});
+      Navigator.pop(context);
+      Navigator.pop(context);
+    } on PlatformException catch (error) {
+      Navigator.pop(context);
+      if (error.code == 'ERROR_REQUIRES_RECENT_LOGIN')
+        await DefaultDialogBox.errorDialog(context,
+            title: error.message,
+            content: 'Do you want to proceed wih this action?',
+            function: () => Navigator.of(context).pushNamedAndRemoveUntil(
+                SigninScreen.routeName, (route) => false));
+      DefaultDialogBox.errorDialog(context, content: error.message);
+    } catch (_) {
+      Navigator.pop(context);
+      DefaultDialogBox.errorDialog(context);
+    }
+  }
+
+  static void sendEmailVerificationMail(BuildContext context) async {
+    DefaultDialogBox.loadingDialog(context);
+    try {
+      firebaseUser = await FirebaseAuth.instance.currentUser();
+      await firebaseUser.sendEmailVerification();
+      Navigator.pop(context);
+      await DefaultDialogBox.errorDialog(context,
+          title: 'Email successfully sent !',
+          content:
+              'Please check your mail, and click on the link provided to verify!');
     } on PlatformException catch (error) {
       Navigator.pop(context);
       DefaultDialogBox.errorDialog(context, content: error.message);

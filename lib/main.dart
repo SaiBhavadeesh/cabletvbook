@@ -1,15 +1,15 @@
 import 'dart:ui';
 
-import 'package:cableTvBook/screens/signup_screen.dart';
-import 'package:cableTvBook/services/initial_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import 'package:cableTvBook/screens/home_screen.dart';
 import 'package:cableTvBook/screens/signin_screen.dart';
 import 'package:cableTvBook/screens/search_screen.dart';
+import 'package:cableTvBook/screens/signup_screen.dart';
 import 'package:cableTvBook/screens/profile_screen.dart';
 import 'package:cableTvBook/screens/register_screen.dart';
+import 'package:cableTvBook/services/initial_screen.dart';
 import 'package:cableTvBook/screens/settings_screen.dart';
 import 'package:cableTvBook/screens/crop_image_screen.dart';
 import 'package:cableTvBook/screens/collection_screen.dart';

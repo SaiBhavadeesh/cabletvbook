@@ -1,7 +1,58 @@
+import 'package:cableTvBook/widgets/verify_phone_popup.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_icons/flutter_icons.dart';
+
+import 'package:cableTvBook/global/variables.dart';
+import 'package:cableTvBook/global/validators.dart';
+import 'package:cableTvBook/global/box_decoration.dart';
+import 'package:cableTvBook/services/authentication.dart';
 
 class SettingsScreen extends StatelessWidget {
   static const routeName = '/settingsScreen';
+
+  final _textController = TextEditingController();
+  final _formKey = GlobalKey<FormState>();
+  static Size size;
+
+  Future<dynamic> getChangeDialog(BuildContext context,
+      {@required String title,
+      @required Function validator,
+      @required IconData icon,
+      TextInputType textInputType,
+      @required Function onSaved}) {
+    return showDialog(
+      context: context,
+      builder: (context) => Form(
+        key: _formKey,
+        child: AlertDialog(
+          title: Text(title),
+          content: TextFormField(
+            controller: _textController,
+            validator: validator,
+            keyboardType: textInputType,
+            decoration: inputDecoration(icon: icon),
+          ),
+          actions: [
+            FlatButton(
+              onPressed: () => Navigator.pop(context),
+              child: Text(
+                'cancel',
+                style: TextStyle(color: Theme.of(context).errorColor),
+              ),
+            ),
+            FlatButton(
+              color: Theme.of(context).primaryColor,
+              onPressed: onSaved,
+              child: Text(
+                'save',
+                style: TextStyle(color: Colors.white, fontSize: 18),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 
   Widget getTitle(BuildContext context, String title) {
     return Column(
@@ -26,25 +77,23 @@ class SettingsScreen extends StatelessWidget {
     );
   }
 
-  Widget getdetailText(BuildContext context, String text, Size size) {
+  Widget getdetailText(BuildContext context, String text, {Function function}) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 24,vertical: 4),
+      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 4),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
-          Text(
-            text,
-            style: TextStyle(
-              fontWeight: FontWeight.bold,
-              fontSize: 16,
+          GestureDetector(
+            onTap: function,
+            child: Text(
+              text,
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 16,
+              ),
             ),
           ),
-          Divider(
-            indent: 0,
-            endIndent: size.width * 0.9,
-            thickness: 2,
-            color: Theme.of(context).primaryColor,
-          ),
+          Divider(color: Colors.transparent),
         ],
       ),
     );
@@ -52,7 +101,7 @@ class SettingsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final size = MediaQuery.of(context).size;
+    size = MediaQuery.of(context).size;
     return Scaffold(
       appBar: AppBar(
         title: Text('General Settings'),
@@ -60,85 +109,84 @@ class SettingsScreen extends StatelessWidget {
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
-          getTitle(
-            context,
-            'Account Settings',
-          ),
-          getdetailText(
-            context,
-            'Change Email',
-            size,
-          ),
+          getTitle(context, 'Account Settings'),
+          if (!firebaseUser.isEmailVerified)
+            getdetailText(context, 'Verify your email',
+                function: () =>
+                    Authentication.sendEmailVerificationMail(context)),
+          if (operatorDetails.password != null)
+            getdetailText(
+              context,
+              'Change Email',
+              function: () => getChangeDialog(
+                context,
+                title: 'Change Email !',
+                validator: emailValidator,
+                icon: Icons.email,
+                textInputType: TextInputType.emailAddress,
+                onSaved: () {
+                  if (_formKey.currentState.validate()) {
+                    _formKey.currentState.save();
+                    Authentication.changeEmailAddress(context,
+                        email: _textController.text);
+                  }
+                },
+              ),
+            ),
           getdetailText(
             context,
             'Change Phone number',
-            size,
+            function: () => getChangeDialog(
+              context,
+              title: 'Change Phone number !',
+              validator: phoneValidator,
+              icon: Icons.phone,
+              textInputType: TextInputType.phone,
+              onSaved: () {
+                if (_formKey.currentState.validate()) {
+                  _formKey.currentState.save();
+                  Authentication.changePhoneNumber(context,
+                      phoneNumber: '+ 91 ' + _textController.text);
+                  Navigator.of(context).pushReplacement(
+                    PageRouteBuilder(
+                      pageBuilder: (context, _, __) => VerifyPhonePopup(
+                        isUpdate: true,
+                        phoneNumber: '+ 91 ' + _textController.text,
+                      ),
+                      opaque: false,
+                    ),
+                  );
+                }
+              },
+            ),
           ),
-          getTitle(
-            context,
-            'Privacy Settings',
-          ),
-          getdetailText(
-            context,
-            'Change Security pin',
-            size,
-          ),
-          getdetailText(
-            context,
-            'Change Password',
-            size,
-          ),
+          getTitle(context, 'Privacy Settings'),
+          getdetailText(context, 'Change Security pin',
+              function: () => getChangeDialog(context,
+                  title: 'Currently unavailable',
+                  validator: null,
+                  icon: null,
+                  onSaved: null)),
+          if (operatorDetails.password != null)
+            getdetailText(
+              context,
+              'Change Password',
+              function: () => getChangeDialog(
+                context,
+                title: 'Change password !',
+                validator: (value) => passwordValidator(value, false),
+                icon: FlutterIcons.vpn_key_mdi,
+                onSaved: () {
+                  if (_formKey.currentState.validate()) {
+                    _formKey.currentState.save();
+                    Authentication.changePassword(context,
+                        password: _textController.text);
+                  }
+                },
+              ),
+            ),
         ],
       ),
     );
   }
 }
-
-
-                // () => showDialog(
-                //   context: context,
-                //   builder: (ctx) {
-                //     final formKey = GlobalKey<FormState>();
-                //     String phoneNumber;
-                //     return AlertDialog(
-                //       content: Form(
-                //         key: formKey,
-                //         child: TextFormField(
-                //           initialValue: operatorDetails.phoneNumber.substring(4),
-                //           keyboardType: TextInputType.phone,
-                //           validator: (value) {
-                //             if (!validator.isNumeric(value)) {
-                //               return 'Phone number is Invalid!';
-                //             }
-                //             return null;
-                //           },
-                //           decoration: InputDecoration(
-                //             labelText: 'Edit Phone number',
-                //             prefixText: '+ 91 ',
-                //           ),
-                //           onSaved: (value) {
-                //             phoneNumber = '+ 91 ' + value;
-                //           },
-                //         ),
-                //       ),
-                //       actions: <Widget>[
-                //         FlatButton(
-                //           onPressed: () => Navigator.of(ctx).pop(),
-                //           child: Text('Cancel'),
-                //         ),
-                //         FlatButton(
-                //           onPressed: () {
-                //             if (formKey.currentState.validate()) {
-                //               formKey.currentState.save();
-                //               setState(() {
-                //                 operatorDetails.phoneNumber = phoneNumber;
-                //               });
-                //               Navigator.of(context).pop();
-                //             }
-                //           },
-                //           child: Text('Save'),
-                //         ),
-                //       ],
-                //     );
-                //   },
-                // ),

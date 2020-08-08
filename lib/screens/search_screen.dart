@@ -1,9 +1,11 @@
 import 'dart:async';
 
+import 'package:cableTvBook/models/customer.dart';
 import 'package:flutter/material.dart';
 
 import 'package:cableTvBook/global/variables.dart';
 import 'package:cableTvBook/widgets/search_screen_widget.dart';
+import 'package:loading_indicator/loading_indicator.dart';
 
 class SearchScreen extends StatefulWidget {
   static const routeName = '/searchScreen';
@@ -164,12 +166,28 @@ class _SearchScreenState extends State<SearchScreen> {
             ),
           ),
         ),
-        body: TabBarView(
-          children: <Widget>[
-            SearchScreenWidget(active: true),
-            SearchScreenWidget(all: true),
-            SearchScreenWidget(inactive: true),
-          ],
+        body: FutureBuilder(
+          future: getAllCustomers(),
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting)
+              return Container(
+                padding: EdgeInsets.symmetric(
+                    horizontal: MediaQuery.of(context).size.width * 0.3),
+                child: Center(
+                  child: LoadingIndicator(
+                      indicatorType: Indicator.ballClipRotateMultiple),
+                ),
+              );
+            return TabBarView(
+              children: <Widget>[
+                SearchScreenWidget(
+                    active: true, providedCustomers: snapshot.data),
+                SearchScreenWidget(all: true, providedCustomers: snapshot.data),
+                SearchScreenWidget(
+                    inactive: true, providedCustomers: snapshot.data),
+              ],
+            );
+          },
         ),
       ),
     );

@@ -3,6 +3,7 @@ import 'dart:async';
 
 import 'package:cableTvBook/global/variables.dart';
 import 'package:cableTvBook/services/databse_services.dart';
+import 'package:cableTvBook/widgets/default_dialog_box.dart';
 import 'package:flutter/material.dart';
 
 import 'package:cableTvBook/models/operator.dart';
@@ -103,14 +104,12 @@ class _HomeScreenState extends State<HomeScreen> {
     } catch (error) {}
   }
 
-  Future<dynamic> showEditOrAddDialog(
-      {Operator operatorDetails, int index = -1}) {
+  Future<dynamic> showEditOrAddDialog({int index = -1}) {
     return showDialog(
       context: context,
       builder: (ctx) {
         final textController = TextEditingController();
-        if (index >= 0)
-          textController.text = operatorDetails.areas[index].areaName;
+        if (index >= 0) textController.text = areas[index].areaName;
         return Form(
           key: _formKey,
           child: BackdropFilter(
@@ -154,20 +153,23 @@ class _HomeScreenState extends State<HomeScreen> {
                     if (_formKey.currentState.validate()) {
                       _formKey.currentState.save();
                       if (index < 0) {
-                        final tempList = operatorDetails.areas
-                          ..add(AreaData(areaName: textController.text));
-                        final list = tempList.map((e) => e.toJson()).toList();
-                        await DatabaseService.updateData(context, scaffoldKey,
-                            data: {'areas': list});
-                      } else {
-                        operatorDetails.areas[index].areaName =
-                            textController.text;
-                        final list = operatorDetails.areas
-                            .map((e) => e.toJson())
-                            .toList();
-                        await DatabaseService.updateData(context, scaffoldKey,
-                            data: {'areas': list});
-                      }
+                        bool isExist = false;
+                        areas.forEach((element) {
+                          if (element.areaName == textController.text.trim())
+                            isExist = true;
+                        });
+                        if (isExist) {
+                          await DefaultDialogBox.errorDialog(ctx,
+                              title: 'Alert !',
+                              content: 'Area already exists !');
+                        } else
+                          await DatabaseService.addArea(context, scaffoldKey,
+                              data: AreaData(areaName: textController.text)
+                                  .toJson());
+                      } else
+                        await DatabaseService.updateArea(context, scaffoldKey,
+                            data: areas[index].toJson()
+                              ..['areaName'] = textController.text);
                       Navigator.of(ctx).pop();
                       setState(() {});
                     }
@@ -281,7 +283,7 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
       body: GridView.builder(
         physics: BouncingScrollPhysics(),
-        itemCount: operatorDetails.areas.length,
+        itemCount: areas.length,
         itemBuilder: (context, index) => GestureDetector(
           child: Container(
             margin: EdgeInsets.all(size.width * 0.025),
@@ -313,7 +315,7 @@ class _HomeScreenState extends State<HomeScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
                 Text(
-                  operatorDetails.areas[index].areaName,
+                  areas[index].areaName,
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: size.width * 0.06,
@@ -324,7 +326,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 Flexible(
                   fit: FlexFit.loose,
                   child: Text(
-                    'Total customers : ${operatorDetails.areas[index].totalAccounts}',
+                    'Total customers : ${areas[index].totalAccounts}',
                     style: TextStyle(
                       fontSize: size.width * 0.045,
                       color: Colors.white,
@@ -335,7 +337,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 Flexible(
                   fit: FlexFit.loose,
                   child: Text(
-                    'Active : ${operatorDetails.areas[index].activeAccounts}',
+                    'Active : ${0}',
                     style: TextStyle(
                       fontSize: size.width * 0.045,
                       color: Colors.white,
@@ -346,7 +348,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 Flexible(
                   fit: FlexFit.loose,
                   child: Text(
-                    'In-Active : ${operatorDetails.areas[index].inActiveAccounts}',
+                    'In-Active : ${0}',
                     style: TextStyle(
                       fontSize: size.width * 0.045,
                       color: Colors.white,
@@ -358,21 +360,19 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
           onTap: () => Navigator.of(context).pushNamed(
             AreaCustomersScreen.routeName,
-            arguments: operatorDetails.areas[index],
+            arguments: areas[index],
           ),
-          onLongPress: () => showEditOrAddDialog(
-              index: index, operatorDetails: operatorDetails),
+          onLongPress: () => showEditOrAddDialog(index: index),
         ),
         padding: EdgeInsets.symmetric(horizontal: size.width * 0.025),
         gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
           crossAxisCount: 2,
         ),
       ),
-      floatingActionButton: operatorDetails.areas.length < 16
+      floatingActionButton: areas.length < 16
           ? defaultbutton(
               context: context,
-              function: () =>
-                  showEditOrAddDialog(operatorDetails: operatorDetails),
+              function: () => showEditOrAddDialog(),
               title: 'Add Area',
               height: 12,
               width: 18,

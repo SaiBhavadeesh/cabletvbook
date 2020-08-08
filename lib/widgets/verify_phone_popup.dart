@@ -89,7 +89,7 @@ class VerifyPhonePopup extends StatelessWidget {
                                       context: context,
                                       otp: otp,
                                       email: operatorDetails.email,
-                                      password: null),
+                                      password: operatorDetails.password),
                               title: 'Done'),
                         ),
                       ],

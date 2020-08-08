@@ -292,12 +292,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   alignment: Alignment.center,
                   decoration: sweepGradientDecoration(context),
                   child: Text(
-                    operatorDetails.areas[index].areaName,
+                    areas[index].areaName,
                     style: TextStyle(color: Colors.white),
                   ),
                 );
               },
-              itemCount: operatorDetails.areas.length,
+              itemCount: areas.length,
             ),
             SizedBox(height: 10),
             Padding(

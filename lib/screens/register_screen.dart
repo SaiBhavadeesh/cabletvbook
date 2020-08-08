@@ -115,14 +115,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     _formKey.currentState.save();
                     operatorDetails = Operator(
                         id: null,
-                        name: _nameController.text,
+                        name: _nameController.text.trim(),
                         email: routeArguments['email'],
                         password: routeArguments['password'],
-                        networkName: _networkController.text,
-                        phoneNumber: '+ 91 ' + _phoneController.text,
-                        areas: [AreaData(areaName: _areaController.text)],
-                        plans: [double.parse(_planController.text)],
-                        startDate: null);
+                        networkName: _networkController.text.trim(),
+                        phoneNumber: '+ 91 ' + _phoneController.text.trim(),
+                        plans: [double.parse(_planController.text.trim())]);
+                    areas = [AreaData(areaName: _areaController.text.trim())];
                     Authentication.verifyPhoneNumberAndRegister(
                         context: context,
                         phoneNumber: operatorDetails.phoneNumber,

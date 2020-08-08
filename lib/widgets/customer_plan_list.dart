@@ -44,7 +44,7 @@ class _CustomerPlanListState extends State<CustomerPlanList> {
             ),
             Container(
               alignment: Alignment.center,
-              width: width * 0.18,
+              width: width * 0.23,
               child: Text(
                 widget.billDate,
                 textAlign: TextAlign.center,
@@ -61,11 +61,13 @@ class _CustomerPlanListState extends State<CustomerPlanList> {
             Container(
               alignment: Alignment.center,
               width: width * 0.18,
-              child: Text(
-                widget.billAmount,
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: width * 0.045,
+              child: FittedBox(
+                child: Text(
+                  widget.billAmount,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: width * 0.045,
+                  ),
                 ),
               ),
             ),
@@ -76,7 +78,7 @@ class _CustomerPlanListState extends State<CustomerPlanList> {
             ),
             Container(
               alignment: Alignment.center,
-              width: width * 0.35,
+              width: width * 0.3,
               height: width * 0.05,
               child: widget.status == 'Completed'
                   ? Icon(

@@ -1,29 +1,25 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 
 class AreaData {
+  String id;
   String areaName;
   int totalAccounts;
-  int activeAccounts;
-  int inActiveAccounts;
   AreaData({
     @required this.areaName,
     this.totalAccounts = 0,
-    this.activeAccounts = 0,
-    this.inActiveAccounts = 0,
   });
 
   AreaData.fromMap(Map<String, dynamic> doc) {
+    this.id = doc['id'];
     this.areaName = doc['areaName'];
     this.totalAccounts = doc['totalAccounts'];
-    this.activeAccounts = doc['activeAccounts'];
-    this.inActiveAccounts = doc['inActiveAccounts'];
   }
 
   Map<String, dynamic> toJson() => {
+        'id': this.id,
         'areaName': this.areaName,
         'totalAccounts': this.totalAccounts,
-        'activeAccounts': this.activeAccounts,
-        'inActiveAccounts': this.inActiveAccounts,
       };
 }
 
@@ -36,7 +32,6 @@ class Operator {
   String phoneNumber;
   DateTime startDate;
   List<double> plans;
-  List<AreaData> areas;
   String profileImageLink;
   Operator({
     @required this.id,
@@ -45,9 +40,8 @@ class Operator {
     @required this.password,
     @required this.networkName,
     @required this.phoneNumber,
-    @required this.startDate,
+    this.startDate,
     this.profileImageLink,
-    @required this.areas,
     @required this.plans,
   });
 
@@ -60,7 +54,6 @@ class Operator {
     this.phoneNumber = document['phoneNumber'];
     this.profileImageLink = document['profileImageLink'];
     this.startDate = document['startDate'].toDate();
-    this.areas = [...document['areas']].map((e) => AreaData.fromMap(e)).toList();
     this.plans = [...document['plans']];
   }
 
@@ -72,10 +65,7 @@ class Operator {
         'networkName': this.networkName,
         'profileImageLink': this.profileImageLink,
         'phoneNumber': this.phoneNumber,
-        'startDate': this.startDate,
-        'areas': this.areas != null
-            ? this.areas.map((e) => e.toJson()).toList()
-            : null,
+        'startDate': FieldValue.serverTimestamp(),
         'plans': this.plans,
       };
 }

@@ -46,10 +46,10 @@ class _CustomerTileState extends State<CustomerTile> {
     if (_timer != null) _timer.cancel();
   }
 
-  void gestureNavigator(BuildContext ctx) {
+  void gestureNavigator(BuildContext ctx, Customer customer) {
     Navigator.of(ctx).pushNamed(
       CustomerDetailScreen.routeName,
-      arguments: widget.customer,
+      arguments: customer,
     );
   }
 
@@ -84,14 +84,14 @@ class _CustomerTileState extends State<CustomerTile> {
         child: ListTile(
           contentPadding: EdgeInsets.symmetric(horizontal: 5),
           leading: GestureDetector(
-            onTap: () => gestureNavigator(context),
+            onTap: () => gestureNavigator(context, widget.customer),
             child: CircleAvatar(
               radius: 30,
               backgroundImage: AssetImage('assets/images/default_profile.jpg'),
             ),
           ),
           title: GestureDetector(
-            onTap: () => gestureNavigator(context),
+            onTap: () => gestureNavigator(context, widget.customer),
             child: Padding(
               padding: const EdgeInsets.all(8.0),
               child: Text(
@@ -122,7 +122,7 @@ class _CustomerTileState extends State<CustomerTile> {
                     ),
                   ),
                 ),
-                onTap: () => gestureNavigator(context),
+                onTap: () => gestureNavigator(context, widget.customer),
                 onLongPress: () => copyAndShowSnackBar(
                     context, widget.customer.accountNumber, 'Account number'),
               ),
@@ -140,14 +140,14 @@ class _CustomerTileState extends State<CustomerTile> {
                     ),
                   ),
                 ),
-                onTap: () => gestureNavigator(context),
+                onTap: () => gestureNavigator(context, widget.customer),
                 onLongPress: () => copyAndShowSnackBar(
                     context, widget.customer.macId, 'MAC-Id'),
               ),
             ],
           ),
           trailing: GestureDetector(
-            onTap: () => gestureNavigator(context),
+            onTap: () => gestureNavigator(context, widget.customer),
             child: Text(
               widget.customer.currentStatus,
               softWrap: true,

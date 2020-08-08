@@ -1,20 +1,18 @@
 import 'dart:io';
 import 'dart:ui';
 
-import 'package:cableTvBook/global/default_buttons.dart';
-import 'package:cableTvBook/global/variables.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:cableTvBook/services/databse_services.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_icons/flutter_icons.dart';
 
 import 'package:cableTvBook/models/customer.dart';
-import 'package:cableTvBook/models/operator.dart';
+import 'package:cableTvBook/global/variables.dart';
 import 'package:cableTvBook/global/validators.dart';
 import 'package:cableTvBook/helpers/image_getter.dart';
 import 'package:cableTvBook/global/box_decoration.dart';
-import 'package:cableTvBook/screens/bottom_tabs_screen.dart';
+import 'package:cableTvBook/global/default_buttons.dart';
 import 'package:cableTvBook/widgets/default_dialog_box.dart';
 
 class AddCustomerScreen extends StatefulWidget {
@@ -31,14 +29,14 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
   final _phoneController = TextEditingController();
   final _accountController = TextEditingController();
   final _macController = TextEditingController();
-  String _selectedArea;
+  String _selectedAreaId;
   double _selectedPlan;
   File _selectedImageFile;
   bool _checked = false;
 
   void _selectAreaField(String value) {
     setState(() {
-      _selectedArea = value;
+      _selectedAreaId = value;
     });
   }
 
@@ -52,7 +50,7 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
 
   void saveDetails() async {
     if (_formKey.currentState.validate() &&
-        _selectedArea != null &&
+        _selectedAreaId != null &&
         _selectedPlan != null) {
       _formKey.currentState.save();
       final newCustomer = Customer(
@@ -63,27 +61,24 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
         accountNumber: _accountController.text.trim(),
         macId: _macController.text.trim(),
         networkProviderId: operatorDetails.id,
-        startDate: null,
-        area: _selectedArea,
+        areaId: _selectedAreaId,
         currentPlan: _selectedPlan,
         currentStatus: _checked ? 'Active' : 'Inactive',
       );
-      print(newCustomer.toJson());
-      try {} catch (_) {}
-      // operatorDetails.areas.forEach((element) {
-      //   if (element.areaName == _selectedArea) {
-      //     element.totalAccounts++;
-      //     element.inActiveAccounts++;
-      //   }
-      // });
-      // Navigator.of(context).pushNamedAndRemoveUntil(
-      //     BottomTabsScreen.routeName, (route) => false);
-    } else if (_selectedArea == null || _selectedPlan == null) {
+      final rechargeData = Recharge(
+        status: _checked ? 'Active' : 'Inactive',
+        plan: _selectedPlan.toString(),
+      );
+      await DatabaseService.addNewCustomer(context,
+          customer: newCustomer,
+          recharge: rechargeData,
+          file: _selectedImageFile);
+    } else if (_selectedAreaId == null || _selectedPlan == null) {
       String msg;
-      if (_selectedArea == null && _selectedPlan == null)
+      if (_selectedAreaId == null && _selectedPlan == null)
         msg = 'area and plan';
       else
-        msg = _selectedArea == null ? 'area' : 'plan';
+        msg = _selectedAreaId == null ? 'area' : 'plan';
       DefaultDialogBox.errorDialog(context,
           title: 'Alert', content: 'Please select $msg');
     }
@@ -189,7 +184,7 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
                           letterSpacing: 1,
                         ),
                       ),
-                      ...operatorDetails.areas.map(
+                      ...areas.map(
                         (area) {
                           return Row(
                             children: <Widget>[
@@ -197,8 +192,8 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
                                 materialTapTargetSize:
                                     MaterialTapTargetSize.shrinkWrap,
                                 activeColor: Theme.of(context).primaryColor,
-                                value: area.areaName,
-                                groupValue: _selectedArea,
+                                value: area.id,
+                                groupValue: _selectedAreaId,
                                 onChanged: _selectAreaField,
                               ),
                               Text(area.areaName),

@@ -101,11 +101,14 @@ class Authentication {
             }
             firebaseUser = _authResult.user;
             operatorDetails.id = firebaseUser.uid;
-            await Firestore.instance
+            final _firestoreInstance = Firestore.instance
                 .collection('users')
-                .document(firebaseUser.uid)
-                .setData(operatorDetails.toJson()
-                  ..['startDate'] = FieldValue.serverTimestamp());
+                .document(firebaseUser.uid);
+            await _firestoreInstance.setData(operatorDetails.toJson());
+            final _areaInstance =
+                _firestoreInstance.collection('areas').document();
+            await _areaInstance.setData(
+                areas.first.toJson()..['id'] = _areaInstance.documentID);
             await DatabaseService.getuserData();
             Navigator.of(context).pushNamedAndRemoveUntil(
                 BottomTabsScreen.routeName, (route) => false);
@@ -177,11 +180,12 @@ class Authentication {
       }
       firebaseUser = _authResult.user;
       operatorDetails.id = firebaseUser.uid;
-      await Firestore.instance
-          .collection('users')
-          .document(firebaseUser.uid)
-          .setData(operatorDetails.toJson()
-            ..['startDate'] = FieldValue.serverTimestamp());
+      final _firestoreInstance =
+          Firestore.instance.collection('users').document(firebaseUser.uid);
+      await _firestoreInstance.setData(operatorDetails.toJson());
+      final _areaInstance = _firestoreInstance.collection('areas').document();
+      await _areaInstance
+          .setData(areas.first.toJson()..['id'] = _areaInstance.documentID);
       await DatabaseService.getuserData();
       Navigator.of(context).pushNamedAndRemoveUntil(
           BottomTabsScreen.routeName, (route) => false);
@@ -192,6 +196,7 @@ class Authentication {
         await _authResult.user.delete();
       } catch (_) {}
     } catch (error) {
+      print(error);
       Navigator.pop(context);
       DefaultDialogBox.errorDialog(context);
       try {
@@ -205,6 +210,7 @@ class Authentication {
       DefaultDialogBox.loadingDialog(context);
       await FirebaseAuth.instance.signOut();
       firebaseUser = null;
+      isGoogleUser = false;
       operatorDetails = null;
       Navigator.of(context)
           .pushNamedAndRemoveUntil(SigninScreen.routeName, (route) => false);
@@ -235,9 +241,9 @@ class Authentication {
         await DefaultDialogBox.errorDialog(context,
             title: error.message,
             content: 'Do you want to proceed wih this action?',
-            function: () => Navigator.of(context).pushNamedAndRemoveUntil(
-                SigninScreen.routeName, (route) => false));
-      DefaultDialogBox.errorDialog(context, content: error.message);
+            function: () => signout(context));
+      else
+        DefaultDialogBox.errorDialog(context, content: error.message);
     } catch (_) {
       Navigator.pop(context);
       DefaultDialogBox.errorDialog(context);
@@ -263,9 +269,9 @@ class Authentication {
         await DefaultDialogBox.errorDialog(context,
             title: error.message,
             content: 'Do you want to proceed wih this action?',
-            function: () => Navigator.of(context).pushNamedAndRemoveUntil(
-                SigninScreen.routeName, (route) => false));
-      DefaultDialogBox.errorDialog(context, content: error.message);
+            function: () => signout(context));
+      else
+        DefaultDialogBox.errorDialog(context, content: error.message);
     } catch (_) {
       Navigator.pop(context);
       DefaultDialogBox.errorDialog(context);
@@ -306,9 +312,9 @@ class Authentication {
         await DefaultDialogBox.errorDialog(context,
             title: error.message,
             content: 'Do you want to proceed wih this action?',
-            function: () => Navigator.of(context).pushNamedAndRemoveUntil(
-                SigninScreen.routeName, (route) => false));
-      DefaultDialogBox.errorDialog(context, content: error.message);
+            function: () => signout(context));
+      else
+        DefaultDialogBox.errorDialog(context, content: error.message);
     } catch (_) {
       Navigator.pop(context);
       DefaultDialogBox.errorDialog(context);
@@ -336,9 +342,9 @@ class Authentication {
         await DefaultDialogBox.errorDialog(context,
             title: error.message,
             content: 'Do you want to proceed wih this action?',
-            function: () => Navigator.of(context).pushNamedAndRemoveUntil(
-                SigninScreen.routeName, (route) => false));
-      DefaultDialogBox.errorDialog(context, content: error.message);
+            function: () => signout(context));
+      else
+        DefaultDialogBox.errorDialog(context, content: error.message);
     } catch (_) {
       Navigator.pop(context);
       DefaultDialogBox.errorDialog(context);

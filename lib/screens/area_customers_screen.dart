@@ -1,7 +1,8 @@
-import 'package:cableTvBook/models/customer.dart';
 import 'package:cableTvBook/models/operator.dart';
-import 'package:cableTvBook/widgets/search_screen_widget.dart';
 import 'package:flutter/material.dart';
+import 'package:cableTvBook/models/customer.dart';
+import 'package:cableTvBook/widgets/search_screen_widget.dart';
+import 'package:loading_indicator/loading_indicator.dart';
 
 class AreaCustomersScreen extends StatelessWidget {
   static const routeName = '/areaCustomer';
@@ -9,7 +10,6 @@ class AreaCustomersScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
     final AreaData area = ModalRoute.of(context).settings.arguments;
-    final List<Customer> customers = getAreaCustomers(area.areaName);
     return DefaultTabController(
       initialIndex: 1,
       length: 3,
@@ -43,21 +43,35 @@ class AreaCustomersScreen extends StatelessWidget {
             ),
           ),
         ),
-        body: TabBarView(
-          children: [
-            SearchScreenWidget(
-              active: true,
-              providedCustomers: customers,
-            ),
-            SearchScreenWidget(
-              all: true,
-              providedCustomers: customers,
-            ),
-            SearchScreenWidget(
-              inactive: true,
-              providedCustomers: customers,
-            ),
-          ],
+        body: FutureBuilder(
+          future: getAreaCustomers(area.id),
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting)
+              return Container(
+                padding: EdgeInsets.symmetric(
+                    horizontal: MediaQuery.of(context).size.width * 0.3),
+                child: Center(
+                  child: LoadingIndicator(
+                      indicatorType: Indicator.ballClipRotateMultiple),
+                ),
+              );
+            return TabBarView(
+              children: [
+                SearchScreenWidget(
+                  active: true,
+                  providedCustomers: snapshot.data,
+                ),
+                SearchScreenWidget(
+                  all: true,
+                  providedCustomers: snapshot.data,
+                ),
+                SearchScreenWidget(
+                  inactive: true,
+                  providedCustomers: snapshot.data,
+                ),
+              ],
+            );
+          },
         ),
       ),
     );

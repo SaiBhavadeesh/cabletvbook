@@ -56,16 +56,26 @@ class DatabaseService {
       await _firestoreInstance.setData(customer.toJson()
         ..['id'] = _firestoreInstance.documentID
         ..['profileImageUrl'] = url);
-      await _firestoreInstance
-          .collection(DateTime.now().year.toString())
-          .document()
-          .setData(recharge.toJson());
+      if (customer.currentStatus == 'Active')
+        await _firestoreInstance
+            .collection(DateTime.now().year.toString())
+            .document()
+            .setData(recharge.toJson());
+      final data = {
+        'totalAccounts': area.totalAccounts + 1,
+        'activeAccounts': customer.currentStatus == 'Active'
+            ? area.activeAccounts + 1
+            : area.activeAccounts,
+        'inActiveAccounts': customer.currentStatus == 'Active'
+            ? area.inActiveAccounts
+            : area.inActiveAccounts + 1,
+      };
       await Firestore.instance
           .collection('users')
           .document(firebaseUser.uid)
           .collection('areas')
           .document(customer.areaId)
-          .updateData({'totalAccounts': area.totalAccounts + 1});
+          .updateData(data);
       await getuserData();
       Navigator.of(context).pushNamedAndRemoveUntil(
           BottomTabsScreen.routeName, (route) => false);

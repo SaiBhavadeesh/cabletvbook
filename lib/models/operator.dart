@@ -5,21 +5,29 @@ class AreaData {
   String id;
   String areaName;
   int totalAccounts;
+  int activeAccounts;
+  int inActiveAccounts;
   AreaData({
     @required this.areaName,
     this.totalAccounts = 0,
+    this.activeAccounts = 0,
+    this.inActiveAccounts = 0,
   });
 
   AreaData.fromMap(Map<String, dynamic> doc) {
     this.id = doc['id'];
     this.areaName = doc['areaName'];
     this.totalAccounts = doc['totalAccounts'];
+    this.activeAccounts = doc['activeAccounts'];
+    this.inActiveAccounts = doc['inActiveAccounts'];
   }
 
   Map<String, dynamic> toJson() => {
         'id': this.id,
         'areaName': this.areaName,
         'totalAccounts': this.totalAccounts,
+        'activeAccounts': this.activeAccounts,
+        'inActiveAccounts': this.inActiveAccounts,
       };
 }
 

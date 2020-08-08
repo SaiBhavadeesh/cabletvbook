@@ -50,7 +50,7 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
 
   void saveDetails() async {
     if (_formKey.currentState.validate() &&
-        _selectedAreaId != null &&
+        _selectedAreaId != null && 
         _selectedPlan != null) {
       _formKey.currentState.save();
       final newCustomer = Customer(

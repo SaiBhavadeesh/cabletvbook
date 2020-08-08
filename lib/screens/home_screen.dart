@@ -337,7 +337,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 Flexible(
                   fit: FlexFit.loose,
                   child: Text(
-                    'Active : ${0}',
+                    'Active : ${areas[index].activeAccounts}',
                     style: TextStyle(
                       fontSize: size.width * 0.045,
                       color: Colors.white,
@@ -348,7 +348,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 Flexible(
                   fit: FlexFit.loose,
                   child: Text(
-                    'In-Active : ${0}',
+                    'In-Active : ${areas[index].inActiveAccounts}',
                     style: TextStyle(
                       fontSize: size.width * 0.045,
                       color: Colors.white,

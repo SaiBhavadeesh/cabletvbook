@@ -87,7 +87,9 @@ class _CustomerTileState extends State<CustomerTile> {
             onTap: () => gestureNavigator(context, widget.customer),
             child: CircleAvatar(
               radius: 30,
-              backgroundImage: AssetImage('assets/images/default_profile.jpg'),
+              backgroundImage: widget.customer.profileImageUrl == null
+                  ? AssetImage('assets/images/default_profile.jpg')
+                  : NetworkImage(widget.customer.profileImageUrl),
             ),
           ),
           title: GestureDetector(

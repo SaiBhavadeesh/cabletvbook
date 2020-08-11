@@ -31,11 +31,8 @@ class DatabaseService {
     try {
       String url;
       try {
-        final _ref = FirebaseStorage.instance
-            .ref()
-            .child('customerPictures')
-            .child(operatorDetails.id)
-            .child('profilePicture.png');
+        final _ref = FirebaseStorage.instance.ref().child(
+            'customerPictures/${operatorDetails.id}/${customer.areaId}/${customer.id}/profilePicture.png');
         await _ref.putFile(file).onComplete;
         url = await _ref.getDownloadURL();
       } on PlatformException catch (error) {
@@ -47,11 +44,8 @@ class DatabaseService {
       }
       final area = areas.firstWhere((element) => element.id == customer.areaId);
       final _firestoreInstance = Firestore.instance
-          .collection('users')
-          .document(operatorDetails.id)
-          .collection('areas')
-          .document(customer.areaId)
-          .collection('customers')
+          .collection(
+              'users/${operatorDetails.id}/areas/${customer.areaId}/customers')
           .document();
       await _firestoreInstance.setData(customer.toJson()
         ..['id'] = _firestoreInstance.documentID
@@ -71,9 +65,7 @@ class DatabaseService {
             : area.inActiveAccounts + 1,
       };
       await Firestore.instance
-          .collection('users')
-          .document(firebaseUser.uid)
-          .collection('areas')
+          .collection('users/${firebaseUser.uid}/areas')
           .document(customer.areaId)
           .updateData(data);
       await getuserData();
@@ -81,11 +73,79 @@ class DatabaseService {
           BottomTabsScreen.routeName, (route) => false);
     } on PlatformException catch (error) {
       Navigator.pop(context);
-      Scaffold.of(context).showSnackBar(SnackBar(content: Text(error.message)));
+      Scaffold.of(context).showSnackBar(SnackBar(
+        content: Text(error.message),
+        duration: Duration(seconds: 1),
+      ));
     } catch (_) {
       Navigator.pop(context);
-      Scaffold.of(context).showSnackBar(
-          SnackBar(content: Text('ERROR : something went wrong !')));
+      Scaffold.of(context).showSnackBar(SnackBar(
+        content: Text('ERROR : something went wrong !'),
+        duration: Duration(seconds: 1),
+      ));
+    }
+  }
+
+  static Future<void> updateCustomerData(
+      BuildContext context, GlobalKey<ScaffoldState> key,
+      {@required Map<String, dynamic> data,
+      @required String customerId,
+      @required areaId}) async {
+    DefaultDialogBox.loadingDialog(context,
+        loaderType: SelectLoader.ballRotateChase);
+    print(data);
+    print(customerId);
+    print(areaId);
+    try {
+      await Firestore.instance
+          .collection('users/${operatorDetails.id}/areas/$areaId/customers')
+          .document(customerId)
+          .updateData(data);
+      Navigator.pop(context);
+    } on PlatformException catch (error) {
+      Navigator.pop(context);
+      key.currentState.showSnackBar(SnackBar(
+        content: Text(error.message),
+        duration: Duration(seconds: 1),
+      ));
+    } catch (_) {
+      Navigator.pop(context);
+      key.currentState.showSnackBar(SnackBar(
+        content: Text('ERROR : picture upload failed !'),
+        duration: Duration(seconds: 1),
+      ));
+    }
+  }
+
+  static Future<void> updateCustomerPicture(
+      BuildContext context, GlobalKey<ScaffoldState> key,
+      {@required File file,
+      @required String customerId,
+      @required String areaId}) async {
+    DefaultDialogBox.loadingDialog(context,
+        loaderType: SelectLoader.ballRotateChase);
+    try {
+      final _ref = FirebaseStorage.instance.ref().child(
+          'customerPictures/${operatorDetails.id}/$areaId/$customerId/profilePicture.png');
+      await _ref.putFile(file).onComplete;
+      final url = await _ref.getDownloadURL();
+      await Firestore.instance
+          .collection('users/${operatorDetails.id}/areas/$areaId/customers')
+          .document(customerId)
+          .updateData({'profileImageUrl': url});
+      Navigator.pop(context);
+    } on PlatformException catch (error) {
+      Navigator.pop(context);
+      key.currentState.showSnackBar(SnackBar(
+        content: Text(error.message),
+        duration: Duration(seconds: 1),
+      ));
+    } catch (_) {
+      Navigator.pop(context);
+      key.currentState.showSnackBar(SnackBar(
+        content: Text('ERROR : picture upload failed !'),
+        duration: Duration(seconds: 1),
+      ));
     }
   }
 
@@ -97,9 +157,7 @@ class DatabaseService {
     try {
       final _ref = FirebaseStorage.instance
           .ref()
-          .child('profilePictures')
-          .child(operatorDetails.id)
-          .child('profilePicture.png');
+          .child('profilePictures/${operatorDetails.id}/profilePicture.png');
       await _ref.putFile(file).onComplete;
       final url = await _ref.getDownloadURL();
       await Firestore.instance
@@ -110,11 +168,16 @@ class DatabaseService {
       Navigator.pop(context);
     } on PlatformException catch (error) {
       Navigator.pop(context);
-      key.currentState.showSnackBar(SnackBar(content: Text(error.message)));
+      key.currentState.showSnackBar(SnackBar(
+        content: Text(error.message),
+        duration: Duration(seconds: 1),
+      ));
     } catch (_) {
       Navigator.pop(context);
-      key.currentState.showSnackBar(
-          SnackBar(content: Text('ERROR : picture upload failed !')));
+      key.currentState.showSnackBar(SnackBar(
+        content: Text('ERROR : picture upload failed !'),
+        duration: Duration(seconds: 1),
+      ));
     }
   }
 
@@ -132,11 +195,16 @@ class DatabaseService {
       Navigator.pop(context);
     } on PlatformException catch (error) {
       Navigator.pop(context);
-      key.currentState.showSnackBar(SnackBar(content: Text(error.message)));
+      key.currentState.showSnackBar(SnackBar(
+        content: Text(error.message),
+        duration: Duration(seconds: 1),
+      ));
     } catch (_) {
       Navigator.pop(context);
-      key.currentState.showSnackBar(
-          SnackBar(content: Text('ERROR : something went wrong !')));
+      key.currentState.showSnackBar(SnackBar(
+        content: Text('ERROR : something went wrong !'),
+        duration: Duration(seconds: 1),
+      ));
     }
   }
 
@@ -147,9 +215,7 @@ class DatabaseService {
         loaderType: SelectLoader.ballRotateChase);
     try {
       final _firestoreInstance = Firestore.instance
-          .collection('users')
-          .document(firebaseUser.uid)
-          .collection('areas')
+          .collection('users/${firebaseUser.uid}/areas')
           .document();
       await _firestoreInstance
           .setData(data..['id'] = _firestoreInstance.documentID);
@@ -157,11 +223,16 @@ class DatabaseService {
       Navigator.pop(context);
     } on PlatformException catch (error) {
       Navigator.pop(context);
-      key.currentState.showSnackBar(SnackBar(content: Text(error.message)));
+      key.currentState.showSnackBar(SnackBar(
+        content: Text(error.message),
+        duration: Duration(seconds: 1),
+      ));
     } catch (_) {
       Navigator.pop(context);
-      key.currentState.showSnackBar(
-          SnackBar(content: Text('ERROR : something went wrong !')));
+      key.currentState.showSnackBar(SnackBar(
+        content: Text('ERROR : something went wrong !'),
+        duration: Duration(seconds: 1),
+      ));
     }
   }
 
@@ -172,9 +243,7 @@ class DatabaseService {
         loaderType: SelectLoader.ballRotateChase);
     try {
       await Firestore.instance
-          .collection('users')
-          .document(firebaseUser.uid)
-          .collection('areas')
+          .collection('users/${firebaseUser.uid}/areas')
           .document(data['id'])
           .updateData(data);
       await getuserData();
@@ -182,18 +251,29 @@ class DatabaseService {
     } on PlatformException catch (error) {
       Navigator.pop(context);
       if (key != null)
-        key.currentState.showSnackBar(SnackBar(content: Text(error.message)));
+        key.currentState.showSnackBar(SnackBar(
+          content: Text(error.message),
+          duration: Duration(seconds: 1),
+        ));
       else
-        Scaffold.of(context)
-            .showSnackBar(SnackBar(content: Text(error.message)));
+        Scaffold.of(context).showSnackBar(SnackBar(
+          content: Text(error.message),
+          duration: Duration(seconds: 1),
+        ));
     } catch (_) {
       Navigator.pop(context);
       if (key != null)
-        key.currentState.showSnackBar(
-            SnackBar(content: Text('ERROR : something went wrong !')));
+        key.currentState.showSnackBar(SnackBar(
+          content: Text('ERROR : something went wrong !'),
+          duration: Duration(seconds: 1),
+        ));
       else
-        Scaffold.of(context).showSnackBar(
-            SnackBar(content: Text('ERROR : something went wrong !')));
+        Scaffold.of(context).showSnackBar(SnackBar(
+          content: Text('ERROR : something went wrong !'),
+          duration: Duration(seconds: 1),
+        ));
     }
   }
+
+  static Future<void> rechargeCustomer() async {}
 }

@@ -35,6 +35,7 @@ class Customer {
   String macId;
   String areaId;
   String address;
+  String tempInfo;
   double currentPlan;
   DateTime startDate;
   String phoneNumber;
@@ -49,6 +50,7 @@ class Customer {
     @required this.macId,
     @required this.areaId,
     @required this.address,
+    this.tempInfo,
     this.startDate,
     this.profileImageUrl,
     @required this.currentPlan,
@@ -64,6 +66,7 @@ class Customer {
     this.macId = document['macId'];
     this.areaId = document['areaId'];
     this.address = document['address'];
+    this.tempInfo = document['tempInfo'];
     this.startDate = document['startDate'].toDate();
     this.profileImageUrl = document['profileImageUrl'];
     this.currentPlan = document['currentPlan'];
@@ -79,6 +82,7 @@ class Customer {
         'macId': this.macId,
         'areaId': this.areaId,
         'address': this.address,
+        'tempInfo': this.tempInfo,
         'currentPlan': this.currentPlan,
         'phoneNumber': this.phoneNumber,
         'accountNumber': this.accountNumber,
@@ -89,16 +93,8 @@ class Customer {
       };
 }
 
-Future<List<Customer>> getAreaCustomers(String areaId) async {
-  final querysnapShot = await Firestore.instance
-      .collection('users')
-      .document(firebaseUser.uid)
-      .collection('areas')
-      .document(areaId)
-      .collection('customers')
-      .getDocuments();
-  final areaCustomers =
-      querysnapShot.documents.map((e) => Customer.fromMap(e)).toList();
+List<Customer> getAreaCustomers(List<DocumentSnapshot> snapshot) {
+  final areaCustomers = snapshot.map((e) => Customer.fromMap(e)).toList();
   return areaCustomers;
 }
 
@@ -106,11 +102,8 @@ Future<List<Customer>> getAllCustomers() async {
   List<DocumentSnapshot> doc = [];
   for (int i = 0; i < areas.length; i++) {
     doc += (await Firestore.instance
-            .collection('users')
-            .document(firebaseUser.uid)
-            .collection('areas')
-            .document(areas[i].id)
-            .collection('customers')
+            .collection(
+                'users/${firebaseUser.uid}/areas/${areas[i].id}/customers')
             .getDocuments())
         .documents;
   }
@@ -145,13 +138,8 @@ List<Customer> getSelectedCustomers({
 Future<List<Recharge>> getCustomerYearlyRecharge(
     String areaId, String customerId, String year) async {
   final document = await Firestore.instance
-      .collection('users')
-      .document(firebaseUser.uid)
-      .collection('areas')
-      .document(areaId)
-      .collection('customers')
-      .document(customerId)
-      .collection(year)
+      .collection(
+          'users/${firebaseUser.uid}/areas/$areaId/customers/$customerId/$year')
       .getDocuments();
   return document.documents.map((e) => Recharge.fromMap(e)).toList();
 }

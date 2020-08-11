@@ -3,11 +3,13 @@ import 'package:intl/intl.dart';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:flutter_icons/flutter_icons.dart';
 
 import 'package:cableTvBook/models/customer.dart';
 import 'package:cableTvBook/global/variables.dart';
 import 'package:cableTvBook/helpers/image_getter.dart';
+import 'package:cableTvBook/services/databse_services.dart';
 import 'package:cableTvBook/widgets/customer_plan_list.dart';
 import 'package:cableTvBook/widgets/modal_bottom_sheet.dart';
 
@@ -23,8 +25,10 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
   Size size;
   int _selectedYear = DateTime.now().year;
   bool _isEdit = false;
+  bool _init = true;
   File _pickedImage;
   Customer customer;
+  double _selectedPlan;
 
   List<int> getAllYears(DateTime date) {
     List<int> years = [];
@@ -37,6 +41,14 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
   }
 
   void onMoreInfo() {
+    if (_isEdit) {
+      DatabaseService.updateCustomerData(context, scaffoldKey,
+          data: {'tempInfo': null},
+          customerId: customer.id,
+          areaId: customer.areaId);
+      moreInfoController.clear();
+      customer.tempInfo = null;
+    }
     setState(() {
       _isEdit = !_isEdit;
     });
@@ -141,12 +153,126 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
     );
   }
 
+  void _selectPlanField(double value) {
+    setState(() {
+      _selectedPlan = value;
+    });
+  }
+
+  void activateButton() async {
+    await showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              'Select Plan : ',
+              style: TextStyle(
+                color: Theme.of(context).primaryColor,
+                fontWeight: FontWeight.bold,
+                fontSize: 18,
+                letterSpacing: 1,
+              ),
+            ),
+            ...operatorDetails.plans.map(
+              (plan) {
+                return Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: <Widget>[
+                    Radio(
+                      materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                      activeColor: Theme.of(context).primaryColor,
+                      value: plan,
+                      groupValue: _selectedPlan,
+                      onChanged: _selectPlanField,
+                    ),
+                    Text('\u20B9 ' + plan.toString()),
+                  ],
+                );
+              },
+            ).toList(),
+            
+          ],
+        ),
+      ),
+    );
+    // final url = "https://www.actcorp.in";
+    // if (await canLaunch(url)) {
+    //   await launch(
+    //     url,
+    //     enableJavaScript: true,
+    //   );
+    // } else {
+    //   scaffoldKey.currentState.showSnackBar(SnackBar(
+    //     content: Text('Could not process your request, Please try again'),
+    //     duration: Duration(seconds: 1),
+    //   ));
+    // }
+    // await showDialog(
+    //   context: context,
+    //   builder: (ctx) => AlertDialog(
+    //     content: Text('Activation successful ?'),
+    //     actions: [
+    //       FlatButton(
+    //         onPressed: () => Navigator.pop(ctx),
+    //         child: Text('no'),
+    //         color: Theme.of(context).errorColor,
+    //       ),
+    //       FlatButton(
+    //         onPressed: () {},
+    //         child: Text('yes'),
+    //         color: Theme.of(context).primaryColor,
+    //       ),
+    //     ],
+    //   ),
+    // );
+  }
+
+  void deactivateButton() async {
+    final url = "https://www.actcorp.in";
+    if (await canLaunch(url)) {
+      await launch(
+        url,
+        enableJavaScript: true,
+      );
+    } else {
+      scaffoldKey.currentState.showSnackBar(SnackBar(
+        content: Text('Could not process your request, Please try again'),
+        duration: Duration(seconds: 1),
+      ));
+    }
+    await showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        content: Text('De-activation successful ?'),
+        actions: [
+          FlatButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: Text('no'),
+            color: Theme.of(context).errorColor,
+          ),
+          FlatButton(
+            onPressed: () {},
+            child: Text('yes'),
+            color: Theme.of(context).primaryColor,
+          ),
+        ],
+      ),
+    );
+  }
+
+  final scaffoldKey = GlobalKey<ScaffoldState>();
   @override
   Widget build(BuildContext context) {
     customer = ModalRoute.of(context).settings.arguments;
+    moreInfoController.text = customer.tempInfo ?? '';
+    if (_init) _isEdit = customer.tempInfo == null ? false : true;
+    _init = false;
     size = MediaQuery.of(context).size;
     final years = getAllYears(customer.startDate);
     return Scaffold(
+      key: scaffoldKey,
       appBar: AppBar(
         backgroundColor: Colors.red[500],
         title: Text(operatorDetails.networkName),
@@ -217,8 +343,10 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: <Widget>[
-                              Text(customer.name,
-                                  style: TextStyle(fontSize: 20)),
+                              Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 8.0),
+                                  child: richText('Name : ', customer.name)),
                               Padding(
                                   padding: const EdgeInsets.all(8.0),
                                   child: richText(
@@ -248,13 +376,22 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
                                 _pickedImage =
                                     await ImageGetter.getImageFromDevice(
                                         context);
+                                await DatabaseService.updateCustomerPicture(
+                                    context, scaffoldKey,
+                                    file: _pickedImage,
+                                    customerId: customer.id,
+                                    areaId: customer.areaId);
+                                setState(() {});
                               },
                               child: CircleAvatar(
                                 radius: size.width * 0.1,
-                                backgroundImage: _pickedImage == null
-                                    ? AssetImage(
-                                        'assets/images/default_profile.jpg')
-                                    : FileImage(_pickedImage),
+                                backgroundImage: customer.profileImageUrl ==
+                                        null
+                                    ? _pickedImage == null
+                                        ? AssetImage(
+                                            'assets/images/default_profile.jpg')
+                                        : FileImage(_pickedImage)
+                                    : NetworkImage(customer.profileImageUrl),
                               ),
                             ),
                             IconButton(
@@ -263,7 +400,19 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
                                 size: size.height * 0.05,
                                 color: Theme.of(context).primaryColor,
                               ),
-                              onPressed: () {},
+                              onPressed: () async {
+                                final url = "tel:${customer.phoneNumber}";
+                                if (await canLaunch(url)) {
+                                  await launch(url);
+                                } else {
+                                  scaffoldKey.currentState
+                                      .showSnackBar(SnackBar(
+                                    content: Text(
+                                        'Could not process your request, Please try again'),
+                                    duration: Duration(seconds: 1),
+                                  ));
+                                }
+                              },
                             ),
                             AnimatedCrossFade(
                               duration: Duration(seconds: 1),
@@ -272,7 +421,7 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
                                   : CrossFadeState.showFirst,
                               firstChild: IconButton(
                                   onPressed: onMoreInfo,
-                                  icon: Icon(FlutterIcons.edit_ant)),
+                                  icon: Icon(Icons.note_add)),
                               secondChild: IconButton(
                                   onPressed: onMoreInfo,
                                   icon: Icon(Icons.delete)),
@@ -289,7 +438,16 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
                           top: 4.0, left: 4.0, right: 4.0),
                       child: TextFormField(
                         controller: moreInfoController,
-                        enabled: _isEdit,
+                        enabled: customer.tempInfo == null && _isEdit,
+                        onEditingComplete: () {
+                          if (moreInfoController.text.isNotEmpty)
+                            DatabaseService.updateCustomerData(
+                                context, scaffoldKey,
+                                data: {'tempInfo': moreInfoController.text},
+                                customerId: customer.id,
+                                areaId: customer.areaId);
+                          customer.tempInfo = moreInfoController.text;
+                        },
                         decoration: InputDecoration(
                           disabledBorder: OutlineInputBorder(
                             borderSide: BorderSide(color: Colors.yellow),
@@ -336,8 +494,8 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
                       month: DateFormat('MMM').format(
                         DateTime(_selectedYear, rechargeData[index].date.month),
                       ),
-                      billDate: DateFormat('dd/MM')
-                          .format(rechargeData[index].date),
+                      billDate:
+                          DateFormat('dd/MM').format(rechargeData[index].date),
                       billAmount: rechargeData[index].plan,
                       status: rechargeData[index].status,
                     );
@@ -353,7 +511,7 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
       floatingActionButton: Row(
         children: <Widget>[
           SizedBox(width: 10),
-          floatingButton(0, () {}, 'Activate', Colors.green),
+          floatingButton(0, activateButton, 'Activate', Colors.green),
           Expanded(child: SizedBox()),
           FloatingActionButton(
             onPressed: () => modalBottomSheet(context, customer),
@@ -362,7 +520,7 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
             foregroundColor: Colors.white,
           ),
           Expanded(child: SizedBox()),
-          floatingButton(1, () {}, 'Deactivate', Colors.red),
+          floatingButton(1, deactivateButton, 'Deactivate', Colors.red),
           SizedBox(width: 10),
         ],
       ),

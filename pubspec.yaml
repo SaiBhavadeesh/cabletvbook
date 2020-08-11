@@ -26,6 +26,7 @@ dependencies:
   intl: ^0.16.1
   validators: ^2.0.1
   image_crop: ^0.3.2
+  url_launcher: ^5.5.0
   image_picker: ^0.6.7+4
   flutter_icons: ^1.1.0
   firebase_auth: ^0.16.1

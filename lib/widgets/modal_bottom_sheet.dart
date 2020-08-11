@@ -1,13 +1,15 @@
 import 'dart:ui';
 
-import 'package:cableTvBook/global/validators.dart';
+import 'package:cableTvBook/services/databse_services.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_icons/flutter_icons.dart';
 
+import 'package:cableTvBook/models/customer.dart';
+import 'package:cableTvBook/global/validators.dart';
 import 'package:cableTvBook/global/box_decoration.dart';
 
 class ModalBottomSheet extends StatefulWidget {
-  final customer;
+  final Customer customer;
   ModalBottomSheet({@required this.customer});
   @override
   _ModalBottomSheetState createState() => _ModalBottomSheetState();
@@ -15,6 +17,7 @@ class ModalBottomSheet extends StatefulWidget {
 
 class _ModalBottomSheetState extends State<ModalBottomSheet> {
   final _formKey = GlobalKey<FormState>();
+  final scaffoldKey = GlobalKey<ScaffoldState>();
   String _name;
   String _address;
   String _phone;
@@ -24,6 +27,7 @@ class _ModalBottomSheetState extends State<ModalBottomSheet> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      key: scaffoldKey,
       backgroundColor: Colors.black45,
       body: BackdropFilter(
         filter: ImageFilter.blur(sigmaX: 2, sigmaY: 2),
@@ -103,7 +107,7 @@ class _ModalBottomSheetState extends State<ModalBottomSheet> {
                       keyboardType: TextInputType.phone,
                       validator: phoneValidator,
                       decoration: inputDecoration(
-                          label: 'Phone number', icon: Icons.phone),
+                          label: 'Phone number', icon: Icons.phone,prefixText: '+91 '),
                       onSaved: (newValue) {
                         _phone = newValue;
                       },
@@ -134,9 +138,25 @@ class _ModalBottomSheetState extends State<ModalBottomSheet> {
                     SizedBox(height: 10),
                     FloatingActionButton.extended(
                       elevation: 0,
-                      onPressed: () {
+                      onPressed: () async {
                         if (_formKey.currentState.validate()) {
                           _formKey.currentState.save();
+                          Map<String, dynamic> data = {};
+                          if (widget.customer.name != _name)
+                            data.addAll({'name': _name});
+                          if (widget.customer.address != _address)
+                            data.addAll({'address': _address});
+                          if (widget.customer.phoneNumber != _phone)
+                            data.addAll({'phoneNumber': _phone});
+                          if (widget.customer.accountNumber != _account)
+                            data.addAll({'accountNumber': _account});
+                          if (widget.customer.macId != _mac)
+                            data.addAll({'macId': _mac});
+                          await DatabaseService.updateCustomerData(
+                              context, scaffoldKey,
+                              data: data,
+                              customerId: widget.customer.id,
+                              areaId: widget.customer.areaId);
                           widget.customer.name = _name;
                           widget.customer.address = _address;
                           widget.customer.phoneNumber = _phone;

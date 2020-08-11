@@ -57,7 +57,8 @@ InputDecoration inputDecoration(
     bool filled = false,
     String hint,
     Color iconColor,
-    Color hintColor = Colors.black}) {
+    Color hintColor = Colors.black,
+    double radius = 15}) {
   return InputDecoration(
     counter: SizedBox(),
     fillColor: filledColor,
@@ -72,7 +73,7 @@ InputDecoration inputDecoration(
     prefixText: prefixText,
     prefixIcon: icon == null ? null : Icon(icon, color: iconColor),
     border: OutlineInputBorder(
-      borderRadius: BorderRadius.circular(15),
+      borderRadius: BorderRadius.circular(radius),
     ),
   );
 }

@@ -1,9 +1,10 @@
+import 'package:cableTvBook/global/box_decoration.dart';
 import 'package:cableTvBook/models/customer.dart';
 import 'package:flutter/material.dart';
 import 'package:cableTvBook/widgets/customer_tile.dart';
 import 'package:flutter_icons/flutter_icons.dart';
 
-class SearchScreenWidget extends StatelessWidget {
+class SearchScreenWidget extends StatefulWidget {
   final bool all;
   final bool active;
   final bool inactive;
@@ -14,15 +15,46 @@ class SearchScreenWidget extends StatelessWidget {
     this.inactive = false,
     this.providedCustomers,
   });
+
+  @override
+  _SearchScreenWidgetState createState() => _SearchScreenWidgetState();
+}
+
+class _SearchScreenWidgetState extends State<SearchScreenWidget> {
   final searchController = TextEditingController();
+
+  List<Customer> customers = [];
+
+  onTextChange(String value) {
+    customers = getSelectedCustomers(
+      active: widget.active,
+      all: widget.all,
+      inactive: widget.inactive,
+      providedCustomers: widget.providedCustomers,
+    );
+    setState(() {
+      if (value.isNotEmpty)
+        customers = customers
+            .where((customer) => (customer.name.contains(value) ||
+                customer.accountNumber.contains(value) ||
+                customer.macId.contains(value)))
+            .toList();
+    });
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    customers = getSelectedCustomers(
+      active: widget.active,
+      all: widget.all,
+      inactive: widget.inactive,
+      providedCustomers: widget.providedCustomers,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    final customers = getSelectedCustomers(
-      active: active,
-      all: all,
-      inactive: inactive,
-      providedCustomers: providedCustomers,
-    );
     return Stack(
       children: <Widget>[
         Scrollbar(
@@ -55,16 +87,11 @@ class SearchScreenWidget extends StatelessWidget {
           child: TextField(
             controller: searchController,
             textInputAction: TextInputAction.search,
-            decoration: InputDecoration(
-              filled: true,
-              fillColor: Colors.white,
-              contentPadding: EdgeInsets.all(10),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(30),
-              ),
-              prefixIcon: Icon(FlutterIcons.ios_search_ion),
-              hintText: 'Search by Name / mac no / acc no.',
-            ),
+            onChanged: onTextChange,
+            decoration: inputDecoration(
+                hint: 'Search by Name / mac no / acc no.',
+                icon: FlutterIcons.ios_search_ion,
+                radius: 30),
           ),
         ),
       ],

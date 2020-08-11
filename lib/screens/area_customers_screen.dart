@@ -1,11 +1,14 @@
-import 'package:cableTvBook/models/operator.dart';
 import 'package:flutter/material.dart';
+import 'package:cableTvBook/global/variables.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 import 'package:cableTvBook/models/customer.dart';
+import 'package:cableTvBook/models/operator.dart';
 import 'package:cableTvBook/widgets/search_screen_widget.dart';
-import 'package:loading_indicator/loading_indicator.dart';
 
 class AreaCustomersScreen extends StatelessWidget {
   static const routeName = '/areaCustomer';
+
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
@@ -39,40 +42,30 @@ class AreaCustomersScreen extends StatelessWidget {
             ),
             preferredSize: Size(
               size.width,
-              size.height * 0.02,
+              size.height * 0.025,
             ),
           ),
         ),
-        body: FutureBuilder(
-          future: getAreaCustomers(area.id),
-          builder: (context, snapshot) {
-            if (snapshot.connectionState == ConnectionState.waiting)
-              return Container(
-                padding: EdgeInsets.symmetric(
-                    horizontal: MediaQuery.of(context).size.width * 0.3),
-                child: Center(
-                  child: LoadingIndicator(
-                      indicatorType: Indicator.ballClipRotateMultiple),
-                ),
-              );
-            return TabBarView(
-              children: [
-                SearchScreenWidget(
-                  active: true,
-                  providedCustomers: snapshot.data,
-                ),
-                SearchScreenWidget(
-                  all: true,
-                  providedCustomers: snapshot.data,
-                ),
-                SearchScreenWidget(
-                  inactive: true,
-                  providedCustomers: snapshot.data,
-                ),
-              ],
-            );
-          },
-        ),
+        body: StreamBuilder(
+            stream: Firestore.instance
+                .collection(
+                    'users/${operatorDetails.id}/areas/${area.id}/customers')
+                .snapshots(),
+            builder: (context, snapshot) {
+              if (snapshot.hasData) {
+                final customers = getAreaCustomers(snapshot.data.documents);
+                return TabBarView(
+                  children: [
+                    SearchScreenWidget(
+                        active: true, providedCustomers: customers),
+                    SearchScreenWidget(all: true, providedCustomers: customers),
+                    SearchScreenWidget(
+                        inactive: true, providedCustomers: customers),
+                  ],
+                );
+              }
+              return Container();
+            }),
       ),
     );
   }

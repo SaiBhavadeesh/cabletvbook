@@ -9,10 +9,13 @@ import 'package:url_launcher/url_launcher.dart';
 class ActivateBottomSheet extends StatefulWidget {
   final customerId;
   final areaId;
-  final recentRecharge;
+  final int year;
   final plan;
   ActivateBottomSheet(
-      {this.customerId, this.areaId, this.recentRecharge, this.plan});
+      {@required this.customerId,
+      @required this.areaId,
+      @required this.year,
+      @required this.plan});
   @override
   _ActivateBottomSheetState createState() => _ActivateBottomSheetState();
 }
@@ -65,7 +68,7 @@ class _ActivateBottomSheetState extends State<ActivateBottomSheet> {
               ),
               padding: EdgeInsets.all(20),
               child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+                // crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
                     'Select Plan : ',
@@ -94,39 +97,42 @@ class _ActivateBottomSheetState extends State<ActivateBottomSheet> {
                       );
                     },
                   ).toList(),
-                  Text(
-                    'Select Period : ',
-                    style: TextStyle(
-                      color: Theme.of(context).primaryColor,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 18,
-                      letterSpacing: 1,
-                    ),
-                  ),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: <Widget>[
-                      Radio(
-                        materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                        activeColor: Theme.of(context).primaryColor,
-                        value: 1,
-                        groupValue: _selectedTerm,
-                        onChanged: _selectTermField,
-                      ),
-                      Text('1 Month'),
-                    ],
-                  ),
+                  SizedBox(height: 10),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Radio(
-                        materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                        activeColor: Theme.of(context).primaryColor,
-                        value: 12,
-                        groupValue: _selectedTerm,
-                        onChanged: _selectTermField,
+                      Text(
+                        'Select Period : ',
+                        style: TextStyle(
+                          color: Theme.of(context).primaryColor,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 18,
+                          letterSpacing: 1,
+                        ),
                       ),
-                      Text('12 Months'),
+                      SizedBox(width: 20),
+                      DropdownButton(
+                          items: [
+                            DropdownMenuItem(child: Text('1 Month'), value: 1),
+                            DropdownMenuItem(child: Text('2 Months'), value: 2),
+                            DropdownMenuItem(child: Text('3 Months'), value: 3),
+                            DropdownMenuItem(child: Text('4 Months'), value: 4),
+                            DropdownMenuItem(child: Text('5 Months'), value: 5),
+                            DropdownMenuItem(child: Text('6 Months'), value: 6),
+                            DropdownMenuItem(child: Text('7 Months'), value: 7),
+                            DropdownMenuItem(child: Text('8 Months'), value: 8),
+                            DropdownMenuItem(child: Text('9 Months'), value: 9),
+                            DropdownMenuItem(
+                                child: Text('10 Months'), value: 10),
+                            DropdownMenuItem(
+                                child: Text('11 Months'), value: 11),
+                            DropdownMenuItem(
+                                child: Text('12 Months'), value: 12),
+                          ],
+                          onChanged: _selectTermField,
+                          isDense: true,
+                          underline: SizedBox(),
+                          value: _selectedTerm),
                     ],
                   ),
                   Divider(),
@@ -142,11 +148,12 @@ class _ActivateBottomSheetState extends State<ActivateBottomSheet> {
                     },
                   ),
                   Divider(),
+                  SizedBox(height: 10),
                   Align(
                     child: defaultbutton(
                       context: context,
                       function: () async {
-                        final url = "https://www.actcorp.in";
+                        final url = "https://partnerportal.actcorp.in/packages";
                         if (await canLaunch(url)) {
                           try {
                             await launch(
@@ -169,14 +176,15 @@ class _ActivateBottomSheetState extends State<ActivateBottomSheet> {
                                     onPressed: () async {
                                       Navigator.pop(ctx);
                                       await DatabaseService.rechargeCustomer(
-                                          context, scaffoldKey,
-                                          customerId: widget.customerId,
-                                          areaId: widget.areaId,
-                                          plan: _selectedPlan,
-                                          term: _selectedTerm,
-                                          billPay: _checked,
-                                          recentRecharge:
-                                              widget.recentRecharge);
+                                        context,
+                                        scaffoldKey,
+                                        customerId: widget.customerId,
+                                        areaId: widget.areaId,
+                                        year: widget.year.toString(),
+                                        plan: _selectedPlan,
+                                        term: _selectedTerm,
+                                        billPay: _checked,
+                                      );
                                       Navigator.pop(context);
                                     },
                                     child: Text('yes'),

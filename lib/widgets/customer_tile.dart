@@ -47,10 +47,8 @@ class _CustomerTileState extends State<CustomerTile> {
   }
 
   void gestureNavigator(BuildContext ctx, Customer customer) {
-    Navigator.of(ctx).pushNamed(
-      CustomerDetailScreen.routeName,
-      arguments: customer,
-    );
+    Navigator.of(ctx)
+        .pushNamed(CustomerDetailScreen.routeName, arguments: customer);
   }
 
   void copyAndShowSnackBar(BuildContext ctx, String copy, String text) {
@@ -100,53 +98,55 @@ class _CustomerTileState extends State<CustomerTile> {
                 widget.customer.name,
                 style: TextStyle(
                   fontWeight: FontWeight.bold,
-                  fontSize: 20,
+                  fontSize: 22,
                   color: Colors.white,
                 ),
               ),
             ),
           ),
           isThreeLine: true,
-          subtitle: Row(
-            mainAxisAlignment: MainAxisAlignment.start,
-            children: <Widget>[
-              GestureDetector(
-                child: Card(
-                  color: Colors.red[300],
-                  child: Padding(
-                    padding: const EdgeInsets.all(5.0),
-                    child: Text(
-                      '${widget.customer.accountNumber}',
-                      style: TextStyle(
-                        fontSize: 18,
-                        color: Colors.white,
+          subtitle: FittedBox(
+            fit: BoxFit.contain,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.start,
+              children: <Widget>[
+                GestureDetector(
+                  child: Card(
+                    color: Colors.red[300],
+                    child: Padding(
+                      padding: const EdgeInsets.all(5.0),
+                      child: Text(
+                        '${widget.customer.accountNumber}',
+                        style: TextStyle(
+                          color: Colors.white,
+                        ),
                       ),
                     ),
                   ),
+                  onTap: () => gestureNavigator(context, widget.customer),
+                  onLongPress: () => copyAndShowSnackBar(
+                      context, widget.customer.accountNumber, 'Account number'),
                 ),
-                onTap: () => gestureNavigator(context, widget.customer),
-                onLongPress: () => copyAndShowSnackBar(
-                    context, widget.customer.accountNumber, 'Account number'),
-              ),
-              GestureDetector(
-                child: Card(
-                  color: Colors.teal,
-                  child: Padding(
-                    padding: const EdgeInsets.all(5.0),
-                    child: Text(
-                      '${widget.customer.macId}',
-                      style: TextStyle(
-                        fontSize: 18,
-                        color: Colors.white,
+                GestureDetector(
+                  child: Card(
+                    color: Colors.teal,
+                    child: Padding(
+                      padding: const EdgeInsets.all(5.0),
+                      child: Text(
+                        '${widget.customer.macId}',
+                        softWrap: true,
+                        style: TextStyle(
+                          color: Colors.white,
+                        ),
                       ),
                     ),
                   ),
+                  onTap: () => gestureNavigator(context, widget.customer),
+                  onLongPress: () => copyAndShowSnackBar(
+                      context, widget.customer.macId, 'MAC-Id'),
                 ),
-                onTap: () => gestureNavigator(context, widget.customer),
-                onLongPress: () => copyAndShowSnackBar(
-                    context, widget.customer.macId, 'MAC-Id'),
-              ),
-            ],
+              ],
+            ),
           ),
           trailing: GestureDetector(
             onTap: () => gestureNavigator(context, widget.customer),
@@ -154,11 +154,10 @@ class _CustomerTileState extends State<CustomerTile> {
               widget.customer.currentStatus,
               softWrap: true,
               style: TextStyle(
+                fontSize: 16,
                 color: widget.customer.currentStatus == 'Inactive'
-                    ? Colors.red
-                    : widget.customer.currentStatus == 'Active'
-                        ? Colors.teal[700]
-                        : Colors.yellow,
+                    ? Colors.orange[900]
+                    : Colors.yellow,
               ),
             ),
           ),

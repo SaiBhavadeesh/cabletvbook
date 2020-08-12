@@ -39,12 +39,11 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
     for (int i = startyear; i <= runningYear; i++) {
       years.add(i);
     }
-    _selectedYear = runningYear;
     return years;
   }
 
   void onMoreInfo() {
-    if (_isEdit) {
+    if (_isEdit && customer.tempInfo != null) {
       DatabaseService.updateCustomerData(context, scaffoldKey,
           data: {'tempInfo': null},
           customerId: customer.id,
@@ -58,17 +57,10 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
   }
 
   void modalBottomSheet(BuildContext ctx, Customer data) {
-    Navigator.of(ctx)
-        .push(
-      PageRouteBuilder(
+    Navigator.of(ctx).push(PageRouteBuilder(
         pageBuilder: (context, _, __) =>
             CustomerEditBottomSheet(customer: data),
-        opaque: false,
-      ),
-    )
-        .then((value) {
-      setState(() {});
-    });
+        opaque: false));
   }
 
   void copyTextOnLongTap(
@@ -157,14 +149,12 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
     );
   }
 
-  void activateButton() {
-    Navigator.of(context).push(PageRouteBuilder(
+  void activateButton(BuildContext ctx) {
+    Navigator.of(ctx).push(PageRouteBuilder(
         pageBuilder: (context, _, __) => ActivateBottomSheet(
               customerId: customer.id,
               areaId: customer.areaId,
-              recentRecharge: rechargeData == null || rechargeData.isEmpty
-                  ? null
-                  : rechargeData.last,
+              year: customer.runningYear,
               plan: customer.currentPlan,
             ),
         opaque: false));
@@ -176,7 +166,7 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
           title: 'Alert !',
           content: 'Customer has no active plan to deactivate !');
     } else {
-      final url = "https://www.actcorp.in";
+      final url = "https://partnerportal.actcorp.in/packages";
       if (await canLaunch(url)) {
         try {
           await launch(
@@ -208,7 +198,7 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
                 await DatabaseService.deactivateCustomer(context, scaffoldKey,
                     customerId: customer.id,
                     areaId: customer.areaId,
-                    recentRecharge: rechargeData.last);
+                    year: customer.runningYear.toString());
               },
               child: Text('yes'),
               color: Theme.of(ctx).primaryColor,
@@ -219,281 +209,372 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
     }
   }
 
+  void deleteRecharge(BuildContext ctx, Recharge recharge) async {
+    await showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text('Delete recharge'),
+        content: Text('Are you sure ?'),
+        actions: [
+          FlatButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: Text('no'),
+            color: Theme.of(ctx).errorColor,
+          ),
+          FlatButton(
+            onPressed: () async {
+              Navigator.pop(ctx);
+              await DatabaseService.deleteRecharge(context, scaffoldKey,
+                  customerId: customer.id,
+                  areaId: customer.areaId,
+                  year: _selectedYear.toString(),
+                  startYear: customer.startDate.year.toString(),
+                  recharge: recharge);
+            },
+            child: Text('yes'),
+            color: Theme.of(ctx).primaryColor,
+          ),
+        ],
+      ),
+    );
+  }
+
   final scaffoldKey = GlobalKey<ScaffoldState>();
   @override
   Widget build(BuildContext context) {
-    customer = ModalRoute.of(context).settings.arguments;
-    moreInfoController.text = customer.tempInfo ?? '';
-    if (_init) _isEdit = customer.tempInfo == null ? false : true;
+    if (_init) {
+      customer = ModalRoute.of(context).settings.arguments;
+      _isEdit = customer.tempInfo == null ? false : true;
+      _selectedYear = customer.runningYear;
+    }
     _init = false;
     size = MediaQuery.of(context).size;
-    final years = getAllYears(customer.startDate, customer.runningYear);
-    return Scaffold(
-      key: scaffoldKey,
-      appBar: AppBar(
-        backgroundColor: Colors.red[500],
-        title: Text(operatorDetails.networkName),
-        bottom: PreferredSize(
-          child: Padding(
-            padding: const EdgeInsets.only(bottom: 8.0, left: 8.0, right: 8.0),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: <Widget>[
-                Text(
-                  operatorDetails.name,
-                  style: TextStyle(color: Colors.white),
+    return StreamBuilder(
+      stream: Firestore.instance
+          .collection(
+              'users/${operatorDetails.id}/areas/${customer.areaId}/customers')
+          .document(customer.id)
+          .snapshots(),
+      builder: (context, snapshot) {
+        if (snapshot.hasData) {
+          customer = Customer.fromMap(snapshot.data);
+          final years = getAllYears(customer.startDate, customer.runningYear);
+          moreInfoController.text = customer.tempInfo ?? '';
+          return Scaffold(
+            key: scaffoldKey,
+            appBar: AppBar(
+              backgroundColor: Colors.red[500],
+              title: Text(operatorDetails.networkName),
+              bottom: PreferredSize(
+                child: Padding(
+                  padding:
+                      const EdgeInsets.only(bottom: 8.0, left: 8.0, right: 8.0),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: <Widget>[
+                      Text(
+                        operatorDetails.name,
+                        style: TextStyle(color: Colors.white),
+                      ),
+                      Text(
+                        operatorDetails.phoneNumber,
+                        style: TextStyle(color: Colors.white),
+                      ),
+                    ],
+                  ),
                 ),
-                Text(
-                  operatorDetails.phoneNumber,
-                  style: TextStyle(color: Colors.white),
+                preferredSize: Size(size.width, 10),
+              ),
+              actions: <Widget>[
+                DropdownButton(
+                  icon: Icon(Icons.keyboard_arrow_down),
+                  underline: SizedBox(),
+                  value: _selectedYear,
+                  items: [
+                    ...years.map((year) {
+                      return DropdownMenuItem(
+                        value: year,
+                        child: Text(
+                          year.toString(),
+                        ),
+                      );
+                    }).toList()
+                  ],
+                  onChanged: (value) {
+                    setState(() {
+                      _selectedYear = value;
+                    });
+                  },
                 ),
               ],
             ),
-          ),
-          preferredSize: Size(size.width, 10),
-        ),
-        actions: <Widget>[
-          DropdownButton(
-            icon: Icon(Icons.keyboard_arrow_down),
-            underline: SizedBox(),
-            value: _selectedYear,
-            items: [
-              ...years.map((year) {
-                return DropdownMenuItem(
-                  value: year,
-                  child: Text(
-                    year.toString(),
-                  ),
-                );
-              }).toList()
-            ],
-            onChanged: (int value) {
-              setState(() {
-                _selectedYear = value;
-              });
-            },
-          ),
-        ],
-      ),
-      body: SingleChildScrollView(
-        child: Column(
-          children: <Widget>[
-            Container(
-              width: size.width,
-              padding: EdgeInsets.symmetric(
-                horizontal: size.width * 0.02,
-                vertical: size.height * 0.01,
-              ),
-              decoration: BoxDecoration(
-                color: Colors.yellow,
-              ),
-              child: Builder(
-                builder: (context) => Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: <Widget>[
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: <Widget>[
-                        SizedBox(
-                          width: size.width * 0.75,
-                          child: Column(
+            body: SingleChildScrollView(
+              child: Column(
+                children: <Widget>[
+                  Container(
+                    width: size.width,
+                    padding: EdgeInsets.symmetric(
+                      horizontal: size.width * 0.02,
+                      vertical: size.height * 0.01,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.yellow,
+                    ),
+                    child: Builder(
+                      builder: (context) => Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: <Widget>[
+                          Row(
                             crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: <Widget>[
-                              Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 8.0),
-                                  child: richText('Name : ', customer.name)),
-                              Padding(
-                                  padding: const EdgeInsets.all(8.0),
-                                  child: richText(
-                                      'Start Date : ',
-                                      DateFormat('MMMM d, y / EEEE')
-                                          .format(customer.startDate))),
-                              Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 8.0),
-                                  child:
-                                      richText('Address : ', customer.address)),
-                              Padding(
-                                  padding: const EdgeInsets.all(8.0),
-                                  child: richText(
-                                      'Phone : ', customer.phoneNumber)),
-                              copyValueWidget(context, 'Account no : ',
-                                  customer.accountNumber, 'Account number'),
-                              copyValueWidget(context, 'MAC Id : ',
-                                  customer.macId, 'MAC-ID'),
+                              SizedBox(
+                                width: size.width * 0.75,
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: <Widget>[
+                                    Padding(
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 8.0),
+                                        child:
+                                            richText('Name : ', customer.name)),
+                                    Padding(
+                                        padding: const EdgeInsets.all(8.0),
+                                        child: richText(
+                                            'Start Date : ',
+                                            DateFormat('MMMM d, y / EEEE')
+                                                .format(customer.startDate))),
+                                    Padding(
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 8.0),
+                                        child: richText(
+                                            'Address : ', customer.address)),
+                                    Padding(
+                                        padding: const EdgeInsets.all(8.0),
+                                        child: richText(
+                                            'Phone : ', customer.phoneNumber)),
+                                    copyValueWidget(
+                                        context,
+                                        'Account no : ',
+                                        customer.accountNumber,
+                                        'Account number'),
+                                    copyValueWidget(context, 'MAC Id : ',
+                                        customer.macId, 'MAC-ID'),
+                                  ],
+                                ),
+                              ),
+                              Column(
+                                children: <Widget>[
+                                  GestureDetector(
+                                    onTap: () async {
+                                      _pickedImage =
+                                          await ImageGetter.getImageFromDevice(
+                                              context);
+                                      await DatabaseService
+                                          .updateCustomerPicture(
+                                              context, scaffoldKey,
+                                              file: _pickedImage,
+                                              customerId: customer.id,
+                                              areaId: customer.areaId);
+                                      setState(() {});
+                                    },
+                                    child: CircleAvatar(
+                                      radius: size.width * 0.1,
+                                      backgroundImage: customer
+                                                  .profileImageUrl ==
+                                              null
+                                          ? _pickedImage == null
+                                              ? AssetImage(
+                                                  'assets/images/default_profile.jpg')
+                                              : FileImage(_pickedImage)
+                                          : NetworkImage(
+                                              customer.profileImageUrl),
+                                    ),
+                                  ),
+                                  IconButton(
+                                    icon: Icon(
+                                      Icons.call,
+                                      size: size.height * 0.05,
+                                      color: Theme.of(context).primaryColor,
+                                    ),
+                                    onPressed: () async {
+                                      final url = "tel:${customer.phoneNumber}";
+                                      if (await canLaunch(url)) {
+                                        await launch(url);
+                                      } else {
+                                        scaffoldKey.currentState
+                                            .showSnackBar(SnackBar(
+                                          content: Text(
+                                              'Could not process your request, Please try again'),
+                                          duration: Duration(seconds: 1),
+                                        ));
+                                      }
+                                    },
+                                  ),
+                                  AnimatedCrossFade(
+                                    duration: Duration(seconds: 1),
+                                    crossFadeState: _isEdit
+                                        ? CrossFadeState.showSecond
+                                        : CrossFadeState.showFirst,
+                                    firstChild: IconButton(
+                                        onPressed: onMoreInfo,
+                                        icon: Icon(Icons.note_add)),
+                                    secondChild: IconButton(
+                                        onPressed: onMoreInfo,
+                                        icon: Icon(Icons.delete)),
+                                  ),
+                                ],
+                              ),
                             ],
                           ),
-                        ),
-                        Column(
-                          children: <Widget>[
-                            GestureDetector(
-                              onTap: () async {
-                                _pickedImage =
-                                    await ImageGetter.getImageFromDevice(
-                                        context);
-                                await DatabaseService.updateCustomerPicture(
-                                    context, scaffoldKey,
-                                    file: _pickedImage,
-                                    customerId: customer.id,
-                                    areaId: customer.areaId);
-                                setState(() {});
+                          AnimatedContainer(
+                            duration: Duration(milliseconds: 300),
+                            width: size.width,
+                            height: _isEdit ? size.width * 0.10 : 0,
+                            padding: const EdgeInsets.only(
+                                top: 4.0, left: 4.0, right: 4.0),
+                            child: TextFormField(
+                              controller: moreInfoController,
+                              enabled: customer.tempInfo == null && _isEdit,
+                              onEditingComplete: () {
+                                if (moreInfoController.text.isNotEmpty)
+                                  DatabaseService.updateCustomerData(
+                                      context, scaffoldKey,
+                                      data: {
+                                        'tempInfo': moreInfoController.text
+                                      },
+                                      customerId: customer.id,
+                                      areaId: customer.areaId);
+                                customer.tempInfo = moreInfoController.text;
                               },
-                              child: CircleAvatar(
-                                radius: size.width * 0.1,
-                                backgroundImage: customer.profileImageUrl ==
-                                        null
-                                    ? _pickedImage == null
-                                        ? AssetImage(
-                                            'assets/images/default_profile.jpg')
-                                        : FileImage(_pickedImage)
-                                    : NetworkImage(customer.profileImageUrl),
+                              decoration: InputDecoration(
+                                disabledBorder: OutlineInputBorder(
+                                  borderSide: BorderSide(color: Colors.yellow),
+                                ),
+                                labelText: _isEdit ? 'Temperory Info' : null,
+                                border: OutlineInputBorder(),
+                                contentPadding: EdgeInsets.all(10),
                               ),
                             ),
-                            IconButton(
-                              icon: Icon(
-                                Icons.call,
-                                size: size.height * 0.05,
-                                color: Theme.of(context).primaryColor,
-                              ),
-                              onPressed: () async {
-                                final url = "tel:${customer.phoneNumber}";
-                                if (await canLaunch(url)) {
-                                  await launch(url);
-                                } else {
-                                  scaffoldKey.currentState
-                                      .showSnackBar(SnackBar(
-                                    content: Text(
-                                        'Could not process your request, Please try again'),
-                                    duration: Duration(seconds: 1),
-                                  ));
-                                }
-                              },
-                            ),
-                            AnimatedCrossFade(
-                              duration: Duration(seconds: 1),
-                              crossFadeState: _isEdit
-                                  ? CrossFadeState.showSecond
-                                  : CrossFadeState.showFirst,
-                              firstChild: IconButton(
-                                  onPressed: onMoreInfo,
-                                  icon: Icon(Icons.note_add)),
-                              secondChild: IconButton(
-                                  onPressed: onMoreInfo,
-                                  icon: Icon(Icons.delete)),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                    AnimatedContainer(
-                      duration: Duration(milliseconds: 300),
-                      width: size.width,
-                      height: _isEdit ? size.width * 0.10 : 0,
-                      padding: const EdgeInsets.only(
-                          top: 4.0, left: 4.0, right: 4.0),
-                      child: TextFormField(
-                        controller: moreInfoController,
-                        enabled: customer.tempInfo == null && _isEdit,
-                        onEditingComplete: () {
-                          if (moreInfoController.text.isNotEmpty)
-                            DatabaseService.updateCustomerData(
-                                context, scaffoldKey,
-                                data: {'tempInfo': moreInfoController.text},
-                                customerId: customer.id,
-                                areaId: customer.areaId);
-                          customer.tempInfo = moreInfoController.text;
-                        },
-                        decoration: InputDecoration(
-                          disabledBorder: OutlineInputBorder(
-                            borderSide: BorderSide(color: Colors.yellow),
                           ),
-                          labelText: _isEdit ? 'Temperory Info' : null,
-                          border: OutlineInputBorder(),
-                          contentPadding: EdgeInsets.all(10),
-                        ),
+                        ],
                       ),
                     ),
-                  ],
-                ),
+                  ),
+                  Divider(
+                    height: 0,
+                    endIndent: 0,
+                    indent: 0,
+                    thickness: 3,
+                    color: Theme.of(context).primaryColor,
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.only(top: 8),
+                    child: CustomerPlanList(),
+                  ),
+                  Divider(
+                      endIndent: 0,
+                      indent: 0,
+                      thickness: 3,
+                      color: Theme.of(context).primaryColor),
+                  StreamBuilder(
+                    stream: Firestore.instance
+                        .collection(
+                            'users/${firebaseUser.uid}/areas/${customer.areaId}/customers/${customer.id}/$_selectedYear')
+                        .orderBy('code')
+                        .snapshots(),
+                    builder: (context, snapshot) {
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return SizedBox();
+                      }
+                      rechargeData =
+                          getCustomerYearlyRecharge(snapshot.data.documents);
+                      return ListView.builder(
+                        shrinkWrap: true,
+                        physics: NeverScrollableScrollPhysics(),
+                        itemBuilder: (context, index) {
+                          return GestureDetector(
+                            onLongPress: () =>
+                                deleteRecharge(context, rechargeData[index]),
+                            child: CustomerPlanList(
+                              customerId: customer.id,
+                              areaId: customer.areaId,
+                              id: rechargeData[index].id,
+                              billPay: rechargeData[index].billPay,
+                              year: _selectedYear.toString(),
+                              month: DateFormat('MMMM').format(
+                                DateTime(
+                                    _selectedYear, rechargeData[index].code),
+                              ),
+                              billDate: rechargeData[index].date == null
+                                  ? ''
+                                  : DateFormat('dd/MM/yyyy')
+                                      .format(rechargeData[index].date),
+                              billAmount: rechargeData[index].plan ?? '',
+                              status: rechargeData[index].status
+                                  ? 'Active'
+                                  : 'Inactive',
+                              addInfo: rechargeData[index].addInfo,
+                            ),
+                          );
+                        },
+                        itemCount: rechargeData.length,
+                      );
+                    },
+                  ),
+                  SizedBox(height: size.height * 0.125),
+                ],
               ),
             ),
-            Divider(
-              height: 0,
-              endIndent: 0,
-              indent: 0,
-              thickness: 3,
-              color: Theme.of(context).primaryColor,
+            floatingActionButton: Row(
+              children: <Widget>[
+                SizedBox(width: 10),
+                floatingButton(
+                    0, () => activateButton(context), 'Activate', Colors.green),
+                Expanded(child: SizedBox()),
+                FloatingActionButton(
+                  onPressed: () => modalBottomSheet(context, customer),
+                  child: Icon(FlutterIcons.account_edit_outline_mco),
+                  backgroundColor: Theme.of(context).primaryColor,
+                  foregroundColor: Colors.white,
+                ),
+                Expanded(child: SizedBox()),
+                floatingButton(1, deactivateButton, 'Deactivate', Colors.red),
+                SizedBox(width: 10),
+              ],
             ),
-            Padding(
-              padding: const EdgeInsets.only(top: 8),
-              child: CustomerPlanList(),
-            ),
-            Divider(
-                endIndent: 0,
-                indent: 0,
-                thickness: 3,
-                color: Theme.of(context).primaryColor),
-            StreamBuilder(
-              stream: Firestore.instance
-                  .collection(
-                      'users/${firebaseUser.uid}/areas/${customer.areaId}/customers/${customer.id}/$_selectedYear')
-                  .orderBy('code')
-                  .snapshots(),
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return SizedBox();
-                }
-                rechargeData =
-                    getCustomerYearlyRecharge(snapshot.data.documents);
-                return ListView.builder(
-                  shrinkWrap: true,
-                  physics: NeverScrollableScrollPhysics(),
-                  itemBuilder: (context, index) {
-                    return CustomerPlanList(
-                      customerId: customer.id,
-                      areaId: customer.areaId,
-                      id: rechargeData[index].id,
-                      billPay: rechargeData[index].billPay,
-                      year: _selectedYear.toString(),
-                      month: DateFormat('MMMM').format(
-                        DateTime(_selectedYear, rechargeData[index].code),
+            floatingActionButtonLocation:
+                FloatingActionButtonLocation.centerFloat,
+          );
+        } else {
+          return Scaffold(
+            appBar: AppBar(
+              backgroundColor: Colors.red[500],
+              title: Text(operatorDetails.networkName),
+              bottom: PreferredSize(
+                child: Padding(
+                  padding:
+                      const EdgeInsets.only(bottom: 8.0, left: 8.0, right: 8.0),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: <Widget>[
+                      Text(
+                        operatorDetails.name,
+                        style: TextStyle(color: Colors.white),
                       ),
-                      billDate: rechargeData[index].date == null
-                          ? ''
-                          : DateFormat('dd/MM/yyyy')
-                              .format(rechargeData[index].date),
-                      billAmount: rechargeData[index].plan ?? '',
-                      status: rechargeData[index].status?'Active':'Inactive',
-                      addInfo: rechargeData[index].addInfo,
-                    );
-                  },
-                  itemCount: rechargeData.length,
-                );
-              },
+                      Text(
+                        operatorDetails.phoneNumber,
+                        style: TextStyle(color: Colors.white),
+                      ),
+                    ],
+                  ),
+                ),
+                preferredSize: Size(size.width, 10),
+              ),
             ),
-            SizedBox(height: 45),
-          ],
-        ),
-      ),
-      floatingActionButton: Row(
-        children: <Widget>[
-          SizedBox(width: 10),
-          floatingButton(0, activateButton, 'Activate', Colors.green),
-          Expanded(child: SizedBox()),
-          FloatingActionButton(
-            onPressed: () => modalBottomSheet(context, customer),
-            child: Icon(FlutterIcons.account_edit_outline_mco),
-            backgroundColor: Theme.of(context).primaryColor,
-            foregroundColor: Colors.white,
-          ),
-          Expanded(child: SizedBox()),
-          floatingButton(1, deactivateButton, 'Deactivate', Colors.red),
-          SizedBox(width: 10),
-        ],
-      ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
+          );
+        }
+      },
     );
   }
 }

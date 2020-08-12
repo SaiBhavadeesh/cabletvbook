@@ -8,14 +8,14 @@ import 'package:cableTvBook/models/customer.dart';
 import 'package:cableTvBook/global/validators.dart';
 import 'package:cableTvBook/global/box_decoration.dart';
 
-class ModalBottomSheet extends StatefulWidget {
+class CustomerEditBottomSheet extends StatefulWidget {
   final Customer customer;
-  ModalBottomSheet({@required this.customer});
+  CustomerEditBottomSheet({@required this.customer});
   @override
-  _ModalBottomSheetState createState() => _ModalBottomSheetState();
+  _CustomerEditBottomSheetState createState() => _CustomerEditBottomSheetState();
 }
 
-class _ModalBottomSheetState extends State<ModalBottomSheet> {
+class _CustomerEditBottomSheetState extends State<CustomerEditBottomSheet> {
   final _formKey = GlobalKey<FormState>();
   final scaffoldKey = GlobalKey<ScaffoldState>();
   String _name;

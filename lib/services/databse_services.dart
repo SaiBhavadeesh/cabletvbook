@@ -10,6 +10,7 @@ import 'package:cableTvBook/models/operator.dart';
 import 'package:cableTvBook/global/variables.dart';
 import 'package:cableTvBook/screens/bottom_tabs_screen.dart';
 import 'package:cableTvBook/widgets/default_dialog_box.dart';
+import 'package:intl/intl.dart';
 
 class DatabaseService {
   static Future<void> getuserData() async {
@@ -54,7 +55,8 @@ class DatabaseService {
         await _firestoreInstance
             .collection(DateTime.now().year.toString())
             .document()
-            .setData(recharge.toJson());
+            .setData(
+                recharge.toJson()..['date'] = FieldValue.serverTimestamp());
       final data = {
         'totalAccounts': area.totalAccounts + 1,
         'activeAccounts': customer.currentStatus == 'Active'
@@ -93,9 +95,6 @@ class DatabaseService {
       @required areaId}) async {
     DefaultDialogBox.loadingDialog(context,
         loaderType: SelectLoader.ballRotateChase);
-    print(data);
-    print(customerId);
-    print(areaId);
     try {
       await Firestore.instance
           .collection('users/${operatorDetails.id}/areas/$areaId/customers')
@@ -275,5 +274,123 @@ class DatabaseService {
     }
   }
 
-  static Future<void> rechargeCustomer() async {}
+  static Future<void> rechargeCustomer(
+      BuildContext context, GlobalKey<ScaffoldState> key,
+      {@required String customerId,
+      @required String areaId,
+      @required double plan,
+      @required int term,
+      @required Recharge recentRecharge}) async {
+    DefaultDialogBox.loadingDialog(context,
+        loaderType: SelectLoader.ballRotateChase);
+    try {
+      final _ref = Firestore.instance
+          .collection('users/${operatorDetails.id}/areas/$areaId/customers')
+          .document(customerId);
+      if (recentRecharge != null) {
+        if (recentRecharge.status != 'Completed')
+          await _ref
+              .collection(recentRecharge.date.year.toString())
+              .document(recentRecharge.id)
+              .updateData({'status': 'Completed'});
+        if (recentRecharge.date.year == DateTime.now().year)
+          for (int i = recentRecharge.date.month + 1;
+              i < DateTime.now().month;
+              i++) {
+            final _rechargeRef =
+                _ref.collection(DateTime.now().year.toString()).document();
+            final inactiveRecharge = Recharge(
+                    id: _rechargeRef.documentID, status: 'Inactive', code: i)
+                .toJson();
+            await _rechargeRef.setData(inactiveRecharge);
+          }
+        else if (recentRecharge.date.year < DateTime.now().year) {
+          for (int i = recentRecharge.date.month + 1; i <= 12; i++) {
+            final _rechargeRef =
+                _ref.collection(recentRecharge.date.year.toString()).document();
+            final inactiveRecharge = Recharge(
+                    id: _rechargeRef.documentID, status: 'Inactive', code: i)
+                .toJson();
+            await _rechargeRef.setData(inactiveRecharge);
+          }
+          for (int i = 1; i < DateTime.now().month; i++) {
+            final _rechargeRef =
+                _ref.collection(DateTime.now().year.toString()).document();
+            final inactiveRecharge = Recharge(
+                    id: _rechargeRef.documentID, status: 'Inactive', code: i)
+                .toJson();
+            await _rechargeRef.setData(inactiveRecharge);
+          }
+        }
+      }
+      int monthCode = DateTime.now().month;
+      int rechargeYear = DateTime.now().year;
+      for (int i = 0; i < term; i++) {
+        if (monthCode % 13 == 0) {
+          monthCode = 1;
+          rechargeYear = DateTime.now().year + 1;
+        }
+        final _rechargeRef =
+            _ref.collection(rechargeYear.toString()).document();
+        final activeRecharge = Recharge(
+                id: _rechargeRef.documentID,
+                status: 'Active',
+                code: monthCode,
+                plan: plan.toString())
+            .toJson()
+              ..['date'] = FieldValue.serverTimestamp();
+        await _rechargeRef.setData(activeRecharge);
+        monthCode += 1;
+      }
+      await _ref.updateData({'currentStatus': 'Active'});
+      Navigator.pop(context);
+    } on PlatformException catch (error) {
+      Navigator.pop(context);
+      key.currentState.showSnackBar(SnackBar(
+        content: Text(error.message),
+        duration: Duration(seconds: 1),
+      ));
+    } catch (_) {
+      Navigator.pop(context);
+      key.currentState.showSnackBar(SnackBar(
+        content: Text('ERROR : something went wrong !'),
+        duration: Duration(seconds: 1),
+      ));
+    }
+  }
+
+  static Future<void> deactivateCustomer(
+      BuildContext context, GlobalKey<ScaffoldState> key,
+      {@required String customerId,
+      @required String areaId,
+      @required Recharge recentRecharge}) async {
+    DefaultDialogBox.loadingDialog(context,
+        loaderType: SelectLoader.ballRotateChase);
+    try {
+      final _ref = Firestore.instance
+          .collection('users/${operatorDetails.id}/areas/$areaId/customers')
+          .document(customerId);
+      await _ref.updateData({'currentStatus': 'Inactive'});
+      await _ref
+          .collection(recentRecharge.date.year.toString())
+          .document(recentRecharge.id)
+          .updateData({
+        'status': 'Completed',
+        'addInfo': 'DC: ${DateFormat('dd, MMMM / yyyy').format(DateTime.now())}'
+      });
+      Navigator.pop(context);
+    } on PlatformException catch (error) {
+      Navigator.pop(context);
+      key.currentState.showSnackBar(SnackBar(
+        content: Text(error.message),
+        duration: Duration(seconds: 1),
+      ));
+    } catch (_) {
+      Navigator.pop(context);
+      key.currentState.showSnackBar(SnackBar(
+        content: Text('ERROR : something went wrong !'),
+        duration: Duration(seconds: 1),
+      ));
+    }
+  }
 }

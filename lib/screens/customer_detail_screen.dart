@@ -1,17 +1,20 @@
 import 'dart:io';
+import 'package:cableTvBook/widgets/activate_bottom_sheet.dart';
+import 'package:cableTvBook/widgets/default_dialog_box.dart';
 import 'package:intl/intl.dart';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:flutter_icons/flutter_icons.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 import 'package:cableTvBook/models/customer.dart';
 import 'package:cableTvBook/global/variables.dart';
 import 'package:cableTvBook/helpers/image_getter.dart';
 import 'package:cableTvBook/services/databse_services.dart';
 import 'package:cableTvBook/widgets/customer_plan_list.dart';
-import 'package:cableTvBook/widgets/modal_bottom_sheet.dart';
+import 'package:cableTvBook/widgets/customer_edit_bottom_sheet.dart';
 
 class CustomerDetailScreen extends StatefulWidget {
   static const routeName = '/customerDetailScreen';
@@ -28,7 +31,7 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
   bool _init = true;
   File _pickedImage;
   Customer customer;
-  double _selectedPlan;
+  List<Recharge> rechargeData;
 
   List<int> getAllYears(DateTime date) {
     List<int> years = [];
@@ -58,7 +61,8 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
     Navigator.of(ctx)
         .push(
       PageRouteBuilder(
-        pageBuilder: (context, _, __) => ModalBottomSheet(customer: data),
+        pageBuilder: (context, _, __) =>
+            CustomerEditBottomSheet(customer: data),
         opaque: false,
       ),
     )
@@ -153,113 +157,66 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
     );
   }
 
-  void _selectPlanField(double value) {
-    setState(() {
-      _selectedPlan = value;
-    });
-  }
-
-  void activateButton() async {
-    await showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              'Select Plan : ',
-              style: TextStyle(
-                color: Theme.of(context).primaryColor,
-                fontWeight: FontWeight.bold,
-                fontSize: 18,
-                letterSpacing: 1,
-              ),
+  void activateButton() {
+    Navigator.of(context).push(PageRouteBuilder(
+        pageBuilder: (context, _, __) => ActivateBottomSheet(
+              customerId: customer.id,
+              areaId: customer.areaId,
+              recentRecharge: rechargeData == null || rechargeData.isEmpty
+                  ? null
+                  : rechargeData.last,
+              plan: customer.currentPlan,
             ),
-            ...operatorDetails.plans.map(
-              (plan) {
-                return Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: <Widget>[
-                    Radio(
-                      materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                      activeColor: Theme.of(context).primaryColor,
-                      value: plan,
-                      groupValue: _selectedPlan,
-                      onChanged: _selectPlanField,
-                    ),
-                    Text('\u20B9 ' + plan.toString()),
-                  ],
-                );
-              },
-            ).toList(),
-            
-          ],
-        ),
-      ),
-    );
-    // final url = "https://www.actcorp.in";
-    // if (await canLaunch(url)) {
-    //   await launch(
-    //     url,
-    //     enableJavaScript: true,
-    //   );
-    // } else {
-    //   scaffoldKey.currentState.showSnackBar(SnackBar(
-    //     content: Text('Could not process your request, Please try again'),
-    //     duration: Duration(seconds: 1),
-    //   ));
-    // }
-    // await showDialog(
-    //   context: context,
-    //   builder: (ctx) => AlertDialog(
-    //     content: Text('Activation successful ?'),
-    //     actions: [
-    //       FlatButton(
-    //         onPressed: () => Navigator.pop(ctx),
-    //         child: Text('no'),
-    //         color: Theme.of(context).errorColor,
-    //       ),
-    //       FlatButton(
-    //         onPressed: () {},
-    //         child: Text('yes'),
-    //         color: Theme.of(context).primaryColor,
-    //       ),
-    //     ],
-    //   ),
-    // );
+        opaque: false));
   }
 
   void deactivateButton() async {
-    final url = "https://www.actcorp.in";
-    if (await canLaunch(url)) {
-      await launch(
-        url,
-        enableJavaScript: true,
-      );
+    if (customer.currentStatus != 'Active') {
+      DefaultDialogBox.errorDialog(context,
+          title: 'Alert !',
+          content: 'Customer has no active plan to deactivate !');
     } else {
-      scaffoldKey.currentState.showSnackBar(SnackBar(
-        content: Text('Could not process your request, Please try again'),
-        duration: Duration(seconds: 1),
-      ));
+      final url = "https://www.actcorp.in";
+      if (await canLaunch(url)) {
+        try {
+          await launch(
+            url,
+            forceSafariVC: true,
+            forceWebView: true,
+            enableJavaScript: true,
+          );
+        } catch (_) {}
+      } else {
+        scaffoldKey.currentState.showSnackBar(SnackBar(
+          content: Text('Could not process your request, Please try again'),
+          duration: Duration(seconds: 1),
+        ));
+      }
+      await showDialog(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          content: Text('De-activation successful ?'),
+          actions: [
+            FlatButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: Text('no'),
+              color: Theme.of(ctx).errorColor,
+            ),
+            FlatButton(
+              onPressed: () async {
+                Navigator.pop(ctx);
+                await DatabaseService.deactivateCustomer(context, scaffoldKey,
+                    customerId: customer.id,
+                    areaId: customer.areaId,
+                    recentRecharge: rechargeData.last);
+              },
+              child: Text('yes'),
+              color: Theme.of(ctx).primaryColor,
+            ),
+          ],
+        ),
+      );
     }
-    await showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        content: Text('De-activation successful ?'),
-        actions: [
-          FlatButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: Text('no'),
-            color: Theme.of(context).errorColor,
-          ),
-          FlatButton(
-            onPressed: () {},
-            child: Text('yes'),
-            color: Theme.of(context).primaryColor,
-          ),
-        ],
-      ),
-    );
   }
 
   final scaffoldKey = GlobalKey<ScaffoldState>();
@@ -478,26 +435,33 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
                 indent: 0,
                 thickness: 3,
                 color: Theme.of(context).primaryColor),
-            FutureBuilder(
-              future: getCustomerYearlyRecharge(
-                  customer.areaId, customer.id, _selectedYear.toString()),
+            StreamBuilder(
+              stream: Firestore.instance
+                  .collection(
+                      'users/${firebaseUser.uid}/areas/${customer.areaId}/customers/${customer.id}/$_selectedYear')
+                  .orderBy('code')
+                  .snapshots(),
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return SizedBox();
                 }
-                List<Recharge> rechargeData = snapshot.data;
+                rechargeData =
+                    getCustomerYearlyRecharge(snapshot.data.documents);
                 return ListView.builder(
                   shrinkWrap: true,
                   physics: NeverScrollableScrollPhysics(),
                   itemBuilder: (context, index) {
                     return CustomerPlanList(
-                      month: DateFormat('MMM').format(
-                        DateTime(_selectedYear, rechargeData[index].date.month),
+                      month: DateFormat('MMMM').format(
+                        DateTime(_selectedYear, rechargeData[index].code),
                       ),
-                      billDate:
-                          DateFormat('dd/MM').format(rechargeData[index].date),
-                      billAmount: rechargeData[index].plan,
+                      billDate: rechargeData[index].date == null
+                          ? ''
+                          : DateFormat('dd/MM')
+                              .format(rechargeData[index].date),
+                      billAmount: rechargeData[index].plan ?? '',
                       status: rechargeData[index].status,
+                      addInfo: rechargeData[index].addInfo,
                     );
                   },
                   itemCount: rechargeData.length,

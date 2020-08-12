@@ -3,11 +3,15 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cableTvBook/global/variables.dart';
 
 class Recharge {
+  String id;
+  int code;
   DateTime date;
   String plan;
   String status;
   String addInfo;
   Recharge({
+    this.id,
+    this.code,
     this.date,
     this.plan,
     this.status = '',
@@ -15,14 +19,18 @@ class Recharge {
   });
 
   Recharge.fromMap(doc) {
-    this.date = doc['date'].toDate();
+    this.id = doc['id'];
+    this.code = doc['code'];
+    this.date = doc['date'] == null ? null : doc['date'].toDate();
     this.plan = doc['plan'];
     this.status = doc['status'];
     this.addInfo = doc['addInfo'];
   }
 
   Map<String, dynamic> toJson() => {
-        'date': FieldValue.serverTimestamp(),
+        'id': this.id,
+        'code': this.code,
+        'date': this.date,
         'plan': this.plan,
         'status': this.status,
         'addInfo': this.addInfo,
@@ -93,9 +101,8 @@ class Customer {
       };
 }
 
-List<Customer> getAreaCustomers(List<DocumentSnapshot> snapshot) {
-  final areaCustomers = snapshot.map((e) => Customer.fromMap(e)).toList();
-  return areaCustomers;
+List<Customer> getAreaCustomers(List<DocumentSnapshot> docs) {
+  return docs.map((e) => Customer.fromMap(e)).toList();
 }
 
 Future<List<Customer>> getAllCustomers() async {
@@ -135,11 +142,6 @@ List<Customer> getSelectedCustomers({
   return selectedCustomers;
 }
 
-Future<List<Recharge>> getCustomerYearlyRecharge(
-    String areaId, String customerId, String year) async {
-  final document = await Firestore.instance
-      .collection(
-          'users/${firebaseUser.uid}/areas/$areaId/customers/$customerId/$year')
-      .getDocuments();
-  return document.documents.map((e) => Recharge.fromMap(e)).toList();
+List<Recharge> getCustomerYearlyRecharge(List<DocumentSnapshot> docs) {
+  return docs.map((e) => Recharge.fromMap(e)).toList();
 }

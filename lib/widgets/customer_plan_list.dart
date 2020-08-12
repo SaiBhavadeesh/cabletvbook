@@ -1,23 +1,20 @@
 import 'package:flutter/material.dart';
 
-class CustomerPlanList extends StatefulWidget {
+class CustomerPlanList extends StatelessWidget {
   final String month;
   final String billDate;
   final String billAmount;
   final String status;
+  final String addInfo;
 
   CustomerPlanList({
     this.month = 'Month',
     this.billDate = 'Date',
     this.billAmount = 'Amount',
     this.status = 'Status',
+    this.addInfo,
   });
 
-  @override
-  _CustomerPlanListState createState() => _CustomerPlanListState();
-}
-
-class _CustomerPlanListState extends State<CustomerPlanList> {
   @override
   Widget build(BuildContext context) {
     final width = MediaQuery.of(context).size.width;
@@ -28,9 +25,27 @@ class _CustomerPlanListState extends State<CustomerPlanList> {
           children: <Widget>[
             Container(
               alignment: Alignment.center,
-              width: width * 0.18,
+              width: width * 0.2,
               child: Text(
-                widget.month,
+                month,
+                textAlign: TextAlign.center,
+                softWrap: true,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  fontSize: width * 0.045,
+                ),
+              ),
+            ),
+            Container(
+              height: width * 0.05,
+              color: Theme.of(context).primaryColor,
+              width: 1.5,
+            ),
+            Container(
+              alignment: Alignment.center,
+              width: width * 0.2,
+              child: Text(
+                billDate,
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: width * 0.045,
@@ -44,9 +59,9 @@ class _CustomerPlanListState extends State<CustomerPlanList> {
             ),
             Container(
               alignment: Alignment.center,
-              width: width * 0.23,
+              width: width * 0.2,
               child: Text(
-                widget.billDate,
+                billAmount,
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: width * 0.045,
@@ -60,33 +75,15 @@ class _CustomerPlanListState extends State<CustomerPlanList> {
             ),
             Container(
               alignment: Alignment.center,
-              width: width * 0.18,
-              child: FittedBox(
-                child: Text(
-                  widget.billAmount,
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: width * 0.045,
-                  ),
-                ),
-              ),
-            ),
-            Container(
+              width: width * 0.25,
               height: width * 0.05,
-              color: Theme.of(context).primaryColor,
-              width: 1.5,
-            ),
-            Container(
-              alignment: Alignment.center,
-              width: width * 0.3,
-              height: width * 0.05,
-              child: widget.status == 'Completed'
+              child: status == 'Completed'
                   ? Icon(
                       Icons.done,
                       color: Colors.green,
                     )
                   : Text(
-                      widget.status,
+                      status,
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         fontSize: width * 0.045,
@@ -95,7 +92,10 @@ class _CustomerPlanListState extends State<CustomerPlanList> {
             ),
           ],
         ),
-        if (widget.month != 'Month') Divider(),
+        if (month != 'Month') Divider(),
+        if (addInfo != null)
+          Text(addInfo, style: TextStyle(color: Theme.of(context).errorColor)),
+        if (addInfo != null) Divider(),
       ],
     );
   }

@@ -46,8 +46,6 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
     });
   }
 
-  void uploadPhotoToDatabase() {}
-
   void saveDetails() async {
     if (_formKey.currentState.validate() &&
         _selectedAreaId != null && 
@@ -66,6 +64,7 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
         currentStatus: _checked ? 'Active' : 'Inactive',
       );
       final rechargeData = Recharge(
+        code: DateTime.now().month,
         status: _checked ? 'Active' : 'Inactive',
         plan: _selectedPlan.toString(),
       );

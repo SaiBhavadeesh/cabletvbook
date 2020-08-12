@@ -30,6 +30,11 @@ class _BottomTabsScreenState extends State<BottomTabsScreen> {
     _currentIndex = widget.index;
   }
 
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+  }
+
   final scaffolfKey = GlobalKey<ScaffoldState>();
 
   @override
@@ -88,6 +93,28 @@ class _BottomTabsScreenState extends State<BottomTabsScreen> {
           ),
         ],
       ),
+      bottomSheet: firebaseUser.isEmailVerified
+          ? null
+          : Container(
+              padding: EdgeInsets.symmetric(horizontal: 20, vertical: 40),
+              decoration: BoxDecoration(
+                  color: Colors.blueGrey,
+                  borderRadius:
+                      BorderRadius.vertical(top: Radius.elliptical(50, 50))),
+              child: RichText(
+                textAlign: TextAlign.center,
+                text: TextSpan(
+                  text: 'Please verify your email & Restart the App\n\n',
+                  children: [
+                    TextSpan(
+                        text:
+                            'Go to ( \u2630 -> settings ) to get link to verify email',
+                        style: TextStyle(fontSize: 16))
+                  ],
+                  style: TextStyle(color: Colors.white, fontSize: 26),
+                ),
+              ),
+            ),
     );
   }
 }

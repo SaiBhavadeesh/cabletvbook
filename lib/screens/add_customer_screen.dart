@@ -48,7 +48,7 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
 
   void saveDetails() async {
     if (_formKey.currentState.validate() &&
-        _selectedAreaId != null && 
+        _selectedAreaId != null &&
         _selectedPlan != null) {
       _formKey.currentState.save();
       final newCustomer = Customer(
@@ -61,13 +61,17 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
         networkProviderId: operatorDetails.id,
         areaId: _selectedAreaId,
         currentPlan: _selectedPlan,
+        runningYear: DateTime.now().year,
         currentStatus: _checked ? 'Active' : 'Inactive',
       );
-      final rechargeData = Recharge(
-        code: DateTime.now().month,
-        status: _checked ? 'Active' : 'Inactive',
-        plan: _selectedPlan.toString(),
-      );
+      Recharge rechargeData;
+      if (_checked)
+        rechargeData = Recharge(
+          code: DateTime.now().month,
+          status: true,
+          plan: _selectedPlan.toString(),
+          billPay: true,
+        );
       await DatabaseService.addNewCustomer(context,
           customer: newCustomer,
           recharge: rechargeData,
@@ -240,7 +244,8 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
                 activeColor: Colors.green,
                 controlAffinity: ListTileControlAffinity.leading,
                 value: _checked,
-                title: Text('Check this box, if already paid bill.'),
+                title: Text(
+                    'Check this box, if customer\'s current status is active.'),
                 onChanged: (value) {
                   setState(() {
                     _checked = !_checked;

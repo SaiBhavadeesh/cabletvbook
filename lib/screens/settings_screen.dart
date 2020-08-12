@@ -1,4 +1,3 @@
-import 'package:cableTvBook/widgets/verify_phone_popup.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_icons/flutter_icons.dart';
 
@@ -6,6 +5,7 @@ import 'package:cableTvBook/global/variables.dart';
 import 'package:cableTvBook/global/validators.dart';
 import 'package:cableTvBook/global/box_decoration.dart';
 import 'package:cableTvBook/services/authentication.dart';
+import 'package:cableTvBook/widgets/verify_phone_popup.dart';
 
 class SettingsScreen extends StatelessWidget {
   static const routeName = '/settingsScreen';
@@ -161,12 +161,12 @@ class SettingsScreen extends StatelessWidget {
             ),
           ),
           getTitle(context, 'Privacy Settings'),
-          getdetailText(context, 'Change Security pin',
-              function: () => getChangeDialog(context,
-                  title: 'Currently unavailable',
-                  validator: null,
-                  icon: null,
-                  onSaved: null)),
+          // getdetailText(context, 'Change Security pin',
+          //     function: () => getChangeDialog(context,
+          //         title: 'Currently unavailable',
+          //         validator: null,
+          //         icon: null,
+          //         onSaved: null)),
           if (operatorDetails.password != null)
             getdetailText(
               context,

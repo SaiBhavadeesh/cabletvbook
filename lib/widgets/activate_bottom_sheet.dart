@@ -20,6 +20,7 @@ class ActivateBottomSheet extends StatefulWidget {
 class _ActivateBottomSheetState extends State<ActivateBottomSheet> {
   final scaffoldKey = GlobalKey<ScaffoldState>();
   double _selectedPlan;
+  bool _checked = true;
   int _selectedTerm = 1;
 
   void _selectPlanField(double value) {
@@ -128,6 +129,19 @@ class _ActivateBottomSheetState extends State<ActivateBottomSheet> {
                       Text('12 Months'),
                     ],
                   ),
+                  Divider(),
+                  CheckboxListTile(
+                    activeColor: Colors.green,
+                    controlAffinity: ListTileControlAffinity.leading,
+                    value: _checked,
+                    title: Text('Un-check this box, if bill not paid.'),
+                    onChanged: (value) {
+                      setState(() {
+                        _checked = !_checked;
+                      });
+                    },
+                  ),
+                  Divider(),
                   Align(
                     child: defaultbutton(
                       context: context,
@@ -160,6 +174,7 @@ class _ActivateBottomSheetState extends State<ActivateBottomSheet> {
                                           areaId: widget.areaId,
                                           plan: _selectedPlan,
                                           term: _selectedTerm,
+                                          billPay: _checked,
                                           recentRecharge:
                                               widget.recentRecharge);
                                       Navigator.pop(context);

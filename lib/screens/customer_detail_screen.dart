@@ -26,20 +26,20 @@ class CustomerDetailScreen extends StatefulWidget {
 class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
   final moreInfoController = TextEditingController();
   Size size;
-  int _selectedYear = DateTime.now().year;
+  int _selectedYear;
   bool _isEdit = false;
   bool _init = true;
   File _pickedImage;
   Customer customer;
   List<Recharge> rechargeData;
 
-  List<int> getAllYears(DateTime date) {
+  List<int> getAllYears(DateTime date, int runningYear) {
     List<int> years = [];
     final startyear = date.year;
-    final endYear = DateTime.now().year;
-    for (int i = startyear; i <= endYear + 1; i++) {
+    for (int i = startyear; i <= runningYear; i++) {
       years.add(i);
     }
+    _selectedYear = runningYear;
     return years;
   }
 
@@ -227,7 +227,7 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
     if (_init) _isEdit = customer.tempInfo == null ? false : true;
     _init = false;
     size = MediaQuery.of(context).size;
-    final years = getAllYears(customer.startDate);
+    final years = getAllYears(customer.startDate, customer.runningYear);
     return Scaffold(
       key: scaffoldKey,
       appBar: AppBar(
@@ -452,15 +452,20 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
                   physics: NeverScrollableScrollPhysics(),
                   itemBuilder: (context, index) {
                     return CustomerPlanList(
+                      customerId: customer.id,
+                      areaId: customer.areaId,
+                      id: rechargeData[index].id,
+                      billPay: rechargeData[index].billPay,
+                      year: _selectedYear.toString(),
                       month: DateFormat('MMMM').format(
                         DateTime(_selectedYear, rechargeData[index].code),
                       ),
                       billDate: rechargeData[index].date == null
                           ? ''
-                          : DateFormat('dd/MM')
+                          : DateFormat('dd/MM/yyyy')
                               .format(rechargeData[index].date),
                       billAmount: rechargeData[index].plan ?? '',
-                      status: rechargeData[index].status,
+                      status: rechargeData[index].status?'Active':'Inactive',
                       addInfo: rechargeData[index].addInfo,
                     );
                   },

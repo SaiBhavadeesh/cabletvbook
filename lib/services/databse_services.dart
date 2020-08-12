@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:intl/intl.dart';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -10,7 +11,6 @@ import 'package:cableTvBook/models/operator.dart';
 import 'package:cableTvBook/global/variables.dart';
 import 'package:cableTvBook/screens/bottom_tabs_screen.dart';
 import 'package:cableTvBook/widgets/default_dialog_box.dart';
-import 'package:intl/intl.dart';
 
 class DatabaseService {
   static Future<void> getuserData() async {
@@ -51,12 +51,14 @@ class DatabaseService {
       await _firestoreInstance.setData(customer.toJson()
         ..['id'] = _firestoreInstance.documentID
         ..['profileImageUrl'] = url);
-      if (customer.currentStatus == 'Active')
-        await _firestoreInstance
+      if (customer.currentStatus == 'Active') {
+        final _rechargeInstance = _firestoreInstance
             .collection(DateTime.now().year.toString())
-            .document()
-            .setData(
-                recharge.toJson()..['date'] = FieldValue.serverTimestamp());
+            .document();
+        recharge.id = _rechargeInstance.documentID;
+        await _rechargeInstance.setData(
+            recharge.toJson()..['date'] = FieldValue.serverTimestamp());
+      }
       final data = {
         'totalAccounts': area.totalAccounts + 1,
         'activeAccounts': customer.currentStatus == 'Active'
@@ -280,6 +282,7 @@ class DatabaseService {
       @required String areaId,
       @required double plan,
       @required int term,
+      @required bool billPay,
       @required Recharge recentRecharge}) async {
     DefaultDialogBox.loadingDialog(context,
         loaderType: SelectLoader.ballRotateChase);
@@ -288,11 +291,6 @@ class DatabaseService {
           .collection('users/${operatorDetails.id}/areas/$areaId/customers')
           .document(customerId);
       if (recentRecharge != null) {
-        if (recentRecharge.status != 'Completed')
-          await _ref
-              .collection(recentRecharge.date.year.toString())
-              .document(recentRecharge.id)
-              .updateData({'status': 'Completed'});
         if (recentRecharge.date.year == DateTime.now().year)
           for (int i = recentRecharge.date.month + 1;
               i < DateTime.now().month;
@@ -300,7 +298,7 @@ class DatabaseService {
             final _rechargeRef =
                 _ref.collection(DateTime.now().year.toString()).document();
             final inactiveRecharge = Recharge(
-                    id: _rechargeRef.documentID, status: 'Inactive', code: i)
+                    id: _rechargeRef.documentID, status: false, code: i)
                 .toJson();
             await _rechargeRef.setData(inactiveRecharge);
           }
@@ -309,7 +307,7 @@ class DatabaseService {
             final _rechargeRef =
                 _ref.collection(recentRecharge.date.year.toString()).document();
             final inactiveRecharge = Recharge(
-                    id: _rechargeRef.documentID, status: 'Inactive', code: i)
+                    id: _rechargeRef.documentID, status: false, code: i)
                 .toJson();
             await _rechargeRef.setData(inactiveRecharge);
           }
@@ -317,7 +315,7 @@ class DatabaseService {
             final _rechargeRef =
                 _ref.collection(DateTime.now().year.toString()).document();
             final inactiveRecharge = Recharge(
-                    id: _rechargeRef.documentID, status: 'Inactive', code: i)
+                    id: _rechargeRef.documentID, status: false, code: i)
                 .toJson();
             await _rechargeRef.setData(inactiveRecharge);
           }
@@ -325,6 +323,8 @@ class DatabaseService {
       }
       int monthCode = DateTime.now().month;
       int rechargeYear = DateTime.now().year;
+      if (recentRecharge.code == monthCode &&
+          recentRecharge.date.year == rechargeYear) monthCode += 1;
       for (int i = 0; i < term; i++) {
         if (monthCode % 13 == 0) {
           monthCode = 1;
@@ -334,15 +334,17 @@ class DatabaseService {
             _ref.collection(rechargeYear.toString()).document();
         final activeRecharge = Recharge(
                 id: _rechargeRef.documentID,
-                status: 'Active',
+                status: true,
                 code: monthCode,
+                billPay: billPay,
                 plan: plan.toString())
             .toJson()
               ..['date'] = FieldValue.serverTimestamp();
         await _rechargeRef.setData(activeRecharge);
         monthCode += 1;
       }
-      await _ref.updateData({'currentStatus': 'Active'});
+      await _ref
+          .updateData({'currentStatus': 'Active', 'runningYear': rechargeYear});
       Navigator.pop(context);
     } on PlatformException catch (error) {
       Navigator.pop(context);
@@ -375,7 +377,6 @@ class DatabaseService {
           .collection(recentRecharge.date.year.toString())
           .document(recentRecharge.id)
           .updateData({
-        'status': 'Completed',
         'addInfo': 'DC: ${DateFormat('dd, MMMM / yyyy').format(DateTime.now())}'
       });
       Navigator.pop(context);
@@ -391,6 +392,31 @@ class DatabaseService {
         content: Text('ERROR : something went wrong !'),
         duration: Duration(seconds: 1),
       ));
+    }
+  }
+
+  static Future<void> billPaid(
+    BuildContext context, {
+    @required String customerId,
+    @required String areaId,
+    @required String year,
+    @required String rechargeId,
+  }) async {
+    DefaultDialogBox.loadingDialog(context,
+        loaderType: SelectLoader.ballRotateChase);
+    try {
+      await Firestore.instance
+          .collection(
+              'users/${operatorDetails.id}/areas/$areaId/customers/$customerId/$year')
+          .document(rechargeId)
+          .updateData({'billPay': true});
+      Navigator.pop(context);
+    } on PlatformException catch (error) {
+      Navigator.pop(context);
+      DefaultDialogBox.errorDialog(context, content: error.message);
+    } catch (_) {
+      Navigator.pop(context);
+      DefaultDialogBox.errorDialog(context);
     }
   }
 }

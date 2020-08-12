@@ -7,14 +7,16 @@ class Recharge {
   int code;
   DateTime date;
   String plan;
-  String status;
+  bool billPay;
+  bool status;
   String addInfo;
   Recharge({
     this.id,
     this.code,
     this.date,
     this.plan,
-    this.status = '',
+    this.status,
+    this.billPay,
     this.addInfo,
   });
 
@@ -24,15 +26,17 @@ class Recharge {
     this.date = doc['date'] == null ? null : doc['date'].toDate();
     this.plan = doc['plan'];
     this.status = doc['status'];
+    this.billPay = doc['billPay'];
     this.addInfo = doc['addInfo'];
   }
 
   Map<String, dynamic> toJson() => {
         'id': this.id,
-        'code': this.code,
         'date': this.date,
+        'code': this.code,
         'plan': this.plan,
         'status': this.status,
+        'billPay': this.billPay,
         'addInfo': this.addInfo,
       };
 }
@@ -46,6 +50,7 @@ class Customer {
   String tempInfo;
   double currentPlan;
   DateTime startDate;
+  int runningYear;
   String phoneNumber;
   String accountNumber;
   String currentStatus;
@@ -60,6 +65,7 @@ class Customer {
     @required this.address,
     this.tempInfo,
     this.startDate,
+    this.runningYear,
     this.profileImageUrl,
     @required this.currentPlan,
     @required this.phoneNumber,
@@ -76,6 +82,7 @@ class Customer {
     this.address = document['address'];
     this.tempInfo = document['tempInfo'];
     this.startDate = document['startDate'].toDate();
+    this.runningYear = document['runningYear'];
     this.profileImageUrl = document['profileImageUrl'];
     this.currentPlan = document['currentPlan'];
     this.phoneNumber = document['phoneNumber'];
@@ -92,6 +99,7 @@ class Customer {
         'address': this.address,
         'tempInfo': this.tempInfo,
         'currentPlan': this.currentPlan,
+        'runningYear': this.runningYear,
         'phoneNumber': this.phoneNumber,
         'accountNumber': this.accountNumber,
         'currentStatus': this.currentStatus,

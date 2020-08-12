@@ -259,10 +259,12 @@ class _HomeScreenState extends State<HomeScreen> {
               ],
             ),
           ),
-          onTap: () => Navigator.of(context).pushNamed(
-            AreaCustomersScreen.routeName,
-            arguments: areas[index],
-          ),
+          onTap: areas[index].totalAccounts == 0
+              ? null
+              : () => Navigator.of(context).pushNamed(
+                    AreaCustomersScreen.routeName,
+                    arguments: areas[index],
+                  ),
           onLongPress: () => showEditOrAddDialog(index: index),
         ),
         padding: EdgeInsets.symmetric(horizontal: size.width * 0.025),

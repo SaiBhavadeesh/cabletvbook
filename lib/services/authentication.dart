@@ -360,7 +360,7 @@ class Authentication {
       await DefaultDialogBox.errorDialog(context,
           title: 'Email successfully sent !',
           content:
-              'Please check your mail, and click on the link provided to verify!');
+              'Please check your mail, and click on the link provided to verify and restart the app !');
     } on PlatformException catch (error) {
       Navigator.pop(context);
       DefaultDialogBox.errorDialog(context, content: error.message);

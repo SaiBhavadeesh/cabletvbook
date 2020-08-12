@@ -1,19 +1,57 @@
 import 'package:flutter/material.dart';
+import 'package:cableTvBook/services/databse_services.dart';
 
 class CustomerPlanList extends StatelessWidget {
+  final String customerId;
+  final String areaId;
+  final String year;
+  final String id;
   final String month;
   final String billDate;
   final String billAmount;
   final String status;
+  final bool billPay;
   final String addInfo;
 
   CustomerPlanList({
+    this.customerId,
+    this.areaId,
+    this.year,
+    this.id,
     this.month = 'Month',
     this.billDate = 'Date',
     this.billAmount = 'Amount',
     this.status = 'Status',
+    this.billPay,
     this.addInfo,
   });
+
+  Future<void> changeBillStatus(BuildContext context) async {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('Payment'),
+        content: Text('click yes , if bill paid!'),
+        actions: [
+          FlatButton(
+              onPressed: () => Navigator.pop(context),
+              child: Text('no'),
+              color: Theme.of(context).errorColor),
+          FlatButton(
+              onPressed: () async {
+                await DatabaseService.billPaid(context,
+                    customerId: customerId,
+                    areaId: areaId,
+                    year: year,
+                    rechargeId: id);
+                Navigator.pop(context);
+              },
+              child: Text('yes'),
+              color: Theme.of(context).primaryColor),
+        ],
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -43,10 +81,12 @@ class CustomerPlanList extends StatelessWidget {
             ),
             Container(
               alignment: Alignment.center,
-              width: width * 0.2,
+              width: width * 0.22,
               child: Text(
                 billDate,
                 textAlign: TextAlign.center,
+                softWrap: true,
+                overflow: TextOverflow.ellipsis,
                 style: TextStyle(
                   fontSize: width * 0.045,
                 ),
@@ -57,14 +97,22 @@ class CustomerPlanList extends StatelessWidget {
               color: Theme.of(context).primaryColor,
               width: 1.5,
             ),
-            Container(
-              alignment: Alignment.center,
-              width: width * 0.2,
-              child: Text(
-                billAmount,
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: width * 0.045,
+            GestureDetector(
+              onDoubleTap: billPay == null || billPay
+                  ? null
+                  : () => changeBillStatus(context),
+              child: Container(
+                alignment: Alignment.center,
+                width: width * 0.2,
+                child: Text(
+                  billAmount,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: billPay == null || billPay
+                        ? null
+                        : Theme.of(context).errorColor,
+                    fontSize: width * 0.045,
+                  ),
                 ),
               ),
             ),
@@ -75,9 +123,9 @@ class CustomerPlanList extends StatelessWidget {
             ),
             Container(
               alignment: Alignment.center,
-              width: width * 0.25,
+              width: width * 0.23,
               height: width * 0.05,
-              child: status == 'Completed'
+              child: status == 'Active' && billPay
                   ? Icon(
                       Icons.done,
                       color: Colors.green,

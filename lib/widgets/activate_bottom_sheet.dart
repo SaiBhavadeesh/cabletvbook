@@ -10,10 +10,12 @@ class ActivateBottomSheet extends StatefulWidget {
   final customerId;
   final areaId;
   final int year;
+  final String status;
   final plan;
   ActivateBottomSheet(
       {@required this.customerId,
       @required this.areaId,
+      @required this.status,
       @required this.year,
       @required this.plan});
   @override
@@ -68,7 +70,6 @@ class _ActivateBottomSheetState extends State<ActivateBottomSheet> {
               ),
               padding: EdgeInsets.all(20),
               child: Column(
-                // crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
                     'Select Plan : ',
@@ -180,6 +181,7 @@ class _ActivateBottomSheetState extends State<ActivateBottomSheet> {
                                         scaffoldKey,
                                         customerId: widget.customerId,
                                         areaId: widget.areaId,
+                                        status:widget.status,
                                         year: widget.year.toString(),
                                         plan: _selectedPlan,
                                         term: _selectedTerm,

@@ -1,10 +1,10 @@
-import 'package:cableTvBook/global/variables.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:progress_indicators/progress_indicators.dart';
 
 import 'package:cableTvBook/models/customer.dart';
+import 'package:cableTvBook/global/variables.dart';
 import 'package:cableTvBook/global/box_decoration.dart';
 
 class CollectionScreen extends StatelessWidget {
@@ -27,76 +27,49 @@ class CollectionScreen extends StatelessWidget {
     );
   }
 
-  Widget valueText(double total, double paid) {
+  Widget getValueText(String title, String value, Color color) {
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: RichText(
+        text: TextSpan(
+          text: title,
+          style: TextStyle(fontSize: 16, color: Colors.black),
+          children: [
+            TextSpan(
+              text: value,
+              style: TextStyle(
+                color: color,
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
+            )
+          ],
+        ),
+        textAlign: TextAlign.start,
+      ),
+    );
+  }
+
+  Widget valueText(double subtotal, double paid,
+      {double total, int inactive}) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: RichText(
-            text: TextSpan(
-              text: 'Total amount to be collected : \t',
-              style: TextStyle(fontSize: 16, color: Colors.black),
-              children: [
-                TextSpan(
-                  text: '\u20B9 $total',
-                  style: TextStyle(
-                    color: Colors.blue,
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
-                )
-              ],
-            ),
-            textAlign: TextAlign.start,
-          ),
-        ),
-        Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: RichText(
-            text: TextSpan(
-              text: 'Amount collected : \t',
-              style: TextStyle(fontSize: 16, color: Colors.black),
-              children: [
-                TextSpan(
-                  text: '\u20B9 $paid',
-                  style: TextStyle(
-                    color: Colors.green,
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
-                )
-              ],
-            ),
-            textAlign: TextAlign.start,
-          ),
-        ),
-        Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: RichText(
-            text: TextSpan(
-              text: 'Pending amount to be collected : \t',
-              style: TextStyle(fontSize: 16, color: Colors.black),
-              children: [
-                TextSpan(
-                  text: '\u20B9 ${total - paid}',
-                  style: TextStyle(
-                    color: Colors.red,
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
-                )
-              ],
-            ),
-            textAlign: TextAlign.start,
-          ),
-        ),
+        if (total != null)
+          getValueText('Total amount : \t', '\u20B9 $total', Colors.deepOrange),
+        getValueText('Total bill amount : \t', '\u20B9 $subtotal', Colors.blue),
+        getValueText('Amount collected : \t', '\u20B9 $paid', Colors.green),
+        getValueText('Bill amount pending : \t', '\u20B9 ${subtotal - paid}',
+            Colors.red),
+        if (inactive != null)
+          getValueText('Inactive customers : \t', '$inactive', Colors.deepPurple),
       ],
     );
   }
 
-  Future<Map<int, double>> getMonthlyData() async {
+  Future<Map<int, dynamic>> getMonthlyData() async {
     double total = 0;
+    double subtotal = 0;
     double paid = 0;
     for (int i = 0; i < customers.length; i++) {
       final data = await Firestore.instance
@@ -106,21 +79,22 @@ class CollectionScreen extends StatelessWidget {
           .getDocuments();
       if (data.documents.isNotEmpty) {
         final recharge = Recharge.fromMap(data.documents.first.data);
-        if (recharge.billPay != null && recharge.billPay) {
-          total += double.parse(recharge.plan);
-          paid += double.parse(recharge.plan);
-        } else if (recharge.billPay != null && recharge.billPay)
-          total += double.parse(recharge.plan);
-        else
-          total += customers[i].currentPlan;
-      } else
-        total += customers[i].currentPlan;
+        if (recharge.billPay != null) {
+          subtotal += double.parse(recharge.plan);
+          if (recharge.billPay) {
+            paid += double.parse(recharge.plan);
+          }
+        }
+      }
+      total += customers[i].currentPlan;
     }
-    return {0: total, 1: paid};
+    final inactive = areas.fold(0,
+        (previousValue, element) => previousValue += element.inActiveAccounts);
+    return {0: total, 1: subtotal, 2: paid, 3: inactive};
   }
 
   Future<Map<int, double>> getYearlyData() async {
-    double total = 0;
+    double subtotal = 0;
     double paid = 0;
     for (int i = 0; i < customers.length; i++) {
       final data = await Firestore.instance
@@ -130,15 +104,16 @@ class CollectionScreen extends StatelessWidget {
       if (data.documents.isNotEmpty) {
         for (int i = 0; i < data.documents.length; i++) {
           final recharge = Recharge.fromMap(data.documents[i].data);
-          if (recharge.billPay != null && recharge.billPay) {
-            total += double.parse(recharge.plan);
-            paid += double.parse(recharge.plan);
-          } else if (recharge.billPay != null && !recharge.billPay)
-            total += double.parse(recharge.plan);
+          if (recharge.billPay != null) {
+            subtotal += double.parse(recharge.plan);
+            if (recharge.billPay) {
+              paid += double.parse(recharge.plan);
+            }
+          }
         }
       }
     }
-    return {0: total, 1: paid};
+    return {0: subtotal, 1: paid};
   }
 
   static List<Customer> customers;
@@ -165,39 +140,35 @@ class CollectionScreen extends StatelessWidget {
                   future: getMonthlyData(),
                   builder: (context, snapshot) {
                     if (snapshot.hasData) {
-                      return valueText(snapshot.data[0], snapshot.data[1]);
+                      return valueText(snapshot.data[1], snapshot.data[2],
+                          total: snapshot.data[0], inactive: snapshot.data[3]);
                     }
-                    return Center(
-                      child: Container(
-                        child: FadingText('Please wait ...'),
-                      ),
-                    );
+                    return Container(
+                        alignment: Alignment.center,
+                        height: 250,
+                        child: FadingText('Please wait ...'));
                   },
                 ),
                 SizedBox(height: 20),
                 getTitleText(context,
-                    'This year : ' + DateFormat('yyyy').format(DateTime.now())),
+                    'Upto \t' + DateFormat('MMMM, yyyy').format(DateTime.now())),
                 FutureBuilder(
                   future: getYearlyData(),
                   builder: (context, snapshot) {
                     if (snapshot.hasData) {
                       return valueText(snapshot.data[0], snapshot.data[1]);
                     }
-                    return Center(
-                      child: Container(
-                        child: FadingText('Please wait ...'),
-                      ),
+                    return Container(
+                      alignment: Alignment.center,
+                      height: 250,
+                      child: FadingText('Please wait ...'),
                     );
                   },
                 ),
               ],
             );
           }
-          return Center(
-            child: Container(
-              child: FadingText('Please wait ...'),
-            ),
-          );
+          return Center(child: FadingText('Please wait ...'));
         },
       ),
     );

@@ -276,6 +276,7 @@ class DatabaseService {
       {@required String customerId,
       @required String areaId,
       @required double plan,
+      @required String status,
       @required int term,
       @required bool billPay,
       @required String year}) async {
@@ -341,8 +342,16 @@ class DatabaseService {
         await _rechargeRef.setData(activeRecharge);
         monthCode += 1;
       }
-      await _ref
-          .updateData({'currentStatus': 'Active', 'runningYear': rechargeYear});
+      if (status != 'Active') {
+        await _ref.updateData(
+            {'currentStatus': 'Active', 'runningYear': rechargeYear});
+        final area = areas.firstWhere((element) => element.id == areaId);
+        await updateArea(context, key, data: {
+          'id': areaId,
+          'activeAccounts': area.activeAccounts + 1,
+          'inActiveAccounts': area.inActiveAccounts - 1
+        });
+      }
       Navigator.pop(context);
     } on PlatformException catch (error) {
       Navigator.pop(context);
@@ -376,6 +385,12 @@ class DatabaseService {
         'addInfo': 'DC: ${DateFormat('dd, MMMM / yyyy').format(DateTime.now())}'
       });
       await _ref.updateData({'currentStatus': 'Inactive'});
+      final area = areas.firstWhere((element) => element.id == areaId);
+      await updateArea(context, key, data: {
+        'id': areaId,
+        'activeAccounts': area.activeAccounts - 1,
+        'inActiveAccounts': area.inActiveAccounts + 1
+      });
       Navigator.pop(context);
     } on PlatformException catch (error) {
       Navigator.pop(context);
@@ -450,11 +465,12 @@ class DatabaseService {
           .updateData({'runningYear': updateYear, 'currentStatus': status});
       if (status == 'Inactive') {
         final area = areas.firstWhere((element) => element.id == areaId);
-        await updateArea(context, key, data: {
-          'id': areaId,
-          'activeAccounts': area.activeAccounts - 1,
-          'inActiveAccounts': area.inActiveAccounts - 1
-        });
+        if (area.activeAccounts > 0)
+          await updateArea(context, key, data: {
+            'id': areaId,
+            'activeAccounts': area.activeAccounts - 1,
+            'inActiveAccounts': area.inActiveAccounts + 1
+          });
       }
       Navigator.pop(context);
     } on PlatformException catch (error) {

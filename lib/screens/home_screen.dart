@@ -117,8 +117,13 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  final scaffoldKey = GlobalKey<ScaffoldState>();
+  @override
+  void initState() {
+    super.initState();
+    areas = [];
+  }
 
+  final scaffoldKey = GlobalKey<ScaffoldState>();
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;

@@ -155,6 +155,7 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
         pageBuilder: (context, _, __) => ActivateBottomSheet(
               customerId: customer.id,
               areaId: customer.areaId,
+              status: customer.currentStatus,
               year: customer.runningYear,
               plan: customer.currentPlan,
             ),
@@ -212,41 +213,45 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
 
   void deleteRecharge(
       BuildContext ctx, Recharge recharge, bool prevRecharge) async {
-    await showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text('Delete recharge'),
-        content: Text('Are you sure ?'),
-        actions: [
-          FlatButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: Text('no'),
-            color: Theme.of(ctx).errorColor,
-          ),
-          FlatButton(
-            onPressed: () async {
-              String year = _selectedYear.toString();
-              if (_selectedYear != customer.startDate.year) _selectedYear -= 1;
-              Navigator.pop(ctx);
-              final value = await DatabaseService.deleteRecharge(
-                  context, scaffoldKey,
-                  customerId: customer.id,
-                  areaId: customer.areaId,
-                  year: year,
-                  startYear: customer.startDate.year.toString(),
-                  prevRecharge: prevRecharge,
-                  recharge: recharge);
-              setState(() {
-                if (!value && int.parse(year) != customer.startDate.year)
-                  _selectedYear = _selectedYear + 1;
-              });
-            },
-            child: Text('yes'),
-            color: Theme.of(ctx).primaryColor,
-          ),
-        ],
-      ),
-    );
+    if (DateTime.now().difference(recharge.date) < Duration(days: 10))
+      await showDialog(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          title: Text('Delete recharge'),
+          content: Text('Are you sure ?'),
+          actions: [
+            FlatButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: Text('no'),
+              color: Theme.of(ctx).errorColor,
+            ),
+            FlatButton(
+              onPressed: () async {
+                String year = _selectedYear.toString();
+                if (_selectedYear != customer.startDate.year)
+                  _selectedYear -= 1;
+                Navigator.pop(ctx);
+                final value = await DatabaseService.deleteRecharge(
+                    context, scaffoldKey,
+                    customerId: customer.id,
+                    areaId: customer.areaId,
+                    year: year,
+                    startYear: customer.startDate.year.toString(),
+                    prevRecharge: prevRecharge,
+                    recharge: recharge);
+                setState(() {
+                  if (!value && int.parse(year) != customer.startDate.year)
+                    _selectedYear = _selectedYear + 1;
+                });
+              },
+              child: Text('yes'),
+              color: Theme.of(ctx).primaryColor,
+            ),
+          ],
+        ),
+      );
+    else
+      return null;
   }
 
   final scaffoldKey = GlobalKey<ScaffoldState>();
@@ -495,53 +500,50 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
                         .orderBy('code')
                         .snapshots(),
                     builder: (context, snapshot) {
-                      if (snapshot.connectionState == ConnectionState.waiting) {
-                        return Center(
-                          child: Container(
-                            child: FadingText('Please wait ...'),
-                          ),
+                      if (snapshot.hasData) {
+                        rechargeData =
+                            getCustomerYearlyRecharge(snapshot.data.documents);
+                        return ListView.builder(
+                          shrinkWrap: true,
+                          physics: NeverScrollableScrollPhysics(),
+                          itemBuilder: (context, index) {
+                            return GestureDetector(
+                              onLongPress: () => deleteRecharge(
+                                  context,
+                                  rechargeData[index],
+                                  _selectedYear != customer.startDate.year ||
+                                          index > 0
+                                      ? true
+                                      : false),
+                              child: CustomerPlanList(
+                                customerId: customer.id,
+                                areaId: customer.areaId,
+                                id: rechargeData[index].id,
+                                billPay: rechargeData[index].billPay,
+                                year: _selectedYear.toString(),
+                                month: DateFormat('MMMM').format(
+                                  DateTime(
+                                      _selectedYear, rechargeData[index].code),
+                                ),
+                                billDate: rechargeData[index].date == null
+                                    ? ''
+                                    : DateFormat('dd/MM/yyyy')
+                                        .format(rechargeData[index].date),
+                                billAmount: rechargeData[index].plan ?? '',
+                                status: rechargeData[index].status
+                                    ? 'Active'
+                                    : 'Inactive',
+                                addInfo: rechargeData[index].addInfo,
+                              ),
+                            );
+                          },
+                          itemCount: rechargeData.length,
                         );
                       }
-                      rechargeData =
-                          getCustomerYearlyRecharge(snapshot.data.documents);
-                      return ListView.builder(
-                        shrinkWrap: true,
-                        physics: NeverScrollableScrollPhysics(),
-                        itemBuilder: (context, index) {
-                          return GestureDetector(
-                            onLongPress: rechargeData[index].billPay
-                                ? null
-                                : () => deleteRecharge(
-                                    context,
-                                    rechargeData[index],
-                                    _selectedYear != customer.startDate.year ||
-                                            index > 0
-                                        ? true
-                                        : false),
-                            child: CustomerPlanList(
-                              customerId: customer.id,
-                              areaId: customer.areaId,
-                              id: rechargeData[index].id,
-                              billPay: rechargeData[index].billPay,
-                              year: _selectedYear.toString(),
-                              month: DateFormat('MMMM').format(
-                                DateTime(
-                                    _selectedYear, rechargeData[index].code),
-                              ),
-                              billDate: rechargeData[index].date == null
-                                  ? ''
-                                  : DateFormat('dd/MM/yyyy')
-                                      .format(rechargeData[index].date),
-                              billAmount: rechargeData[index].plan ?? '',
-                              status: rechargeData[index].status
-                                  ? 'Active'
-                                  : 'Inactive',
-                              addInfo: rechargeData[index].addInfo,
-                            ),
-                          );
-                        },
-                        itemCount: rechargeData.length,
-                      );
+                      return Container(
+                          alignment: Alignment.center,
+                          height: 250,
+                          child: FadingText('Please wait ...'));
                     },
                   ),
                   SizedBox(height: size.height * 0.125),

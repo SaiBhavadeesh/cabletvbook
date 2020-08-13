@@ -1,8 +1,9 @@
-import 'package:cableTvBook/global/box_decoration.dart';
-import 'package:cableTvBook/models/customer.dart';
 import 'package:flutter/material.dart';
-import 'package:cableTvBook/widgets/customer_tile.dart';
 import 'package:flutter_icons/flutter_icons.dart';
+
+import 'package:cableTvBook/models/customer.dart';
+import 'package:cableTvBook/widgets/customer_tile.dart';
+import 'package:cableTvBook/global/box_decoration.dart';
 
 class SearchScreenWidget extends StatefulWidget {
   final bool all;
@@ -89,6 +90,8 @@ class _SearchScreenWidgetState extends State<SearchScreenWidget> {
             textInputAction: TextInputAction.search,
             onChanged: onTextChange,
             decoration: inputDecoration(
+              filled: true,
+              filledColor: Colors.white,
                 hint: 'Search by Name / mac no / acc no.',
                 icon: FlutterIcons.ios_search_ion,
                 radius: 30),

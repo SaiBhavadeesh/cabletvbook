@@ -17,9 +17,6 @@ class DatabaseService {
     final _firestoreInstance =
         Firestore.instance.collection('users').document(firebaseUser.uid);
     DocumentSnapshot document = await _firestoreInstance.get();
-    QuerySnapshot doc =
-        await _firestoreInstance.collection('areas').getDocuments();
-    areas = doc.documents.map((e) => AreaData.fromMap(e.data)).toList();
     operatorDetails = Operator.fromMap(document.data);
   }
 
@@ -220,7 +217,6 @@ class DatabaseService {
           .document();
       await _firestoreInstance
           .setData(data..['id'] = _firestoreInstance.documentID);
-      await getuserData();
       Navigator.pop(context);
     } on PlatformException catch (error) {
       Navigator.pop(context);
@@ -247,7 +243,6 @@ class DatabaseService {
           .collection('users/${firebaseUser.uid}/areas')
           .document(data['id'])
           .updateData(data);
-      await getuserData();
       Navigator.pop(context);
     } on PlatformException catch (error) {
       Navigator.pop(context);
@@ -356,7 +351,6 @@ class DatabaseService {
         duration: Duration(seconds: 1),
       ));
     } catch (error) {
-      print(error);
       Navigator.pop(context);
       key.currentState.showSnackBar(SnackBar(
         content: Text('ERROR : something went wrong !'),
@@ -423,31 +417,44 @@ class DatabaseService {
     }
   }
 
-  static Future<void> deleteRecharge(
+  static Future<bool> deleteRecharge(
       BuildContext context, GlobalKey<ScaffoldState> key,
       {@required String customerId,
       @required String areaId,
       @required String year,
       @required String startYear,
+      @required bool prevRecharge,
       @required Recharge recharge}) async {
     DefaultDialogBox.loadingDialog(context,
         loaderType: SelectLoader.ballRotateChase);
+    bool changed = false;
     try {
       await Firestore.instance
           .collection(
               'users/${operatorDetails.id}/areas/$areaId/customers/$customerId/$year')
           .document(recharge.id)
           .delete();
+      int updateYear = int.parse(year);
+      String status = 'Inactive';
       if (recharge.code == 1) {
-        int updateYear;
         if (int.parse(startYear) < int.parse(year)) {
           updateYear = int.parse(year) - 1;
-        }
-        updateYear = int.parse(startYear);
-        await Firestore.instance
-            .collection('users/${operatorDetails.id}/areas/$areaId/customers')
-            .document(customerId)
-            .updateData({'runningYear': updateYear});
+        } else
+          updateYear = int.parse(startYear);
+        changed = true;
+      }
+      if (prevRecharge) status = 'Active';
+      await Firestore.instance
+          .collection('users/${operatorDetails.id}/areas/$areaId/customers')
+          .document(customerId)
+          .updateData({'runningYear': updateYear, 'currentStatus': status});
+      if (status == 'Inactive') {
+        final area = areas.firstWhere((element) => element.id == areaId);
+        await updateArea(context, key, data: {
+          'id': areaId,
+          'activeAccounts': area.activeAccounts - 1,
+          'inActiveAccounts': area.inActiveAccounts - 1
+        });
       }
       Navigator.pop(context);
     } on PlatformException catch (error) {
@@ -463,5 +470,6 @@ class DatabaseService {
         duration: Duration(seconds: 1),
       ));
     }
+    return changed;
   }
 }

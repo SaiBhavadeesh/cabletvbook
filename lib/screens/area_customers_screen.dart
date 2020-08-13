@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:cableTvBook/global/variables.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:loading_indicator/loading_indicator.dart';
 
 import 'package:cableTvBook/models/customer.dart';
 import 'package:cableTvBook/models/operator.dart';
+import 'package:cableTvBook/global/variables.dart';
 import 'package:cableTvBook/widgets/search_screen_widget.dart';
 
 class AreaCustomersScreen extends StatelessWidget {
@@ -64,7 +65,14 @@ class AreaCustomersScreen extends StatelessWidget {
                   ],
                 );
               }
-              return Container();
+              return Container(
+                padding: EdgeInsets.symmetric(
+                    horizontal: MediaQuery.of(context).size.width * 0.3),
+                child: Center(
+                  child: LoadingIndicator(
+                      indicatorType: Indicator.ballClipRotateMultiple),
+                ),
+              );
             }),
       ),
     );

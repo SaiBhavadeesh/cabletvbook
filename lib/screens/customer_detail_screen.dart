@@ -1,6 +1,4 @@
 import 'dart:io';
-import 'package:cableTvBook/widgets/activate_bottom_sheet.dart';
-import 'package:cableTvBook/widgets/default_dialog_box.dart';
 import 'package:intl/intl.dart';
 
 import 'package:flutter/material.dart';
@@ -8,12 +6,15 @@ import 'package:flutter/services.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:flutter_icons/flutter_icons.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:progress_indicators/progress_indicators.dart';
 
 import 'package:cableTvBook/models/customer.dart';
 import 'package:cableTvBook/global/variables.dart';
 import 'package:cableTvBook/helpers/image_getter.dart';
 import 'package:cableTvBook/services/databse_services.dart';
+import 'package:cableTvBook/widgets/default_dialog_box.dart';
 import 'package:cableTvBook/widgets/customer_plan_list.dart';
+import 'package:cableTvBook/widgets/activate_bottom_sheet.dart';
 import 'package:cableTvBook/widgets/customer_edit_bottom_sheet.dart';
 
 class CustomerDetailScreen extends StatefulWidget {
@@ -209,7 +210,8 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
     }
   }
 
-  void deleteRecharge(BuildContext ctx, Recharge recharge) async {
+  void deleteRecharge(
+      BuildContext ctx, Recharge recharge, bool prevRecharge) async {
     await showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -223,13 +225,21 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
           ),
           FlatButton(
             onPressed: () async {
+              String year = _selectedYear.toString();
+              if (_selectedYear != customer.startDate.year) _selectedYear -= 1;
               Navigator.pop(ctx);
-              await DatabaseService.deleteRecharge(context, scaffoldKey,
+              final value = await DatabaseService.deleteRecharge(
+                  context, scaffoldKey,
                   customerId: customer.id,
                   areaId: customer.areaId,
-                  year: _selectedYear.toString(),
+                  year: year,
                   startYear: customer.startDate.year.toString(),
+                  prevRecharge: prevRecharge,
                   recharge: recharge);
+              setState(() {
+                if (!value && int.parse(year) != customer.startDate.year)
+                  _selectedYear = _selectedYear + 1;
+              });
             },
             child: Text('yes'),
             color: Theme.of(ctx).primaryColor,
@@ -301,9 +311,10 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
                     }).toList()
                   ],
                   onChanged: (value) {
-                    setState(() {
-                      _selectedYear = value;
-                    });
+                    if (_selectedYear != value)
+                      setState(() {
+                        _selectedYear = value;
+                      });
                   },
                 ),
               ],
@@ -485,7 +496,11 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
                         .snapshots(),
                     builder: (context, snapshot) {
                       if (snapshot.connectionState == ConnectionState.waiting) {
-                        return SizedBox();
+                        return Center(
+                          child: Container(
+                            child: FadingText('Please wait ...'),
+                          ),
+                        );
                       }
                       rechargeData =
                           getCustomerYearlyRecharge(snapshot.data.documents);
@@ -494,8 +509,15 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
                         physics: NeverScrollableScrollPhysics(),
                         itemBuilder: (context, index) {
                           return GestureDetector(
-                            onLongPress: () =>
-                                deleteRecharge(context, rechargeData[index]),
+                            onLongPress: rechargeData[index].billPay
+                                ? null
+                                : () => deleteRecharge(
+                                    context,
+                                    rechargeData[index],
+                                    _selectedYear != customer.startDate.year ||
+                                            index > 0
+                                        ? true
+                                        : false),
                             child: CustomerPlanList(
                               customerId: customer.id,
                               areaId: customer.areaId,

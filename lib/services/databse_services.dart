@@ -323,7 +323,7 @@ class DatabaseService {
       int monthCode = DateTime.now().month;
       int rechargeYear = DateTime.now().year;
       if (int.parse(year) > rechargeYear) rechargeYear = int.parse(year);
-      if (docs.documents.isNotEmpty) monthCode = recent.code + 1;
+      if (docs.documents.isNotEmpty && recent.date.year >= DateTime.now().year) monthCode = recent.code + 1;
       for (int i = 0; i < term; i++) {
         if (monthCode % 13 == 0) {
           monthCode = 1;

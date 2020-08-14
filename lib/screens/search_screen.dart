@@ -4,9 +4,18 @@ import 'package:loading_indicator/loading_indicator.dart';
 import 'package:cableTvBook/models/customer.dart';
 import 'package:cableTvBook/widgets/search_screen_widget.dart';
 
-class SearchScreen extends StatelessWidget {
+List<Customer> customers = [];
+
+class SearchScreen extends StatefulWidget {
   static const routeName = '/searchScreen';
+
+  @override
+  _SearchScreenState createState() => _SearchScreenState();
+}
+
+class _SearchScreenState extends State<SearchScreen> {
   final searchController = TextEditingController();
+
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
@@ -44,23 +53,23 @@ class SearchScreen extends StatelessWidget {
         body: FutureBuilder(
           future: getAllCustomers(),
           builder: (context, snapshot) {
-            if (snapshot.connectionState == ConnectionState.waiting)
-              return Container(
-                padding: EdgeInsets.symmetric(
-                    horizontal: MediaQuery.of(context).size.width * 0.3),
-                child: Center(
-                  child: LoadingIndicator(
-                      indicatorType: Indicator.ballClipRotateMultiple),
-                ),
+            if (snapshot.hasData) {
+              customers = snapshot.data;
+              return TabBarView(
+                children: <Widget>[
+                  SearchScreenWidget(active: true, isRefreshable: true),
+                  SearchScreenWidget(all: true, isRefreshable: true),
+                  SearchScreenWidget(inactive: true, isRefreshable: true),
+                ],
               );
-            return TabBarView(
-              children: <Widget>[
-                SearchScreenWidget(
-                    active: true, providedCustomers: snapshot.data),
-                SearchScreenWidget(all: true, providedCustomers: snapshot.data),
-                SearchScreenWidget(
-                    inactive: true, providedCustomers: snapshot.data),
-              ],
+            }
+            return Container(
+              padding: EdgeInsets.symmetric(
+                  horizontal: MediaQuery.of(context).size.width * 0.3),
+              child: Center(
+                child: LoadingIndicator(
+                    indicatorType: Indicator.ballClipRotateMultiple),
+              ),
             );
           },
         ),

@@ -3,17 +3,20 @@ import 'package:flutter_icons/flutter_icons.dart';
 
 import 'package:cableTvBook/models/customer.dart';
 import 'package:cableTvBook/widgets/customer_tile.dart';
+import 'package:cableTvBook/screens/search_screen.dart';
 import 'package:cableTvBook/global/box_decoration.dart';
 
 class SearchScreenWidget extends StatefulWidget {
   final bool all;
   final bool active;
   final bool inactive;
+  final bool isRefreshable;
   final List<Customer> providedCustomers;
   SearchScreenWidget({
     this.all = false,
     this.active = false,
     this.inactive = false,
+    this.isRefreshable = false,
     this.providedCustomers,
   });
 
@@ -24,18 +27,30 @@ class SearchScreenWidget extends StatefulWidget {
 class _SearchScreenWidgetState extends State<SearchScreenWidget> {
   final searchController = TextEditingController();
 
-  List<Customer> customers = [];
+  List<Customer> filteredCustomers = [];
+
+  Future<void> _refreshCustomers() async {
+    if (widget.isRefreshable) {
+      customers = await getAllCustomers();
+      filteredCustomers = getSelectedCustomers(
+          active: widget.active,
+          all: widget.all,
+          inactive: widget.inactive,
+          providedCustomers: customers);
+      if (mounted) setState(() {});
+    }
+  }
 
   onTextChange(String value) {
-    customers = getSelectedCustomers(
+    filteredCustomers = getSelectedCustomers(
       active: widget.active,
       all: widget.all,
       inactive: widget.inactive,
-      providedCustomers: widget.providedCustomers,
+      providedCustomers: widget.providedCustomers??customers,
     );
     setState(() {
       if (value.isNotEmpty)
-        customers = customers
+        filteredCustomers = customers
             .where((customer) => (customer.name.contains(value) ||
                 customer.accountNumber.contains(value) ||
                 customer.macId.contains(value)))
@@ -46,58 +61,64 @@ class _SearchScreenWidgetState extends State<SearchScreenWidget> {
   @override
   void initState() {
     super.initState();
-    customers = getSelectedCustomers(
+    filteredCustomers = getSelectedCustomers(
       active: widget.active,
       all: widget.all,
       inactive: widget.inactive,
-      providedCustomers: widget.providedCustomers,
+      providedCustomers: widget.providedCustomers ?? customers,
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    return Stack(
-      children: <Widget>[
-        Scrollbar(
-          child: ListView.builder(
-            physics: BouncingScrollPhysics(),
-            itemCount: customers.length,
-            itemBuilder: (context, index) {
-              if (index == 0) {
-                return Column(
-                  children: <Widget>[
-                    SizedBox(
-                      height: 55,
-                    ),
-                    CustomerTile(
-                      customer: customers[index],
-                      index: index,
-                    ),
-                  ],
+    return RefreshIndicator(
+      color: Theme.of(context).primaryColor,
+      onRefresh: _refreshCustomers,
+      child: Stack(
+        children: <Widget>[
+          Scrollbar(
+            child: ListView.builder(
+              itemCount: filteredCustomers.length,
+              physics: widget.isRefreshable
+                  ? const AlwaysScrollableScrollPhysics()
+                  : const BouncingScrollPhysics(),
+              itemBuilder: (context, index) {
+                if (index == 0) {
+                  return Column(
+                    children: <Widget>[
+                      SizedBox(
+                        height: 55,
+                      ),
+                      CustomerTile(
+                        customer: filteredCustomers[index],
+                        index: index,
+                      ),
+                    ],
+                  );
+                }
+                return CustomerTile(
+                  customer: filteredCustomers[index],
+                  index: index,
                 );
-              }
-              return CustomerTile(
-                customer: customers[index],
-                index: index,
-              );
-            },
+              },
+            ),
           ),
-        ),
-        Padding(
-          padding: const EdgeInsets.all(4.0),
-          child: TextField(
-            controller: searchController,
-            textInputAction: TextInputAction.search,
-            onChanged: onTextChange,
-            decoration: inputDecoration(
-              filled: true,
-              filledColor: Colors.white,
-                hint: 'Search by Name / mac no / acc no.',
-                icon: FlutterIcons.ios_search_ion,
-                radius: 30),
+          Padding(
+            padding: const EdgeInsets.all(4.0),
+            child: TextField(
+              controller: searchController,
+              textInputAction: TextInputAction.search,
+              onChanged: onTextChange,
+              decoration: inputDecoration(
+                  filled: true,
+                  filledColor: Colors.white,
+                  hint: 'Search by Name / mac no / acc no.',
+                  icon: FlutterIcons.ios_search_ion,
+                  radius: 30),
+            ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }

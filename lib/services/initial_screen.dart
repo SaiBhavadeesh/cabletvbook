@@ -34,15 +34,18 @@ class InitialScreen extends StatelessWidget {
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting)
               return Container(
+                height: MediaQuery.of(context).size.height,
                 decoration: BoxDecoration(
                     image: DecorationImage(
                         image: AssetImage('assets/images/splash.png'))),
-                alignment: Alignment.center,
-                padding: EdgeInsets.symmetric(
-                    horizontal: MediaQuery.of(context).size.width * 0.35),
-                child: LoadingIndicator(
-                  color: Colors.black,
-                  indicatorType: Indicator.ballSpinFadeLoader,
+                alignment: Alignment.bottomCenter,
+                padding: const EdgeInsets.only(bottom: 30),
+                child: SizedBox(
+                  height: MediaQuery.of(context).size.width * 0.15,
+                  width: MediaQuery.of(context).size.width * 0.15,
+                  child: LoadingIndicator(
+                      color: Colors.orange,
+                      indicatorType: Indicator.ballSpinFadeLoader),
                 ),
               );
             else {

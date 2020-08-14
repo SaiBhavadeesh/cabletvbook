@@ -69,7 +69,6 @@ class DatabaseService {
           .collection('users/${firebaseUser.uid}/areas')
           .document(customer.areaId)
           .updateData(data);
-      await getuserData();
       Navigator.of(context).pushNamedAndRemoveUntil(
           BottomTabsScreen.routeName, (route) => false);
     } on PlatformException catch (error) {

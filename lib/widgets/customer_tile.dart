@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:cableTvBook/models/customer.dart';
 import 'package:cableTvBook/screens/customer_detail_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 
 class CustomerTile extends StatefulWidget {
@@ -92,22 +93,26 @@ class _CustomerTileState extends State<CustomerTile> {
           ),
           title: GestureDetector(
             onTap: () => gestureNavigator(context, widget.customer),
-            child: Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: FittedBox(
-                fit: BoxFit.contain,
-                child: Text(
-                  widget.customer.name,
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 22,
-                    color: Colors.white,
+            child: SizedBox(
+                child: FittedBox(
+                  alignment: Alignment.centerLeft,
+                  fit: BoxFit.contain,
+                  child: Padding(
+                    padding: const EdgeInsets.only(left: 4, top: 4, bottom: 4),
+                    child: Text(
+                      widget.customer.name,
+                      softWrap: true,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 20,
+                        color: Colors.white,
+                      ),
+                    ),
                   ),
                 ),
-              ),
-            ),
+                height: 34),
           ),
-          isThreeLine: true,
           subtitle: FittedBox(
             fit: BoxFit.contain,
             child: Row(

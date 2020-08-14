@@ -58,9 +58,12 @@ class _BottomTabsScreenState extends State<BottomTabsScreen> {
               ),
               onTap: () async {
                 _profilePic = await ImageGetter.getImageFromDevice(context);
-                await DatabaseService.uploadProfilePicture(context, scaffolfKey,
-                    file: _profilePic);
-                setState(() {});
+                if (_profilePic != null) {
+                  await DatabaseService.uploadProfilePicture(
+                      context, scaffolfKey,
+                      file: _profilePic);
+                  setState(() {});
+                }
               },
             ),
           )

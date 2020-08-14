@@ -6,6 +6,8 @@ import 'package:cableTvBook/widgets/customer_tile.dart';
 import 'package:cableTvBook/screens/search_screen.dart';
 import 'package:cableTvBook/global/box_decoration.dart';
 
+bool showed = false;
+
 class SearchScreenWidget extends StatefulWidget {
   final bool all;
   final bool active;
@@ -67,28 +69,28 @@ class _SearchScreenWidgetState extends State<SearchScreenWidget> {
       inactive: widget.inactive,
       providedCustomers: widget.providedCustomers ?? customers,
     );
-  }
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
     try {
-      if (widget.isRefreshable)
+      if (widget.isRefreshable && !showed) {
+        showed = true;
         Future.delayed(
             Duration(seconds: 0),
             () => Scaffold.of(context).showSnackBar(SnackBar(
-                  content: Row(
-                    children: [
-                      Text('pull down to refresh'),
-                      Icon(Icons.keyboard_arrow_down),
-                    ],
-                  ),
-                  duration: Duration(seconds: 2),
-                  behavior: SnackBarBehavior.floating,
-                  backgroundColor: Colors.blueGrey,
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(30)),
-                )));
+                content: SizedBox(
+                    height: 16,
+                    child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text('pull down to refresh'),
+                          SizedBox(width: 20),
+                          Icon(Icons.arrow_downward, size: 18)
+                        ])),
+                duration: Duration(seconds: 1),
+                behavior: SnackBarBehavior.floating,
+                backgroundColor: Colors.blueGrey,
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(30)))));
+      }
     } catch (_) {}
   }
 

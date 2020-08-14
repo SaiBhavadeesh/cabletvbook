@@ -386,13 +386,15 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
                                       _pickedImage =
                                           await ImageGetter.getImageFromDevice(
                                               context);
-                                      await DatabaseService
-                                          .updateCustomerPicture(
-                                              context, scaffoldKey,
-                                              file: _pickedImage,
-                                              customerId: customer.id,
-                                              areaId: customer.areaId);
-                                      setState(() {});
+                                      if (_pickedImage != null) {
+                                        await DatabaseService
+                                            .updateCustomerPicture(
+                                                context, scaffoldKey,
+                                                file: _pickedImage,
+                                                customerId: customer.id,
+                                                areaId: customer.areaId);
+                                        setState(() {});
+                                      }
                                     },
                                     child: CircleAvatar(
                                       radius: size.width * 0.1,

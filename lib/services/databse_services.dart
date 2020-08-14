@@ -28,9 +28,14 @@ class DatabaseService {
         loaderType: SelectLoader.ballRotateChase);
     try {
       String url;
+      final area = areas.firstWhere((element) => element.id == customer.areaId);
+      final _firestoreInstance = Firestore.instance
+          .collection(
+              'users/${operatorDetails.id}/areas/${customer.areaId}/customers')
+          .document();
       try {
         final _ref = FirebaseStorage.instance.ref().child(
-            'customerPictures/${operatorDetails.id}/${customer.areaId}/${customer.id}/profilePicture.png');
+            'customerPictures/${operatorDetails.id}/${customer.areaId}/${_firestoreInstance.documentID}/profilePicture.png');
         await _ref.putFile(file).onComplete;
         url = await _ref.getDownloadURL();
       } on PlatformException catch (error) {
@@ -40,11 +45,6 @@ class DatabaseService {
         Scaffold.of(context).showSnackBar(
             SnackBar(content: Text('ERROR : picture upload failed !')));
       }
-      final area = areas.firstWhere((element) => element.id == customer.areaId);
-      final _firestoreInstance = Firestore.instance
-          .collection(
-              'users/${operatorDetails.id}/areas/${customer.areaId}/customers')
-          .document();
       await _firestoreInstance.setData(customer.toJson()
         ..['id'] = _firestoreInstance.documentID
         ..['profileImageUrl'] = url);
@@ -323,7 +323,8 @@ class DatabaseService {
       int monthCode = DateTime.now().month;
       int rechargeYear = DateTime.now().year;
       if (int.parse(year) > rechargeYear) rechargeYear = int.parse(year);
-      if (docs.documents.isNotEmpty && recent.date.year >= DateTime.now().year) monthCode = recent.code + 1;
+      if (docs.documents.isNotEmpty && recent.date.year >= DateTime.now().year)
+        monthCode = recent.code + 1;
       for (int i = 0; i < term; i++) {
         if (monthCode % 13 == 0) {
           monthCode = 1;

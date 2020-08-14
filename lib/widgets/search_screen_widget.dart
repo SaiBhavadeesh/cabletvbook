@@ -46,7 +46,7 @@ class _SearchScreenWidgetState extends State<SearchScreenWidget> {
       active: widget.active,
       all: widget.all,
       inactive: widget.inactive,
-      providedCustomers: widget.providedCustomers??customers,
+      providedCustomers: widget.providedCustomers ?? customers,
     );
     setState(() {
       if (value.isNotEmpty)
@@ -67,6 +67,29 @@ class _SearchScreenWidgetState extends State<SearchScreenWidget> {
       inactive: widget.inactive,
       providedCustomers: widget.providedCustomers ?? customers,
     );
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    try {
+      if (widget.isRefreshable)
+        Future.delayed(
+            Duration(seconds: 0),
+            () => Scaffold.of(context).showSnackBar(SnackBar(
+                  content: Row(
+                    children: [
+                      Text('pull down to refresh'),
+                      Icon(Icons.keyboard_arrow_down),
+                    ],
+                  ),
+                  duration: Duration(seconds: 2),
+                  behavior: SnackBarBehavior.floating,
+                  backgroundColor: Colors.blueGrey,
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(30)),
+                )));
+    } catch (_) {}
   }
 
   @override

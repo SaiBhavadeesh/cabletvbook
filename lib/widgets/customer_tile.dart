@@ -94,12 +94,15 @@ class _CustomerTileState extends State<CustomerTile> {
             onTap: () => gestureNavigator(context, widget.customer),
             child: Padding(
               padding: const EdgeInsets.all(8.0),
-              child: Text(
-                widget.customer.name,
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 22,
-                  color: Colors.white,
+              child: FittedBox(
+                fit: BoxFit.contain,
+                child: Text(
+                  widget.customer.name,
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 22,
+                    color: Colors.white,
+                  ),
                 ),
               ),
             ),

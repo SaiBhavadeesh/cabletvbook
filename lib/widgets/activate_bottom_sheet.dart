@@ -63,7 +63,10 @@ class _ActivateBottomSheetState extends State<ActivateBottomSheet> {
               ),
             ),
             Container(
-              height: size.height * 0.65,
+              height: size.height * 0.65 -
+                  size.height *
+                      0.04 *
+                      ((16 - operatorDetails.plans.length) / 4).floor(),
               alignment: Alignment.bottomCenter,
               decoration: BoxDecoration(
                 color: Colors.white,
@@ -122,15 +125,24 @@ class _ActivateBottomSheetState extends State<ActivateBottomSheet> {
                       SizedBox(width: 20),
                       DropdownButton(
                           items: [
-                            DropdownMenuItem(child: Text('1 Month'), value: 1),
-                            DropdownMenuItem(child: Text('2 Months'), value: 2),
-                            DropdownMenuItem(child: Text('3 Months'), value: 3),
-                            DropdownMenuItem(child: Text('4 Months'), value: 4),
-                            DropdownMenuItem(child: Text('5 Months'), value: 5),
-                            DropdownMenuItem(child: Text('6 Months'), value: 6),
-                            DropdownMenuItem(child: Text('7 Months'), value: 7),
-                            DropdownMenuItem(child: Text('8 Months'), value: 8),
-                            DropdownMenuItem(child: Text('9 Months'), value: 9),
+                            DropdownMenuItem(
+                                child: Text('1 Month'), value: 1),
+                            DropdownMenuItem(
+                                child: Text('2 Months'), value: 2),
+                            DropdownMenuItem(
+                                child: Text('3 Months'), value: 3),
+                            DropdownMenuItem(
+                                child: Text('4 Months'), value: 4),
+                            DropdownMenuItem(
+                                child: Text('5 Months'), value: 5),
+                            DropdownMenuItem(
+                                child: Text('6 Months'), value: 6),
+                            DropdownMenuItem(
+                                child: Text('7 Months'), value: 7),
+                            DropdownMenuItem(
+                                child: Text('8 Months'), value: 8),
+                            DropdownMenuItem(
+                                child: Text('9 Months'), value: 9),
                             DropdownMenuItem(
                                 child: Text('10 Months'), value: 10),
                             DropdownMenuItem(
@@ -162,7 +174,8 @@ class _ActivateBottomSheetState extends State<ActivateBottomSheet> {
                     child: defaultbutton(
                       context: context,
                       function: () async {
-                        final url = "https://partnerportal.actcorp.in/packages";
+                        final url =
+                            "https://partnerportal.actcorp.in/packages";
                         if (await canLaunch(url)) {
                           try {
                             await launch(
@@ -215,6 +228,7 @@ class _ActivateBottomSheetState extends State<ActivateBottomSheet> {
                       title: 'Recharge',
                     ),
                   ),
+                  SizedBox(height: 20),
                 ],
               ),
             ),

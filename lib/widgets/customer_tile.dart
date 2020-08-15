@@ -5,6 +5,7 @@ import 'package:cableTvBook/screens/customer_detail_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_icons/flutter_icons.dart';
 
 class CustomerTile extends StatefulWidget {
   final Customer customer;
@@ -67,6 +68,7 @@ class _CustomerTileState extends State<CustomerTile> {
 
   @override
   Widget build(BuildContext context) {
+    final size = MediaQuery.of(context).size;
     return AnimatedOpacity(
       duration: Duration(milliseconds: 500),
       opacity: _show ? 1.0 : 0.0,
@@ -81,91 +83,74 @@ class _CustomerTileState extends State<CustomerTile> {
         ),
         margin: EdgeInsets.only(top: 2, left: 5, right: 5),
         child: ListTile(
+          onTap: () => gestureNavigator(context, widget.customer),
           contentPadding: EdgeInsets.symmetric(horizontal: 5),
-          leading: GestureDetector(
-            onTap: () => gestureNavigator(context, widget.customer),
-            child: CircleAvatar(
-              radius: 30,
-              backgroundImage: widget.customer.profileImageUrl == null
-                  ? AssetImage('assets/images/default_profile.jpg')
-                  : NetworkImage(widget.customer.profileImageUrl),
-            ),
+          leading: CircleAvatar(
+            radius: 30,
+            backgroundImage: widget.customer.profileImageUrl == null
+                ? AssetImage('assets/images/default_profile.jpg')
+                : NetworkImage(widget.customer.profileImageUrl),
           ),
-          title: GestureDetector(
-            onTap: () => gestureNavigator(context, widget.customer),
-            child: SizedBox(
-                child: FittedBox(
-                  alignment: Alignment.centerLeft,
-                  fit: BoxFit.contain,
-                  child: Padding(
-                    padding: const EdgeInsets.only(left: 4, top: 4, bottom: 4),
-                    child: Text(
-                      widget.customer.name,
-                      softWrap: true,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 20,
-                        color: Colors.white,
-                      ),
+          title: SizedBox(
+              child: FittedBox(
+                alignment: Alignment.centerLeft,
+                fit: BoxFit.contain,
+                child: Padding(
+                  padding: EdgeInsets.all(size.width * 0.005),
+                  child: Text(
+                    widget.customer.name,
+                    softWrap: true,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 20,
+                      color: Colors.white,
                     ),
                   ),
                 ),
-                height: 34),
-          ),
-          subtitle: FittedBox(
-            fit: BoxFit.contain,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.start,
-              children: <Widget>[
-                GestureDetector(
-                  child: Card(
-                    color: Colors.red[300],
-                    child: Padding(
-                      padding: const EdgeInsets.all(5.0),
-                      child: Text(
-                        '${widget.customer.accountNumber}',
-                        style: TextStyle(
-                          color: Colors.white,
+              ),
+              height: size.height * 0.0455),
+          subtitle: SizedBox(
+            height: size.height * 0.0575,
+            child: FittedBox(
+              alignment: Alignment.centerLeft,
+              fit: BoxFit.contain,
+              child: Row(
+                children: <Widget>[
+                  GestureDetector(
+                    child: Card(
+                      color: Colors.red[300],
+                      child: Padding(
+                        padding: const EdgeInsets.all(5.0),
+                        child: Text(
+                          '${widget.customer.accountNumber}',
+                          style: TextStyle(
+                            color: Colors.white,
+                          ),
                         ),
                       ),
                     ),
+                    onLongPress: () => copyAndShowSnackBar(context,
+                        widget.customer.accountNumber, 'Account number'),
                   ),
-                  onTap: () => gestureNavigator(context, widget.customer),
-                  onLongPress: () => copyAndShowSnackBar(
-                      context, widget.customer.accountNumber, 'Account number'),
-                ),
-                GestureDetector(
-                  child: Card(
-                    color: Colors.teal,
-                    child: Padding(
-                      padding: const EdgeInsets.all(5.0),
-                      child: Text(
-                        '${widget.customer.macId}',
-                        softWrap: true,
-                        style: TextStyle(
-                          color: Colors.white,
+                  GestureDetector(
+                    child: Card(
+                      color: Colors.teal,
+                      child: Padding(
+                        padding: const EdgeInsets.all(5.0),
+                        child: Text(
+                          '${widget.customer.macId}',
+                          softWrap: true,
+                          style: TextStyle(
+                            color: Colors.white,
+                          ),
                         ),
                       ),
                     ),
+                    onLongPress: () => copyAndShowSnackBar(
+                        context, widget.customer.macId, 'MAC-Id'),
                   ),
-                  onTap: () => gestureNavigator(context, widget.customer),
-                  onLongPress: () => copyAndShowSnackBar(
-                      context, widget.customer.macId, 'MAC-Id'),
-                ),
-              ],
-            ),
-          ),
-          trailing: GestureDetector(
-            onTap: () => gestureNavigator(context, widget.customer),
-            child: Text(
-              widget.customer.currentStatus,
-              softWrap: true,
-              style: TextStyle(
-                fontSize: 16,
-                color: widget.customer.currentStatus == 'Inactive'
-                    ? Colors.orange[900]
-                    : Colors.yellow,
+                ],
               ),
             ),
           ),

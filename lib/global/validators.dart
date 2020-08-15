@@ -35,7 +35,7 @@ String phoneValidator(String value) {
   return null;
 }
 
-String nameValidator(String value, {int maxLength = 25}) {
+String nameValidator(String value, {int maxLength = 30}) {
   if (value.isEmpty) return 'This field is required !';
   if (validator.name(value)) return null;
   String error;

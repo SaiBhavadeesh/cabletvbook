@@ -33,18 +33,19 @@ class DatabaseService {
           .collection(
               'users/${operatorDetails.id}/areas/${customer.areaId}/customers')
           .document();
-      try {
-        final _ref = FirebaseStorage.instance.ref().child(
-            'customerPictures/${operatorDetails.id}/${customer.areaId}/${_firestoreInstance.documentID}/profilePicture.png');
-        await _ref.putFile(file).onComplete;
-        url = await _ref.getDownloadURL();
-      } on PlatformException catch (error) {
-        Scaffold.of(context)
-            .showSnackBar(SnackBar(content: Text(error.message)));
-      } catch (_) {
-        Scaffold.of(context).showSnackBar(
-            SnackBar(content: Text('ERROR : picture upload failed !')));
-      }
+      if (file != null)
+        try {
+          final _ref = FirebaseStorage.instance.ref().child(
+              'customerPictures/${operatorDetails.id}/${customer.areaId}/${_firestoreInstance.documentID}/profilePicture.png');
+          await _ref.putFile(file).onComplete;
+          url = await _ref.getDownloadURL();
+        } on PlatformException catch (error) {
+          Scaffold.of(context)
+              .showSnackBar(SnackBar(content: Text(error.message)));
+        } catch (_) {
+          Scaffold.of(context).showSnackBar(
+              SnackBar(content: Text('ERROR : picture upload failed !')));
+        }
       await _firestoreInstance.setData(customer.toJson()
         ..['id'] = _firestoreInstance.documentID
         ..['profileImageUrl'] = url);
@@ -216,6 +217,31 @@ class DatabaseService {
           .document();
       await _firestoreInstance
           .setData(data..['id'] = _firestoreInstance.documentID);
+      Navigator.pop(context);
+    } on PlatformException catch (error) {
+      Navigator.pop(context);
+      key.currentState.showSnackBar(SnackBar(
+        content: Text(error.message),
+        duration: Duration(seconds: 1),
+      ));
+    } catch (_) {
+      Navigator.pop(context);
+      key.currentState.showSnackBar(SnackBar(
+        content: Text('ERROR : something went wrong !'),
+        duration: Duration(seconds: 1),
+      ));
+    }
+  }
+
+  static Future<void> deleteArea(
+      BuildContext context, GlobalKey<ScaffoldState> key, String areaId) async {
+    DefaultDialogBox.loadingDialog(context,
+        loaderType: SelectLoader.ballRotateChase);
+    try {
+      await Firestore.instance
+          .collection('users/${operatorDetails.id}/areas')
+          .document(areaId)
+          .delete();
       Navigator.pop(context);
     } on PlatformException catch (error) {
       Navigator.pop(context);

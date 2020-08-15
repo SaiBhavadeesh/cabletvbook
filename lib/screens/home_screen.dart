@@ -9,6 +9,7 @@ import 'package:cableTvBook/global/variables.dart';
 import 'package:cableTvBook/global/validators.dart';
 import 'package:cableTvBook/global/box_decoration.dart';
 import 'package:cableTvBook/global/default_buttons.dart';
+import 'package:flutter_icons/flutter_icons.dart';
 import 'package:loading_indicator/loading_indicator.dart';
 import 'package:cableTvBook/services/databse_services.dart';
 import 'package:cableTvBook/widgets/default_dialog_box.dart';
@@ -33,7 +34,7 @@ class _HomeScreenState extends State<HomeScreen> {
     Colors.orange,
   ];
 
-  Future<dynamic> showEditOrAddDialog({int index = -1}) {
+  Future<dynamic> showEditOrAddDialog({int index = -1, bool delete = false}) {
     return showDialog(
       context: context,
       builder: (ctx) {
@@ -45,70 +46,79 @@ class _HomeScreenState extends State<HomeScreen> {
             filter: ImageFilter.blur(sigmaX: 2, sigmaY: 2),
             child: AlertDialog(
               title: Text(
-                index < 0 ? 'Add new area' : 'Edit area name',
+                delete
+                    ? 'Delete area'
+                    : index < 0 ? 'Add new area' : 'Edit area name',
               ),
-              content: index < 0
-                  ? Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: <Widget>[
-                        Text(
-                          'NOTE : This action cannot be undone, Please make sure before adding.\n',
-                          style: TextStyle(
-                            color: Theme.of(context).errorColor,
-                          ),
-                        ),
-                        TextFormField(
+              content: delete
+                  ? Text('Are you sure ?')
+                  : index < 0
+                      ? Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: <Widget>[
+                            Text(
+                              'NOTE: Area cannot be deleted. You can add maximum of 16 areas.\n',
+                              style: TextStyle(
+                                color: Theme.of(context).errorColor,
+                              ),
+                            ),
+                            TextFormField(
+                              maxLength: 10,
+                              controller: textController,
+                              validator: nameValidator,
+                              decoration:
+                                  inputDecoration(icon: Icons.add_location),
+                            ),
+                          ],
+                        )
+                      : TextFormField(
                           maxLength: 10,
                           controller: textController,
                           validator: nameValidator,
-                          decoration: inputDecoration(icon: Icons.add_location),
+                          decoration:
+                              inputDecoration(icon: Icons.edit_location),
                         ),
-                      ],
-                    )
-                  : TextFormField(
-                      maxLength: 10,
-                      controller: textController,
-                      validator: nameValidator,
-                      decoration: inputDecoration(icon: Icons.edit_location),
-                    ),
               actions: <Widget>[
-                FlatButton(
-                  onPressed: () => Navigator.pop(context),
-                  child: Text('cancel'),
-                  textColor: Theme.of(context).errorColor,
-                ),
-                FlatButton(
-                  onPressed: () async {
-                    if (_formKey.currentState.validate()) {
-                      _formKey.currentState.save();
-                      if (index < 0) {
-                        bool isExist = false;
-                        areas.forEach((element) {
-                          if (element.areaName == textController.text.trim())
-                            isExist = true;
-                        });
-                        if (isExist) {
-                          await DefaultDialogBox.errorDialog(ctx,
-                              title: 'Alert !',
-                              content: 'Area already exists !');
-                        } else
-                          await DatabaseService.addArea(context, scaffoldKey,
-                              data: AreaData(areaName: textController.text)
-                                  .toJson());
-                      } else
-                        await DatabaseService.updateArea(context, scaffoldKey,
-                            data: areas[index].toJson()
-                              ..['areaName'] = textController.text);
-                      Navigator.of(ctx).pop();
-                      setState(() {});
-                    }
-                  },
-                  child: Text(
-                    'save',
-                    style: TextStyle(fontSize: 16),
-                  ),
-                  color: Theme.of(context).primaryColor,
-                ),
+                IconButton(
+                    icon: Icon(FlutterIcons.cancel_mdi,
+                        color: Theme.of(context).errorColor),
+                    onPressed: () => Navigator.pop(context)),
+                IconButton(
+                    icon: Icon(FlutterIcons.check_circle_faw),
+                    onPressed: delete
+                        ? () async {
+                            await DatabaseService.deleteArea(
+                                context, scaffoldKey, areas[index].id);
+                            Navigator.pop(ctx);
+                          }
+                        : () async {
+                            if (_formKey.currentState.validate()) {
+                              _formKey.currentState.save();
+                              if (index < 0) {
+                                bool isExist = false;
+                                areas.forEach((element) {
+                                  if (element.areaName ==
+                                      textController.text.trim())
+                                    isExist = true;
+                                });
+                                if (isExist) {
+                                  await DefaultDialogBox.errorDialog(ctx,
+                                      title: 'Alert !',
+                                      content: 'Area already exists !');
+                                } else
+                                  await DatabaseService.addArea(
+                                      context, scaffoldKey,
+                                      data: AreaData(
+                                              areaName: textController.text)
+                                          .toJson());
+                              } else
+                                await DatabaseService.updateArea(
+                                    context, scaffoldKey,
+                                    data: areas[index].toJson()
+                                      ..['areaName'] = textController.text);
+                              Navigator.of(ctx).pop();
+                            }
+                          })
               ],
             ),
           ),
@@ -202,87 +212,89 @@ class _HomeScreenState extends State<HomeScreen> {
               physics: BouncingScrollPhysics(),
               itemCount: areas.length,
               itemBuilder: (context, index) => GestureDetector(
-                child: Container(
-                  margin: EdgeInsets.all(size.width * 0.025),
-                  padding: EdgeInsets.all(size.width * 0.04),
-                  decoration: BoxDecoration(
-                    backgroundBlendMode: BlendMode.darken,
-                    borderRadius: BorderRadius.circular(15),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black12,
-                        offset: Offset(3, 3),
-                        spreadRadius: 5,
-                        blurRadius: 5,
-                      ),
-                    ],
-                    gradient: LinearGradient(
-                      colors: [
-                        colors[index % 8].withOpacity(0.4),
-                        colors[index % 8].withOpacity(0.6),
-                        colors[index % 8].withOpacity(0.8),
-                        colors[index % 8].withOpacity(0.6),
-                        colors[index % 8].withOpacity(1),
+                  child: Container(
+                    margin: EdgeInsets.all(size.width * 0.025),
+                    padding: EdgeInsets.all(size.width * 0.04),
+                    decoration: BoxDecoration(
+                      backgroundBlendMode: BlendMode.darken,
+                      borderRadius: BorderRadius.circular(15),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black12,
+                          offset: Offset(3, 3),
+                          spreadRadius: 5,
+                          blurRadius: 5,
+                        ),
                       ],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
+                      gradient: LinearGradient(
+                        colors: [
+                          colors[index % 8].withOpacity(0.4),
+                          colors[index % 8].withOpacity(0.6),
+                          colors[index % 8].withOpacity(0.8),
+                          colors[index % 8].withOpacity(0.6),
+                          colors[index % 8].withOpacity(1),
+                        ],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: <Widget>[
+                        Text(
+                          areas[index].areaName,
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: size.width * 0.06,
+                            color: Colors.white,
+                          ),
+                        ),
+                        Divider(color: Colors.black38),
+                        Flexible(
+                          fit: FlexFit.loose,
+                          child: Text(
+                            'Total customers : ${areas[index].totalAccounts}',
+                            style: TextStyle(
+                              fontSize: size.width * 0.045,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ),
+                        Divider(color: Colors.black38),
+                        Flexible(
+                          fit: FlexFit.loose,
+                          child: Text(
+                            'Active : ${areas[index].activeAccounts}',
+                            style: TextStyle(
+                              fontSize: size.width * 0.045,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ),
+                        Divider(color: Colors.black38),
+                        Flexible(
+                          fit: FlexFit.loose,
+                          child: Text(
+                            'In-Active : ${areas[index].inActiveAccounts}',
+                            style: TextStyle(
+                              fontSize: size.width * 0.045,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: <Widget>[
-                      Text(
-                        areas[index].areaName,
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: size.width * 0.06,
-                          color: Colors.white,
-                        ),
-                      ),
-                      Divider(color: Colors.black38),
-                      Flexible(
-                        fit: FlexFit.loose,
-                        child: Text(
-                          'Total customers : ${areas[index].totalAccounts}',
-                          style: TextStyle(
-                            fontSize: size.width * 0.045,
-                            color: Colors.white,
+                  onTap: areas[index].totalAccounts == 0
+                      ? null
+                      : () => Navigator.of(context).pushNamed(
+                            AreaCustomersScreen.routeName,
+                            arguments: areas[index],
                           ),
-                        ),
-                      ),
-                      Divider(color: Colors.black38),
-                      Flexible(
-                        fit: FlexFit.loose,
-                        child: Text(
-                          'Active : ${areas[index].activeAccounts}',
-                          style: TextStyle(
-                            fontSize: size.width * 0.045,
-                            color: Colors.white,
-                          ),
-                        ),
-                      ),
-                      Divider(color: Colors.black38),
-                      Flexible(
-                        fit: FlexFit.loose,
-                        child: Text(
-                          'In-Active : ${areas[index].inActiveAccounts}',
-                          style: TextStyle(
-                            fontSize: size.width * 0.045,
-                            color: Colors.white,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                onTap: areas[index].totalAccounts == 0
-                    ? null
-                    : () => Navigator.of(context).pushNamed(
-                          AreaCustomersScreen.routeName,
-                          arguments: areas[index],
-                        ),
-                onLongPress: () => showEditOrAddDialog(index: index),
-              ),
+                  onDoubleTap: () => showEditOrAddDialog(index: index),
+                  onLongPress: areas[index].totalAccounts == 0
+                      ? () => showEditOrAddDialog(delete: true, index: index)
+                      : null),
               padding: EdgeInsets.symmetric(horizontal: size.width * 0.025),
               gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                 crossAxisCount: 2,

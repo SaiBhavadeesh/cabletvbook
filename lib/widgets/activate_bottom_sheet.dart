@@ -48,6 +48,7 @@ class _ActivateBottomSheetState extends State<ActivateBottomSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final size = MediaQuery.of(context).size;
     return Scaffold(
       key: scaffoldKey,
       backgroundColor: Colors.black45,
@@ -62,6 +63,8 @@ class _ActivateBottomSheetState extends State<ActivateBottomSheet> {
               ),
             ),
             Container(
+              height: size.height * 0.65,
+              alignment: Alignment.bottomCenter,
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.vertical(
@@ -69,7 +72,8 @@ class _ActivateBottomSheetState extends State<ActivateBottomSheet> {
                 ),
               ),
               padding: EdgeInsets.all(20),
-              child: Column(
+              child: ListView(
+                shrinkWrap: true,
                 children: [
                   Text(
                     'Select Plan : ',
@@ -80,27 +84,31 @@ class _ActivateBottomSheetState extends State<ActivateBottomSheet> {
                       letterSpacing: 1,
                     ),
                   ),
-                  ...operatorDetails.plans.map(
-                    (plan) {
-                      return Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
+                  GridView.builder(
+                    physics: NeverScrollableScrollPhysics(),
+                    shrinkWrap: true,
+                    padding: EdgeInsets.zero,
+                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: 4),
+                    itemBuilder: (context, index) => FittedBox(
+                      fit: BoxFit.contain,
+                      child: Row(
                         children: <Widget>[
                           Radio(
-                            materialTapTargetSize:
-                                MaterialTapTargetSize.shrinkWrap,
-                            activeColor: Theme.of(context).primaryColor,
-                            value: plan,
-                            groupValue: _selectedPlan,
-                            onChanged: _selectPlanField,
-                          ),
-                          Text('\u20B9 ' + plan.toString()),
+                              materialTapTargetSize:
+                                  MaterialTapTargetSize.shrinkWrap,
+                              activeColor: Theme.of(context).primaryColor,
+                              value: operatorDetails.plans[index],
+                              groupValue: _selectedPlan,
+                              onChanged: _selectPlanField),
+                          Text('\u20B9 ${operatorDetails.plans[index]}'),
                         ],
-                      );
-                    },
-                  ).toList(),
+                      ),
+                    ),
+                    itemCount: operatorDetails.plans.length,
+                  ),
                   SizedBox(height: 10),
                   Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Text(
                         'Select Period : ',
@@ -181,7 +189,7 @@ class _ActivateBottomSheetState extends State<ActivateBottomSheet> {
                                         scaffoldKey,
                                         customerId: widget.customerId,
                                         areaId: widget.areaId,
-                                        status:widget.status,
+                                        status: widget.status,
                                         year: widget.year.toString(),
                                         plan: _selectedPlan,
                                         term: _selectedTerm,

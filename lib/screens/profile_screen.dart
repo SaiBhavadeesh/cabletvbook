@@ -333,63 +333,71 @@ class _ProfileScreenState extends State<ProfileScreen> {
               itemCount: operatorDetails.plans.length,
             ),
             SizedBox(height: 10),
-            Align(
-              alignment: Alignment.centerRight,
-              child: defaultbutton(
-                context: context,
-                title: 'Add Plan',
-                width: 18,
-                height: 12,
-                function: () {
-                  final _formKey = GlobalKey<FormState>();
-                  final _planController = TextEditingController();
-                  return showDialog(
-                    context: context,
-                    builder: (context) => Form(
-                      key: _formKey,
-                      child: BackdropFilter(
-                        filter: ImageFilter.blur(sigmaX: 2, sigmaY: 2),
-                        child: AlertDialog(
-                          title: Text('Add Plan'),
-                          content: TextFormField(
-                            controller: _planController,
-                            validator: planValidator,
-                            decoration: inputDecoration(
-                                icon: FlutterIcons.currency_inr_mco),
-                          ),
-                          actions: <Widget>[
-                            FlatButton(
-                              onPressed: () => Navigator.pop(context),
-                              child: Text('cancel'),
-                              textColor: Theme.of(context).errorColor,
+            if (operatorDetails.plans.length < 16)
+              Align(
+                alignment: Alignment.centerRight,
+                child: defaultbutton(
+                  context: context,
+                  title: 'Add Plan',
+                  width: 18,
+                  height: 12,
+                  function: () {
+                    final _formKey = GlobalKey<FormState>();
+                    final _planController = TextEditingController();
+                    return showDialog(
+                      context: context,
+                      builder: (context) => Form(
+                        key: _formKey,
+                        child: BackdropFilter(
+                          filter: ImageFilter.blur(sigmaX: 2, sigmaY: 2),
+                          child: AlertDialog(
+                            title: Text('Add Plan'),
+                            content: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text('NOTE: Plan cannot be deleted. You can add maximum of 16 plans!\n',
+                                    style: TextStyle(color: Colors.red)),
+                                TextFormField(
+                                  controller: _planController,
+                                  validator: planValidator,
+                                  decoration: inputDecoration(
+                                      icon: FlutterIcons.currency_inr_mco),
+                                ),
+                              ],
                             ),
-                            FlatButton(
-                              onPressed: () async {
-                                if (_formKey.currentState.validate()) {
-                                  _formKey.currentState.save();
-                                  final list = operatorDetails.plans
-                                    ..add(double.parse(_planController.text));
-                                  await DatabaseService.updateData(
-                                      context, scaffolfKey,
-                                      data: {'plans': list});
-                                  Navigator.pop(context);
-                                  setState(() {});
-                                }
-                              },
-                              child: Text(
-                                'save',
-                                style: TextStyle(fontSize: 16),
+                            actions: <Widget>[
+                              FlatButton(
+                                onPressed: () => Navigator.pop(context),
+                                child: Text('cancel'),
+                                textColor: Theme.of(context).errorColor,
                               ),
-                              color: Theme.of(context).primaryColor,
-                            ),
-                          ],
+                              FlatButton(
+                                onPressed: () async {
+                                  if (_formKey.currentState.validate()) {
+                                    _formKey.currentState.save();
+                                    final list = operatorDetails.plans
+                                      ..add(double.parse(_planController.text));
+                                    await DatabaseService.updateData(
+                                        context, scaffolfKey,
+                                        data: {'plans': list});
+                                    Navigator.pop(context);
+                                    setState(() {});
+                                  }
+                                },
+                                child: Text(
+                                  'save',
+                                  style: TextStyle(fontSize: 16),
+                                ),
+                                color: Theme.of(context).primaryColor,
+                              ),
+                            ],
+                          ),
                         ),
                       ),
-                    ),
-                  );
-                },
+                    );
+                  },
+                ),
               ),
-            ),
           ],
         ),
       ),

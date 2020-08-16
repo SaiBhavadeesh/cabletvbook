@@ -160,7 +160,8 @@ class SettingsScreen extends StatelessWidget {
               },
             ),
           ),
-          getTitle(context, 'Privacy Settings'),
+          if (operatorDetails.password != null)
+            getTitle(context, 'Privacy Settings'),
           // getdetailText(context, 'Change Security pin',
           //     function: () => getChangeDialog(context,
           //         title: 'Currently unavailable',

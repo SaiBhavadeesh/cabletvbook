@@ -2,15 +2,15 @@ import 'dart:ui';
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_icons/flutter_icons.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:loading_indicator/loading_indicator.dart';
 
 import 'package:cableTvBook/models/operator.dart';
 import 'package:cableTvBook/global/variables.dart';
 import 'package:cableTvBook/global/validators.dart';
 import 'package:cableTvBook/global/box_decoration.dart';
 import 'package:cableTvBook/global/default_buttons.dart';
-import 'package:flutter_icons/flutter_icons.dart';
-import 'package:loading_indicator/loading_indicator.dart';
 import 'package:cableTvBook/services/databse_services.dart';
 import 'package:cableTvBook/widgets/default_dialog_box.dart';
 import 'package:cableTvBook/screens/area_customers_screen.dart';
@@ -57,7 +57,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           mainAxisSize: MainAxisSize.min,
                           children: <Widget>[
                             Text(
-                              'NOTE: Area cannot be deleted. You can add maximum of 16 areas.\n',
+                              'NOTE: You can add maximum of 16 areas.\n',
                               style: TextStyle(
                                 color: Theme.of(context).errorColor,
                               ),
@@ -79,10 +79,6 @@ class _HomeScreenState extends State<HomeScreen> {
                               inputDecoration(icon: Icons.edit_location),
                         ),
               actions: <Widget>[
-                IconButton(
-                    icon: Icon(FlutterIcons.cancel_mdi,
-                        color: Theme.of(context).errorColor),
-                    onPressed: () => Navigator.pop(context)),
                 IconButton(
                     icon: Icon(FlutterIcons.check_circle_faw),
                     onPressed: delete
@@ -118,7 +114,12 @@ class _HomeScreenState extends State<HomeScreen> {
                                       ..['areaName'] = textController.text);
                               Navigator.of(ctx).pop();
                             }
-                          })
+                          }),
+                SizedBox(width: 10),
+                IconButton(
+                    icon: Icon(FlutterIcons.cancel_mdi,
+                        color: Theme.of(context).errorColor),
+                    onPressed: () => Navigator.pop(context))
               ],
             ),
           ),
@@ -208,98 +209,108 @@ class _HomeScreenState extends State<HomeScreen> {
             areas = [...snapshot.data.documents]
                 .map((e) => AreaData.fromMap(e.data))
                 .toList();
-            return GridView.builder(
-              physics: BouncingScrollPhysics(),
-              itemCount: areas.length,
-              itemBuilder: (context, index) => GestureDetector(
-                  child: Container(
-                    margin: EdgeInsets.all(size.width * 0.025),
-                    padding: EdgeInsets.all(size.width * 0.04),
-                    decoration: BoxDecoration(
-                      backgroundBlendMode: BlendMode.darken,
-                      borderRadius: BorderRadius.circular(15),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black12,
-                          offset: Offset(3, 3),
-                          spreadRadius: 5,
-                          blurRadius: 5,
-                        ),
-                      ],
-                      gradient: LinearGradient(
-                        colors: [
-                          colors[index % 8].withOpacity(0.4),
-                          colors[index % 8].withOpacity(0.6),
-                          colors[index % 8].withOpacity(0.8),
-                          colors[index % 8].withOpacity(0.6),
-                          colors[index % 8].withOpacity(1),
-                        ],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                      ),
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: <Widget>[
-                        Text(
-                          areas[index].areaName,
-                          style: TextStyle(
+            return areas.isEmpty
+                ? Center(
+                    child: Text('No area to show',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                            fontSize: 20,
+                            fontStyle: FontStyle.italic,
                             fontWeight: FontWeight.bold,
-                            fontSize: size.width * 0.06,
-                            color: Colors.white,
+                            letterSpacing: 1)),
+                  )
+                : GridView.builder(
+                    physics: BouncingScrollPhysics(),
+                    itemCount: areas.length,
+                    itemBuilder: (context, index) => GestureDetector(
+                        key: ValueKey(areas[index].id),
+                        child: Container(
+                          margin: EdgeInsets.all(size.width * 0.025),
+                          padding: EdgeInsets.all(size.width * 0.04),
+                          decoration: BoxDecoration(
+                            backgroundBlendMode: BlendMode.darken,
+                            borderRadius: BorderRadius.circular(15),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black12,
+                                offset: Offset(3, 3),
+                                spreadRadius: 5,
+                                blurRadius: 5,
+                              ),
+                            ],
+                            gradient: LinearGradient(
+                              colors: [
+                                colors[index % 8].withOpacity(0.4),
+                                colors[index % 8].withOpacity(0.6),
+                                colors[index % 8].withOpacity(0.8),
+                                colors[index % 8].withOpacity(0.6),
+                                colors[index % 8].withOpacity(1),
+                              ],
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                            ),
                           ),
-                        ),
-                        Divider(color: Colors.black38),
-                        Flexible(
-                          fit: FlexFit.loose,
-                          child: Text(
-                            'Total customers : ${areas[index].totalAccounts}',
-                            style: TextStyle(
-                              fontSize: size.width * 0.045,
-                              color: Colors.white,
+                          child: FittedBox(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: <Widget>[
+                                Text(
+                                  areas[index].areaName,
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: size.width * 0.06,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                                Divider(color: Colors.black38),
+                                FittedBox(
+                                  child: Text(
+                                    'Total customers : ${areas[index].totalAccounts}',
+                                    style: TextStyle(
+                                      fontSize: size.width * 0.045,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                ),
+                                Divider(color: Colors.black38),
+                                FittedBox(
+                                  child: Text(
+                                    'Active : ${areas[index].activeAccounts}',
+                                    style: TextStyle(
+                                      fontSize: size.width * 0.045,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                ),
+                                Divider(color: Colors.black38),
+                                FittedBox(
+                                  child: Text(
+                                    'In-Active : ${areas[index].inActiveAccounts}',
+                                    style: TextStyle(
+                                      fontSize: size.width * 0.045,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
                         ),
-                        Divider(color: Colors.black38),
-                        Flexible(
-                          fit: FlexFit.loose,
-                          child: Text(
-                            'Active : ${areas[index].activeAccounts}',
-                            style: TextStyle(
-                              fontSize: size.width * 0.045,
-                              color: Colors.white,
-                            ),
-                          ),
-                        ),
-                        Divider(color: Colors.black38),
-                        Flexible(
-                          fit: FlexFit.loose,
-                          child: Text(
-                            'In-Active : ${areas[index].inActiveAccounts}',
-                            style: TextStyle(
-                              fontSize: size.width * 0.045,
-                              color: Colors.white,
-                            ),
-                          ),
-                        ),
-                      ],
+                        onTap: areas[index].totalAccounts == 0
+                            ? null
+                            : () => Navigator.of(context).pushNamed(
+                                  AreaCustomersScreen.routeName,
+                                  arguments: areas[index],
+                                ),
+                        onDoubleTap: () => showEditOrAddDialog(index: index),
+                        onLongPress: () =>
+                            showEditOrAddDialog(delete: true, index: index)),
+                    padding:
+                        EdgeInsets.symmetric(horizontal: size.width * 0.025),
+                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 2,
                     ),
-                  ),
-                  onTap: areas[index].totalAccounts == 0
-                      ? null
-                      : () => Navigator.of(context).pushNamed(
-                            AreaCustomersScreen.routeName,
-                            arguments: areas[index],
-                          ),
-                  onDoubleTap: () => showEditOrAddDialog(index: index),
-                  onLongPress: areas[index].totalAccounts == 0
-                      ? () => showEditOrAddDialog(delete: true, index: index)
-                      : null),
-              padding: EdgeInsets.symmetric(horizontal: size.width * 0.025),
-              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 2,
-              ),
-            );
+                  );
           }
           return Container(
             padding: EdgeInsets.symmetric(

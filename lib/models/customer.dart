@@ -119,6 +119,7 @@ Future<List<Customer>> getAllCustomers() async {
     doc += (await Firestore.instance
             .collection(
                 'users/${firebaseUser.uid}/areas/${areas[i].id}/customers')
+            .orderBy('name')
             .getDocuments())
         .documents;
   }

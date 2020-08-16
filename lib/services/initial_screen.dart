@@ -1,10 +1,10 @@
-import 'package:cableTvBook/services/databse_services.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:loading_indicator/loading_indicator.dart';
+import 'package:cableTvBook/services/databse_services.dart';
 
 import 'package:cableTvBook/global/variables.dart';
 import 'package:cableTvBook/screens/signin_screen.dart';
-import 'package:loading_indicator/loading_indicator.dart';
 import 'package:cableTvBook/screens/bottom_tabs_screen.dart';
 
 class InitialScreen extends StatelessWidget {

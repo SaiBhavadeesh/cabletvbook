@@ -51,19 +51,31 @@ class AreaCustomersScreen extends StatelessWidget {
             stream: Firestore.instance
                 .collection(
                     'users/${operatorDetails.id}/areas/${area.id}/customers')
+                .orderBy('name')
                 .snapshots(),
             builder: (context, snapshot) {
               if (snapshot.hasData) {
                 final customers = getAreaCustomers(snapshot.data.documents);
-                return TabBarView(
-                  children: [
-                    SearchScreenWidget(
-                        active: true, providedCustomers: customers),
-                    SearchScreenWidget(all: true, providedCustomers: customers),
-                    SearchScreenWidget(
-                        inactive: true, providedCustomers: customers),
-                  ],
-                );
+                return customers.isEmpty
+                    ? Center(
+                        child: Text('No customer to show',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                                fontSize: 20,
+                                fontStyle: FontStyle.italic,
+                                fontWeight: FontWeight.bold,
+                                letterSpacing: 1)),
+                      )
+                    : TabBarView(
+                        children: [
+                          SearchScreenWidget(
+                              active: true, providedCustomers: customers),
+                          SearchScreenWidget(
+                              all: true, providedCustomers: customers),
+                          SearchScreenWidget(
+                              inactive: true, providedCustomers: customers),
+                        ],
+                      );
               }
               return Container(
                 padding: EdgeInsets.symmetric(

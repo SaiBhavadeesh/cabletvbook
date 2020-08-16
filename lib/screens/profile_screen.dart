@@ -279,26 +279,38 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ),
               ),
             ),
-            GridView.builder(
-              physics: NeverScrollableScrollPhysics(),
-              shrinkWrap: true,
-              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 5,
-              ),
-              itemBuilder: (context, index) {
-                return Container(
-                  margin: const EdgeInsets.all(8),
-                  padding: const EdgeInsets.all(8),
-                  alignment: Alignment.center,
-                  decoration: sweepGradientDecoration(context),
-                  child: Text(
-                    areas[index].areaName,
-                    style: TextStyle(color: Colors.white),
+            areas.isEmpty
+                ? Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Text('No area to show',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                            color: Colors.red,
+                            fontSize: 20,
+                            fontStyle: FontStyle.italic,
+                            fontWeight: FontWeight.bold,
+                            letterSpacing: 1)),
+                  )
+                : GridView.builder(
+                    physics: NeverScrollableScrollPhysics(),
+                    shrinkWrap: true,
+                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 5,
+                    ),
+                    itemBuilder: (context, index) {
+                      return Container(
+                        margin: const EdgeInsets.all(8),
+                        padding: const EdgeInsets.all(8),
+                        alignment: Alignment.center,
+                        decoration: sweepGradientDecoration(context),
+                        child: Text(
+                          areas[index].areaName,
+                          style: TextStyle(color: Colors.white),
+                        ),
+                      );
+                    },
+                    itemCount: areas.length,
                   ),
-                );
-              },
-              itemCount: areas.length,
-            ),
             SizedBox(height: 10),
             Padding(
               padding: const EdgeInsets.only(left: 8.0, bottom: 4.0),
@@ -355,7 +367,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             content: Column(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                Text('NOTE: Plan cannot be deleted. You can add maximum of 16 plans!\n',
+                                Text(
+                                    'NOTE: Plan cannot be deleted. You can add maximum of 16 plans!\n',
                                     style: TextStyle(color: Colors.red)),
                                 TextFormField(
                                   controller: _planController,

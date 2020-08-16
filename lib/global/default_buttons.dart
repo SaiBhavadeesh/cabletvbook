@@ -9,6 +9,7 @@ Widget defaultbutton(
     double width = 45,
     double height = 16}) {
   return FloatingActionButton.extended(
+    heroTag: title,
     onPressed: function,
     isExtended: false,
     elevation: 0,

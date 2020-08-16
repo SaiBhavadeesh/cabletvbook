@@ -55,13 +55,23 @@ class _SearchScreenState extends State<SearchScreen> {
           builder: (context, snapshot) {
             if (snapshot.hasData) {
               customers = snapshot.data;
-              return TabBarView(
-                children: <Widget>[
-                  SearchScreenWidget(active: true, isRefreshable: true),
-                  SearchScreenWidget(all: true, isRefreshable: true),
-                  SearchScreenWidget(inactive: true, isRefreshable: true),
-                ],
-              );
+              return customers.isEmpty
+                  ? Center(
+                      child: Text('No customer to show',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                              fontSize: 20,
+                              fontStyle: FontStyle.italic,
+                              fontWeight: FontWeight.bold,
+                              letterSpacing: 1)),
+                    )
+                  : TabBarView(
+                      children: <Widget>[
+                        SearchScreenWidget(active: true, isRefreshable: true),
+                        SearchScreenWidget(all: true, isRefreshable: true),
+                        SearchScreenWidget(inactive: true, isRefreshable: true),
+                      ],
+                    );
             }
             return Container(
               padding: EdgeInsets.symmetric(

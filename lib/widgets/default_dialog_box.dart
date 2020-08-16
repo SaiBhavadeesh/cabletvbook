@@ -1,5 +1,6 @@
 import 'dart:ui';
 
+import 'package:cableTvBook/global/box_decoration.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_icons/flutter_icons.dart';
 import 'package:loading_indicator/loading_indicator.dart';
@@ -36,12 +37,13 @@ class DefaultDialogBox {
   }
 
   static Future<dynamic> loadingDialog(BuildContext context,
-      {SelectLoader loaderType, String title}) {
+      {SelectLoader loaderType, String title, bool blur = true}) {
     return showDialog(
       context: context,
       barrierDismissible: false,
       builder: (ctx) => BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 2, sigmaY: 2),
+        filter:
+            blur ? ImageFilter.blur(sigmaX: 2, sigmaY: 2) : ImageFilter.blur(),
         child: WillPopScope(
           onWillPop: () async => Future.value(false),
           child: AlertDialog(
@@ -51,7 +53,15 @@ class DefaultDialogBox {
                     ? MediaQuery.of(context).size.width * 0.2
                     : MediaQuery.of(context).size.width * 0.3),
             backgroundColor: Colors.transparent,
-            title: title == null ? null : Text(title),
+            title: title == null
+                ? null
+                : Container(
+                    padding: const EdgeInsets.all(8),
+                    alignment: Alignment.center,
+                    decoration: defaultBoxDecoration(context, true),
+                    child: Text(title,
+                        textAlign: TextAlign.center,
+                        style: TextStyle(color: Colors.white))),
             content: LoadingIndicator(
               indicatorType: loaderType == SelectLoader.ballClipRotateMultiple
                   ? Indicator.ballClipRotateMultiple

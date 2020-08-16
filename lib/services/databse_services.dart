@@ -238,10 +238,10 @@ class DatabaseService {
     DefaultDialogBox.loadingDialog(context,
         loaderType: SelectLoader.ballRotateChase);
     try {
-      await Firestore.instance
+      final _instance = Firestore.instance
           .collection('users/${operatorDetails.id}/areas')
-          .document(areaId)
-          .delete();
+          .document(areaId);
+      await _instance.delete();
       Navigator.pop(context);
     } on PlatformException catch (error) {
       Navigator.pop(context);
@@ -513,5 +513,39 @@ class DatabaseService {
       ));
     }
     return changed;
+  }
+
+  static Future<void> deleteCustomer(BuildContext context,
+      {@required String areaId,
+      @required String customerId,
+      @required bool isActive,
+      @required int totalCount,
+      @required int otherCount}) async {
+    DefaultDialogBox.loadingDialog(context,
+        loaderType: SelectLoader.ballRotateChase);
+    try {
+      final _areaInst = Firestore.instance
+          .collection('users/${operatorDetails.id}/areas')
+          .document(areaId);
+      await _areaInst.collection('customers').document(customerId).delete();
+      final key = isActive ? 'activeAccounts' : 'inActiveAccounts';
+      _areaInst.updateData({
+        'totalAccounts': totalCount - 1,
+        key: otherCount - 1,
+      });
+      Navigator.pop(context);
+    } on PlatformException catch (error) {
+      Navigator.pop(context);
+      Scaffold.of(context).showSnackBar(SnackBar(
+        content: Text(error.message),
+        duration: Duration(seconds: 1),
+      ));
+    } catch (_) {
+      Navigator.pop(context);
+      Scaffold.of(context).showSnackBar(SnackBar(
+        content: Text('ERROR : something went wrong !'),
+        duration: Duration(seconds: 1),
+      ));
+    }
   }
 }

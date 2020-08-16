@@ -173,8 +173,8 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
         try {
           await launch(
             url,
-            forceSafariVC: true,
-            forceWebView: true,
+            // forceSafariVC: true,
+            // forceWebView: true,
             enableJavaScript: true,
           );
         } catch (_) {}

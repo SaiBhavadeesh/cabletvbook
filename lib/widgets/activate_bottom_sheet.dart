@@ -180,8 +180,8 @@ class _ActivateBottomSheetState extends State<ActivateBottomSheet> {
                           try {
                             await launch(
                               url,
-                              forceSafariVC: true,
-                              forceWebView: true,
+                              // forceSafariVC: true,
+                              // forceWebView: true,
                               enableJavaScript: true,
                             );
                             await showDialog(

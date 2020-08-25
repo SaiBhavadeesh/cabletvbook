@@ -12,12 +12,14 @@ class ActivateBottomSheet extends StatefulWidget {
   final int year;
   final String status;
   final plan;
+  final unpaidNo;
   ActivateBottomSheet(
       {@required this.customerId,
       @required this.areaId,
       @required this.status,
       @required this.year,
-      @required this.plan});
+      @required this.plan,
+      @required this.unpaidNo});
   @override
   _ActivateBottomSheetState createState() => _ActivateBottomSheetState();
 }
@@ -26,6 +28,7 @@ class _ActivateBottomSheetState extends State<ActivateBottomSheet> {
   final scaffoldKey = GlobalKey<ScaffoldState>();
   double _selectedPlan;
   bool _checked = true;
+  bool _selected = false;
   int _selectedTerm = 1;
 
   void _selectPlanField(double value) {
@@ -63,7 +66,7 @@ class _ActivateBottomSheetState extends State<ActivateBottomSheet> {
               ),
             ),
             Container(
-              height: size.height * 0.65 -
+              height: size.height * 0.75 -
                   size.height *
                       0.04 *
                       ((16 - operatorDetails.plans.length) / 4).floor(),
@@ -125,24 +128,15 @@ class _ActivateBottomSheetState extends State<ActivateBottomSheet> {
                       SizedBox(width: 20),
                       DropdownButton(
                           items: [
-                            DropdownMenuItem(
-                                child: Text('1 Month'), value: 1),
-                            DropdownMenuItem(
-                                child: Text('2 Months'), value: 2),
-                            DropdownMenuItem(
-                                child: Text('3 Months'), value: 3),
-                            DropdownMenuItem(
-                                child: Text('4 Months'), value: 4),
-                            DropdownMenuItem(
-                                child: Text('5 Months'), value: 5),
-                            DropdownMenuItem(
-                                child: Text('6 Months'), value: 6),
-                            DropdownMenuItem(
-                                child: Text('7 Months'), value: 7),
-                            DropdownMenuItem(
-                                child: Text('8 Months'), value: 8),
-                            DropdownMenuItem(
-                                child: Text('9 Months'), value: 9),
+                            DropdownMenuItem(child: Text('1 Month'), value: 1),
+                            DropdownMenuItem(child: Text('2 Months'), value: 2),
+                            DropdownMenuItem(child: Text('3 Months'), value: 3),
+                            DropdownMenuItem(child: Text('4 Months'), value: 4),
+                            DropdownMenuItem(child: Text('5 Months'), value: 5),
+                            DropdownMenuItem(child: Text('6 Months'), value: 6),
+                            DropdownMenuItem(child: Text('7 Months'), value: 7),
+                            DropdownMenuItem(child: Text('8 Months'), value: 8),
+                            DropdownMenuItem(child: Text('9 Months'), value: 9),
                             DropdownMenuItem(
                                 child: Text('10 Months'), value: 10),
                             DropdownMenuItem(
@@ -169,21 +163,33 @@ class _ActivateBottomSheetState extends State<ActivateBottomSheet> {
                     },
                   ),
                   Divider(),
+                  CheckboxListTile(
+                    activeColor: Colors.green,
+                    controlAffinity: ListTileControlAffinity.leading,
+                    value: _selected,
+                    title: Text('Launch portal.'),
+                    onChanged: (value) {
+                      setState(() {
+                        _selected = !_selected;
+                      });
+                    },
+                  ),
+                  Divider(),
                   SizedBox(height: 10),
                   Align(
                     child: defaultbutton(
                       context: context,
                       function: () async {
-                        final url =
-                            "https://partnerportal.actcorp.in/packages";
-                        if (await canLaunch(url)) {
+                        final url = "https://partnerportal.actcorp.in/packages";
+                        if (await canLaunch(url) || !_selected) {
                           try {
-                            await launch(
-                              url,
-                              // forceSafariVC: true,
-                              // forceWebView: true,
-                              enableJavaScript: true,
-                            );
+                            if (_selected)
+                              await launch(
+                                url,
+                                // forceSafariVC: true,
+                                // forceWebView: true,
+                                enableJavaScript: true,
+                              );
                             await showDialog(
                               context: context,
                               builder: (ctx) => AlertDialog(
@@ -207,6 +213,7 @@ class _ActivateBottomSheetState extends State<ActivateBottomSheet> {
                                         plan: _selectedPlan,
                                         term: _selectedTerm,
                                         billPay: _checked,
+                                        unPaidNo: widget.unpaidNo,
                                       );
                                       Navigator.pop(context);
                                     },

@@ -28,6 +28,7 @@ class SearchScreenWidget extends StatefulWidget {
 
 class _SearchScreenWidgetState extends State<SearchScreenWidget> {
   final searchController = TextEditingController();
+  bool _val = false;
 
   List<Customer> filteredCustomers = [];
 
@@ -43,7 +44,7 @@ class _SearchScreenWidgetState extends State<SearchScreenWidget> {
     }
   }
 
-  onTextChange(String value) {
+  void onTextChange(String value) {
     filteredCustomers = getSelectedCustomers(
       active: widget.active,
       all: widget.all,
@@ -52,11 +53,28 @@ class _SearchScreenWidgetState extends State<SearchScreenWidget> {
     );
     setState(() {
       if (value.isNotEmpty)
-        filteredCustomers = customers
+        filteredCustomers = filteredCustomers
             .where((customer) => (customer.name.contains(value) ||
                 customer.accountNumber.contains(value) ||
                 customer.macId.contains(value)))
             .toList();
+    });
+  }
+
+  void showPending(bool value) {
+    setState(() {
+      if (value)
+        filteredCustomers = filteredCustomers
+            .where((element) => element.noOfPendingBills > 0)
+            .toList();
+      else
+        filteredCustomers = getSelectedCustomers(
+          active: widget.active,
+          all: widget.all,
+          inactive: widget.inactive,
+          providedCustomers: widget.providedCustomers ?? customers,
+        );
+      _val = !_val;
     });
   }
 
@@ -140,6 +158,29 @@ class _SearchScreenWidgetState extends State<SearchScreenWidget> {
                   hint: 'Search by Name / mac no / acc no.',
                   icon: FlutterIcons.ios_search_ion,
                   radius: 30),
+            ),
+          ),
+          Positioned(
+            bottom: 0,
+            right: 8,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                Switch(
+                    activeTrackColor: Colors.lightGreen,
+                    activeColor: Theme.of(context).primaryColor,
+                    inactiveThumbColor: Colors.black45,
+                    inactiveTrackColor: Colors.black38,
+                    value: _val,
+                    onChanged: showPending),
+                Text(
+                  'Show Pending',
+                  style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                      color: Colors.red),
+                ),
+              ],
             ),
           ),
         ],

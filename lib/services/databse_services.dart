@@ -304,7 +304,8 @@ class DatabaseService {
       @required String status,
       @required int term,
       @required bool billPay,
-      @required String year}) async {
+      @required String year,
+      @required int unPaidNo}) async {
     DefaultDialogBox.loadingDialog(context,
         loaderType: SelectLoader.ballRotateChase);
     try {
@@ -314,24 +315,26 @@ class DatabaseService {
       final docs = await _ref.collection(year).orderBy('code').getDocuments();
       Recharge recent;
       if (docs.documents.isNotEmpty) {
-        recent = Recharge.fromMap(docs.documents.last.data);
+        recent = Recharge.fromMap(docs.documents.last);
         if (recent != null) {
           if (recent.date.year == DateTime.now().year)
-            for (int i = recent.date.month + 1; i < DateTime.now().month; i++) {
+            for (int i = recent.code + 1; i < DateTime.now().month; i++) {
               final _rechargeRef =
                   _ref.collection(DateTime.now().year.toString()).document();
               final inactiveRecharge =
                   Recharge(id: _rechargeRef.documentID, status: false, code: i)
-                      .toJson();
+                      .toJson()
+                        ..['date'] = FieldValue.serverTimestamp();
               await _rechargeRef.setData(inactiveRecharge);
             }
           else if (recent.date.year < DateTime.now().year) {
-            for (int i = recent.date.month + 1; i <= 12; i++) {
+            for (int i = recent.code + 1; i <= 12; i++) {
               final _rechargeRef =
                   _ref.collection(recent.date.year.toString()).document();
               final inactiveRecharge =
                   Recharge(id: _rechargeRef.documentID, status: false, code: i)
-                      .toJson();
+                      .toJson()
+                        ..['date'] = FieldValue.serverTimestamp();
               await _rechargeRef.setData(inactiveRecharge);
             }
             for (int i = 1; i < DateTime.now().month; i++) {
@@ -339,7 +342,8 @@ class DatabaseService {
                   _ref.collection(DateTime.now().year.toString()).document();
               final inactiveRecharge =
                   Recharge(id: _rechargeRef.documentID, status: false, code: i)
-                      .toJson();
+                      .toJson()
+                        ..['date'] = FieldValue.serverTimestamp();
               await _rechargeRef.setData(inactiveRecharge);
             }
           }
@@ -348,8 +352,12 @@ class DatabaseService {
       int monthCode = DateTime.now().month;
       int rechargeYear = DateTime.now().year;
       if (int.parse(year) > rechargeYear) rechargeYear = int.parse(year);
-      if (docs.documents.isNotEmpty && recent.date.year >= DateTime.now().year)
-        monthCode = recent.code + 1;
+      if (docs.documents.isNotEmpty) {
+        if (recent.date.year > DateTime.now().year)
+          monthCode = recent.code + 1;
+        else if (recent.date.year == DateTime.now().year &&
+            recent.code >= monthCode) monthCode = recent.code + 1;
+      }
       for (int i = 0; i < term; i++) {
         if (monthCode % 13 == 0) {
           monthCode = 1;
@@ -368,9 +376,11 @@ class DatabaseService {
         await _rechargeRef.setData(activeRecharge);
         monthCode += 1;
       }
+      if (!billPay)
+        await _ref.updateData({'noOfPendingBills': unPaidNo + term});
+      await _ref
+          .updateData({'currentStatus': 'Active', 'runningYear': rechargeYear});
       if (status != 'Active') {
-        await _ref.updateData(
-            {'currentStatus': 'Active', 'runningYear': rechargeYear});
         final area = areas.firstWhere((element) => element.id == areaId);
         await updateArea(context, key, data: {
           'id': areaId,
@@ -380,17 +390,14 @@ class DatabaseService {
       }
       Navigator.pop(context);
     } on PlatformException catch (error) {
+      print(error.message);
       Navigator.pop(context);
-      key.currentState.showSnackBar(SnackBar(
-        content: Text(error.message),
-        duration: Duration(seconds: 1),
-      ));
+      key.currentState.showSnackBar(SnackBar(content: Text(error.message)));
     } catch (error) {
+      print(error.toString());
       Navigator.pop(context);
-      key.currentState.showSnackBar(SnackBar(
-        content: Text('ERROR : something went wrong !'),
-        duration: Duration(seconds: 1),
-      ));
+      key.currentState.showSnackBar(
+          SnackBar(content: Text('ERROR : something went wrong !')));
     }
   }
 
@@ -439,20 +446,26 @@ class DatabaseService {
     @required String areaId,
     @required String year,
     @required String rechargeId,
+    @required int unpaidBillno,
   }) async {
     DefaultDialogBox.loadingDialog(context,
         loaderType: SelectLoader.ballRotateChase);
     try {
-      await Firestore.instance
-          .collection(
-              'users/${operatorDetails.id}/areas/$areaId/customers/$customerId/$year')
+      final _ref = Firestore.instance
+          .collection('users/${operatorDetails.id}/areas/$areaId/customers');
+      await _ref
+          .document(customerId)
+          .updateData({'noOfPendingBills': unpaidBillno - 1});
+      await _ref
+          .document(customerId)
+          .collection(year)
           .document(rechargeId)
           .updateData({'billPay': true});
       Navigator.pop(context);
     } on PlatformException catch (error) {
       Navigator.pop(context);
       DefaultDialogBox.errorDialog(context, content: error.message);
-    } catch (error) {
+    } catch (_) {
       Navigator.pop(context);
       DefaultDialogBox.errorDialog(context);
     }
@@ -465,16 +478,32 @@ class DatabaseService {
       @required String year,
       @required String startYear,
       @required bool prevRecharge,
-      @required Recharge recharge}) async {
+      @required Recharge recharge,
+      @required int unPaidNo}) async {
     DefaultDialogBox.loadingDialog(context,
         loaderType: SelectLoader.ballRotateChase);
     bool changed = false;
+    Recharge _prev;
     try {
-      await Firestore.instance
-          .collection(
-              'users/${operatorDetails.id}/areas/$areaId/customers/$customerId/$year')
+      final _ref = Firestore.instance
+          .collection('users/${operatorDetails.id}/areas/$areaId/customers');
+      await _ref
+          .document(customerId)
+          .collection(year)
           .document(recharge.id)
           .delete();
+      if (recharge.code > 1)
+        _prev = Recharge.fromMap((await _ref
+                .document(customerId)
+                .collection(year)
+                .where('code', isEqualTo: recharge.code - 1)
+                .getDocuments())
+            .documents
+            .first);
+      if (recharge.billPay != null && !recharge.billPay)
+        await _ref
+            .document(customerId)
+            .updateData({'noOfPendingBills': unPaidNo - 1});
       int updateYear = int.parse(year);
       String status = 'Inactive';
       if (recharge.code == 1) {
@@ -483,8 +512,14 @@ class DatabaseService {
         } else
           updateYear = int.parse(startYear);
         changed = true;
+        final temp = (await _ref
+                .document(customerId)
+                .collection(updateYear.toString())
+                .getDocuments())
+            .documents;
+        if (temp.isNotEmpty) _prev = Recharge.fromMap(temp.last);
       }
-      if (prevRecharge) status = 'Active';
+      if (_prev != null) status = _prev.status ? 'Active' : 'Inactive';
       await Firestore.instance
           .collection('users/${operatorDetails.id}/areas/$areaId/customers')
           .document(customerId)
@@ -503,13 +538,12 @@ class DatabaseService {
       Navigator.pop(context);
       key.currentState.showSnackBar(SnackBar(
         content: Text(error.message),
-        duration: Duration(seconds: 1),
       ));
-    } catch (_) {
+    } catch (e) {
+      print(e.toString());
       Navigator.pop(context);
       key.currentState.showSnackBar(SnackBar(
         content: Text('ERROR : something went wrong !'),
-        duration: Duration(seconds: 1),
       ));
     }
     return changed;

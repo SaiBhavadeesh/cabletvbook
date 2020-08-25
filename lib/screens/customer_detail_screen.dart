@@ -158,6 +158,7 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
               status: customer.currentStatus,
               year: customer.runningYear,
               plan: customer.currentPlan,
+              unpaidNo: customer.noOfPendingBills,
             ),
         opaque: false));
   }
@@ -213,7 +214,8 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
 
   void deleteRecharge(
       BuildContext ctx, Recharge recharge, bool prevRecharge) async {
-    if (DateTime.now().difference(recharge.date) < Duration(days: 10))
+    if (recharge.status &&
+        DateTime.now().difference(recharge.date) < Duration(days: 10))
       await showDialog(
         context: context,
         builder: (ctx) => AlertDialog(
@@ -238,7 +240,8 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
                     year: year,
                     startYear: customer.startDate.year.toString(),
                     prevRecharge: prevRecharge,
-                    recharge: recharge);
+                    recharge: recharge,
+                    unPaidNo: customer.noOfPendingBills);
                 setState(() {
                   if (!value && int.parse(year) != customer.startDate.year)
                     _selectedYear = _selectedYear + 1;
@@ -527,15 +530,17 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
                                   DateTime(
                                       _selectedYear, rechargeData[index].code),
                                 ),
-                                billDate: rechargeData[index].date == null
+                                billDate: rechargeData[index].billPay == null
                                     ? ''
-                                    : DateFormat('dd/MM/yyyy')
-                                        .format(rechargeData[index].date),
+                                    : DateFormat('dd/MM/yyyy').format(
+                                        rechargeData[index].date ??
+                                            DateTime.now()),
                                 billAmount: rechargeData[index].plan ?? '',
                                 status: rechargeData[index].status
                                     ? 'Active'
                                     : 'Inactive',
                                 addInfo: rechargeData[index].addInfo,
+                                unpaidBill: customer.noOfPendingBills,
                               ),
                             );
                           },

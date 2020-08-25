@@ -12,6 +12,7 @@ class CustomerPlanList extends StatelessWidget {
   final String status;
   final bool billPay;
   final String addInfo;
+  final int unpaidBill;
 
   CustomerPlanList({
     this.customerId,
@@ -24,6 +25,7 @@ class CustomerPlanList extends StatelessWidget {
     this.status = 'Status',
     this.billPay,
     this.addInfo,
+    this.unpaidBill,
   });
 
   Future<void> changeBillStatus(BuildContext context) async {
@@ -43,7 +45,8 @@ class CustomerPlanList extends StatelessWidget {
                     customerId: customerId,
                     areaId: areaId,
                     year: year,
-                    rechargeId: id);
+                    rechargeId: id,
+                    unpaidBillno: unpaidBill);
                 Navigator.pop(context);
               },
               child: Text('yes'),

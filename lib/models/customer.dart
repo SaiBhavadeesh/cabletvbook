@@ -51,6 +51,7 @@ class Customer {
   double currentPlan;
   DateTime startDate;
   int runningYear;
+  int noOfPendingBills;
   String phoneNumber;
   String accountNumber;
   String currentStatus;
@@ -67,6 +68,7 @@ class Customer {
     this.startDate,
     this.runningYear,
     this.profileImageUrl,
+    this.noOfPendingBills = 0,
     @required this.currentPlan,
     @required this.phoneNumber,
     @required this.accountNumber,
@@ -83,6 +85,7 @@ class Customer {
     this.tempInfo = document['tempInfo'];
     this.startDate = document['startDate'].toDate();
     this.runningYear = document['runningYear'];
+    this.noOfPendingBills = document['noOfPendingBills'];
     this.profileImageUrl = document['profileImageUrl'];
     this.currentPlan = document['currentPlan'];
     this.phoneNumber = document['phoneNumber'];
@@ -104,6 +107,7 @@ class Customer {
         'accountNumber': this.accountNumber,
         'currentStatus': this.currentStatus,
         'profileImageUrl': this.profileImageUrl,
+        'noOfPendingBills': this.noOfPendingBills,
         'startDate': FieldValue.serverTimestamp(),
         'networkProviderId': this.networkProviderId,
       };

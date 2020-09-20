@@ -1,14 +1,14 @@
-import 'package:cableTvBook/widgets/default_dialog_box.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:carousel_slider/carousel_slider.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:razorpay_flutter/razorpay_flutter.dart';
 
 import 'package:cableTvBook/global/variables.dart';
 import 'package:cableTvBook/global/default_buttons.dart';
 import 'package:cableTvBook/services/databse_services.dart';
 import 'package:cableTvBook/screens/bottom_tabs_screen.dart';
+import 'package:cableTvBook/widgets/default_dialog_box.dart';
 
 class RazorPayScreen extends StatefulWidget {
   static const routeName = 'razorPayScreen';

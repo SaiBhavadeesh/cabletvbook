@@ -19,6 +19,7 @@ class SettingsScreen extends StatelessWidget {
       @required Function validator,
       @required IconData icon,
       TextInputType textInputType,
+      String prefix,
       @required Function onSaved}) {
     return showDialog(
       context: context,
@@ -30,7 +31,7 @@ class SettingsScreen extends StatelessWidget {
             controller: _textController,
             validator: validator,
             keyboardType: textInputType,
-            decoration: inputDecoration(icon: icon),
+            decoration: inputDecoration(icon: icon,prefixText: prefix),
           ),
           actions: [
             FlatButton(
@@ -142,6 +143,7 @@ class SettingsScreen extends StatelessWidget {
               validator: phoneValidator,
               icon: Icons.phone,
               textInputType: TextInputType.phone,
+              prefix: '+91 ',
               onSaved: () {
                 if (_formKey.currentState.validate()) {
                   _formKey.currentState.save();

@@ -38,6 +38,10 @@ class Operator {
   String password;
   String networkName;
   String phoneNumber;
+  String transactionId;
+  DateTime transactionTime;
+  double amountPaid;
+  bool isSubscribed;
   DateTime startDate;
   List<double> plans;
   String profileImageLink;
@@ -48,9 +52,13 @@ class Operator {
     @required this.password,
     @required this.networkName,
     @required this.phoneNumber,
+    @required this.plans,
     this.startDate,
     this.profileImageLink,
-    @required this.plans,
+    this.transactionId,
+    this.transactionTime,
+    this.isSubscribed = false,
+    this.amountPaid,
   });
 
   Operator.fromMap(Map<String, dynamic> document) {
@@ -63,6 +71,10 @@ class Operator {
     this.profileImageLink = document['profileImageLink'];
     this.startDate = document['startDate'].toDate();
     this.plans = [...document['plans']];
+    this.transactionId = document['transactionId'];
+    this.transactionTime = document['transactionTime'].toDate();
+    this.amountPaid = document['amountPaid'];
+    this.isSubscribed = document['isSubscribed'];
   }
 
   Map<String, dynamic> toJson() => {
@@ -75,5 +87,9 @@ class Operator {
         'phoneNumber': this.phoneNumber,
         'startDate': FieldValue.serverTimestamp(),
         'plans': this.plans,
+        'transactionId': this.transactionId,
+        'transactionTime': this.transactionTime,
+        'amountPaid': this.amountPaid,
+        'isSubscribed': this.isSubscribed,
       };
 }

@@ -27,13 +27,17 @@ dependencies:
   validators: ^2.0.1
   image_crop: ^0.3.2
   file_picker: ^1.13.3
+  fluttertoast: ^7.1.1
   url_launcher: ^5.5.0
   image_picker: ^0.6.7+4
+  path_provider: ^1.6.16
   flutter_icons: ^1.1.0
   firebase_auth: ^0.16.1
   google_sign_in: ^4.5.1
   pin_code_fields: ^4.0.0
   cloud_firestore: ^0.13.7
+  carousel_slider: ^2.2.1
+  razorpay_flutter: ^1.2.2
   firebase_storage: ^3.1.6
   loading_indicator: ^1.2.0
   regexed_validator: ^1.0.4
@@ -68,12 +72,7 @@ flutter:
 
   # To add assets to your application, add an assets section, like this:
   assets:
-    - assets/images/drawer.jpg
-    - assets/images/google.png
-    - assets/images/splash.png
-    - assets/images/app_icon.png
-    - assets/images/profile_icon.png
-    - assets/images/default_profile.jpg
+    - assets/images/
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware.

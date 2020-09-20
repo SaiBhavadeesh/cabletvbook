@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:intl/intl.dart';
 
 import 'package:flutter/material.dart';
@@ -16,8 +17,14 @@ class DatabaseService {
   static Future<void> getuserData() async {
     final _firestoreInstance =
         Firestore.instance.collection('users').document(firebaseUser.uid);
-    DocumentSnapshot document = await _firestoreInstance.get();
-    operatorDetails = Operator.fromMap(document.data);
+    try {
+      DocumentSnapshot document = await _firestoreInstance.get();
+      operatorDetails = Operator.fromMap(document.data);
+    } on PlatformException catch (error) {
+      Fluttertoast.showToast(msg: error.message);
+    } catch (_) {
+      Fluttertoast.showToast(msg: 'ERROR : something went wrong!');
+    }
   }
 
   static Future<void> addNewCustomer(BuildContext context,
@@ -39,12 +46,11 @@ class DatabaseService {
               'customerPictures/${operatorDetails.id}/${customer.areaId}/${_firestoreInstance.documentID}/profilePicture.png');
           await _ref.putFile(file).onComplete;
           url = await _ref.getDownloadURL();
+          Fluttertoast.showToast(msg: 'Profile picture uploaded!');
         } on PlatformException catch (error) {
-          Scaffold.of(context)
-              .showSnackBar(SnackBar(content: Text(error.message)));
+          Fluttertoast.showToast(msg: error.message);
         } catch (_) {
-          Scaffold.of(context).showSnackBar(
-              SnackBar(content: Text('ERROR : picture upload failed !')));
+          Fluttertoast.showToast(msg: 'ERROR : picture upload failed!');
         }
       await _firestoreInstance.setData(customer.toJson()
         ..['id'] = _firestoreInstance.documentID
@@ -72,23 +78,17 @@ class DatabaseService {
           .updateData(data);
       Navigator.of(context).pushNamedAndRemoveUntil(
           BottomTabsScreen.routeName, (route) => false);
+      Fluttertoast.showToast(msg: 'Customer successfully added!');
     } on PlatformException catch (error) {
       Navigator.pop(context);
-      Scaffold.of(context).showSnackBar(SnackBar(
-        content: Text(error.message),
-        duration: Duration(seconds: 1),
-      ));
+      Fluttertoast.showToast(msg: error.message);
     } catch (_) {
       Navigator.pop(context);
-      Scaffold.of(context).showSnackBar(SnackBar(
-        content: Text('ERROR : something went wrong !'),
-        duration: Duration(seconds: 1),
-      ));
+      Fluttertoast.showToast(msg: 'ERROR : something went wrong!');
     }
   }
 
-  static Future<void> updateCustomerData(
-      BuildContext context, GlobalKey<ScaffoldState> key,
+  static Future<void> updateCustomerData(BuildContext context,
       {@required Map<String, dynamic> data,
       @required String customerId,
       @required areaId}) async {
@@ -100,23 +100,17 @@ class DatabaseService {
           .document(customerId)
           .updateData(data);
       Navigator.pop(context);
+      Fluttertoast.showToast(msg: 'Successfully updated!');
     } on PlatformException catch (error) {
       Navigator.pop(context);
-      key.currentState.showSnackBar(SnackBar(
-        content: Text(error.message),
-        duration: Duration(seconds: 1),
-      ));
+      Fluttertoast.showToast(msg: error.message);
     } catch (_) {
       Navigator.pop(context);
-      key.currentState.showSnackBar(SnackBar(
-        content: Text('ERROR : picture upload failed !'),
-        duration: Duration(seconds: 1),
-      ));
+      Fluttertoast.showToast(msg: 'ERROR : something went wrong!');
     }
   }
 
-  static Future<void> updateCustomerPicture(
-      BuildContext context, GlobalKey<ScaffoldState> key,
+  static Future<void> updateCustomerPicture(BuildContext context,
       {@required File file,
       @required String customerId,
       @required String areaId}) async {
@@ -132,23 +126,17 @@ class DatabaseService {
           .document(customerId)
           .updateData({'profileImageUrl': url});
       Navigator.pop(context);
+      Fluttertoast.showToast(msg: 'Profile picture updated!');
     } on PlatformException catch (error) {
       Navigator.pop(context);
-      key.currentState.showSnackBar(SnackBar(
-        content: Text(error.message),
-        duration: Duration(seconds: 1),
-      ));
+      Fluttertoast.showToast(msg: error.message);
     } catch (_) {
       Navigator.pop(context);
-      key.currentState.showSnackBar(SnackBar(
-        content: Text('ERROR : picture upload failed !'),
-        duration: Duration(seconds: 1),
-      ));
+      Fluttertoast.showToast(msg: 'ERROR : picture upload failed!');
     }
   }
 
-  static Future<void> uploadProfilePicture(
-      BuildContext context, GlobalKey<ScaffoldState> key,
+  static Future<void> uploadProfilePicture(BuildContext context,
       {@required File file}) async {
     DefaultDialogBox.loadingDialog(context,
         loaderType: SelectLoader.ballRotateChase);
@@ -164,23 +152,17 @@ class DatabaseService {
           .updateData({'profileImageLink': url});
       await getuserData();
       Navigator.pop(context);
+      Fluttertoast.showToast(msg: 'Profile picture updated!');
     } on PlatformException catch (error) {
       Navigator.pop(context);
-      key.currentState.showSnackBar(SnackBar(
-        content: Text(error.message),
-        duration: Duration(seconds: 1),
-      ));
+      Fluttertoast.showToast(msg: error.message);
     } catch (_) {
       Navigator.pop(context);
-      key.currentState.showSnackBar(SnackBar(
-        content: Text('ERROR : picture upload failed !'),
-        duration: Duration(seconds: 1),
-      ));
+      Fluttertoast.showToast(msg: 'ERROR : picture upload failed!');
     }
   }
 
-  static Future<void> updateData(
-      BuildContext context, GlobalKey<ScaffoldState> key,
+  static Future<void> updateData(BuildContext context,
       {@required Map<String, dynamic> data}) async {
     DefaultDialogBox.loadingDialog(context,
         loaderType: SelectLoader.ballRotateChase);
@@ -191,23 +173,17 @@ class DatabaseService {
           .updateData(data);
       await getuserData();
       Navigator.pop(context);
+      Fluttertoast.showToast(msg: 'Successfully updated!');
     } on PlatformException catch (error) {
       Navigator.pop(context);
-      key.currentState.showSnackBar(SnackBar(
-        content: Text(error.message),
-        duration: Duration(seconds: 1),
-      ));
+      Fluttertoast.showToast(msg: error.message);
     } catch (_) {
       Navigator.pop(context);
-      key.currentState.showSnackBar(SnackBar(
-        content: Text('ERROR : something went wrong !'),
-        duration: Duration(seconds: 1),
-      ));
+      Fluttertoast.showToast(msg: 'ERROR : something went wrong!');
     }
   }
 
-  static Future<void> addArea(
-      BuildContext context, GlobalKey<ScaffoldState> key,
+  static Future<void> addArea(BuildContext context,
       {@required Map<String, dynamic> data}) async {
     DefaultDialogBox.loadingDialog(context,
         loaderType: SelectLoader.ballRotateChase);
@@ -218,23 +194,17 @@ class DatabaseService {
       await _firestoreInstance
           .setData(data..['id'] = _firestoreInstance.documentID);
       Navigator.pop(context);
+      Fluttertoast.showToast(msg: 'New area created successfully!');
     } on PlatformException catch (error) {
       Navigator.pop(context);
-      key.currentState.showSnackBar(SnackBar(
-        content: Text(error.message),
-        duration: Duration(seconds: 1),
-      ));
+      Fluttertoast.showToast(msg: error.message);
     } catch (_) {
       Navigator.pop(context);
-      key.currentState.showSnackBar(SnackBar(
-        content: Text('ERROR : something went wrong !'),
-        duration: Duration(seconds: 1),
-      ));
+      Fluttertoast.showToast(msg: 'ERROR : something went wrong!');
     }
   }
 
-  static Future<void> deleteArea(
-      BuildContext context, GlobalKey<ScaffoldState> key, String areaId) async {
+  static Future<void> deleteArea(BuildContext context, String areaId) async {
     DefaultDialogBox.loadingDialog(context,
         loaderType: SelectLoader.ballRotateChase);
     try {
@@ -243,23 +213,17 @@ class DatabaseService {
           .document(areaId);
       await _instance.delete();
       Navigator.pop(context);
+      Fluttertoast.showToast(msg: 'Area successfully deleted!');
     } on PlatformException catch (error) {
       Navigator.pop(context);
-      key.currentState.showSnackBar(SnackBar(
-        content: Text(error.message),
-        duration: Duration(seconds: 1),
-      ));
+      Fluttertoast.showToast(msg: error.message);
     } catch (_) {
       Navigator.pop(context);
-      key.currentState.showSnackBar(SnackBar(
-        content: Text('ERROR : something went wrong !'),
-        duration: Duration(seconds: 1),
-      ));
+      Fluttertoast.showToast(msg: 'ERROR : something went wrong!');
     }
   }
 
-  static Future<void> updateArea(
-      BuildContext context, GlobalKey<ScaffoldState> key,
+  static Future<void> updateArea(BuildContext context,
       {@required Map<String, dynamic> data}) async {
     DefaultDialogBox.loadingDialog(context,
         loaderType: SelectLoader.ballRotateChase);
@@ -271,33 +235,14 @@ class DatabaseService {
       Navigator.pop(context);
     } on PlatformException catch (error) {
       Navigator.pop(context);
-      if (key != null)
-        key.currentState.showSnackBar(SnackBar(
-          content: Text(error.message),
-          duration: Duration(seconds: 1),
-        ));
-      else
-        Scaffold.of(context).showSnackBar(SnackBar(
-          content: Text(error.message),
-          duration: Duration(seconds: 1),
-        ));
+      Fluttertoast.showToast(msg: error.message);
     } catch (_) {
       Navigator.pop(context);
-      if (key != null)
-        key.currentState.showSnackBar(SnackBar(
-          content: Text('ERROR : something went wrong !'),
-          duration: Duration(seconds: 1),
-        ));
-      else
-        Scaffold.of(context).showSnackBar(SnackBar(
-          content: Text('ERROR : something went wrong !'),
-          duration: Duration(seconds: 1),
-        ));
+      Fluttertoast.showToast(msg: 'ERROR : something went wrong!');
     }
   }
 
-  static Future<void> rechargeCustomer(
-      BuildContext context, GlobalKey<ScaffoldState> key,
+  static Future<void> rechargeCustomer(BuildContext context,
       {@required String customerId,
       @required String areaId,
       @required double plan,
@@ -382,27 +327,24 @@ class DatabaseService {
           .updateData({'currentStatus': 'Active', 'runningYear': rechargeYear});
       if (status != 'Active') {
         final area = areas.firstWhere((element) => element.id == areaId);
-        await updateArea(context, key, data: {
+        await updateArea(context, data: {
           'id': areaId,
           'activeAccounts': area.activeAccounts + 1,
           'inActiveAccounts': area.inActiveAccounts - 1
         });
       }
       Navigator.pop(context);
+      Fluttertoast.showToast(msg: 'Activation successful!');
     } on PlatformException catch (error) {
-      print(error.message);
       Navigator.pop(context);
-      key.currentState.showSnackBar(SnackBar(content: Text(error.message)));
-    } catch (error) {
-      print(error.toString());
+      Fluttertoast.showToast(msg: error.message);
+    } catch (_) {
       Navigator.pop(context);
-      key.currentState.showSnackBar(
-          SnackBar(content: Text('ERROR : something went wrong !')));
+      Fluttertoast.showToast(msg: 'ERROR : something went wrong!');
     }
   }
 
-  static Future<void> deactivateCustomer(
-      BuildContext context, GlobalKey<ScaffoldState> key,
+  static Future<void> deactivateCustomer(BuildContext context,
       {@required String customerId,
       @required String areaId,
       @required String year}) async {
@@ -419,24 +361,19 @@ class DatabaseService {
       });
       await _ref.updateData({'currentStatus': 'Inactive'});
       final area = areas.firstWhere((element) => element.id == areaId);
-      await updateArea(context, key, data: {
+      await updateArea(context, data: {
         'id': areaId,
         'activeAccounts': area.activeAccounts - 1,
         'inActiveAccounts': area.inActiveAccounts + 1
       });
       Navigator.pop(context);
+      Fluttertoast.showToast(msg: 'Deactivation successful!');
     } on PlatformException catch (error) {
       Navigator.pop(context);
-      key.currentState.showSnackBar(SnackBar(
-        content: Text(error.message),
-        duration: Duration(seconds: 1),
-      ));
+      Fluttertoast.showToast(msg: error.message);
     } catch (_) {
       Navigator.pop(context);
-      key.currentState.showSnackBar(SnackBar(
-        content: Text('ERROR : something went wrong !'),
-        duration: Duration(seconds: 1),
-      ));
+      Fluttertoast.showToast(msg: 'ERROR : something went wrong!');
     }
   }
 
@@ -464,15 +401,14 @@ class DatabaseService {
       Navigator.pop(context);
     } on PlatformException catch (error) {
       Navigator.pop(context);
-      DefaultDialogBox.errorDialog(context, content: error.message);
+      Fluttertoast.showToast(msg: error.message);
     } catch (_) {
       Navigator.pop(context);
-      DefaultDialogBox.errorDialog(context);
+      Fluttertoast.showToast(msg: 'ERROR : something went wrong!');
     }
   }
 
-  static Future<bool> deleteRecharge(
-      BuildContext context, GlobalKey<ScaffoldState> key,
+  static Future<bool> deleteRecharge(BuildContext context,
       {@required String customerId,
       @required String areaId,
       @required String year,
@@ -527,7 +463,7 @@ class DatabaseService {
       if (status == 'Inactive') {
         final area = areas.firstWhere((element) => element.id == areaId);
         if (area.activeAccounts > 0)
-          await updateArea(context, key, data: {
+          await updateArea(context, data: {
             'id': areaId,
             'activeAccounts': area.activeAccounts - 1,
             'inActiveAccounts': area.inActiveAccounts + 1
@@ -536,15 +472,10 @@ class DatabaseService {
       Navigator.pop(context);
     } on PlatformException catch (error) {
       Navigator.pop(context);
-      key.currentState.showSnackBar(SnackBar(
-        content: Text(error.message),
-      ));
-    } catch (e) {
-      print(e.toString());
+      Fluttertoast.showToast(msg: error.message);
+    } catch (_) {
       Navigator.pop(context);
-      key.currentState.showSnackBar(SnackBar(
-        content: Text('ERROR : something went wrong !'),
-      ));
+      Fluttertoast.showToast(msg: 'ERROR : something went wrong!');
     }
     return changed;
   }
@@ -568,18 +499,13 @@ class DatabaseService {
         key: otherCount - 1,
       });
       Navigator.pop(context);
+      Fluttertoast.showToast(msg: 'Customer successfully deleted!');
     } on PlatformException catch (error) {
       Navigator.pop(context);
-      Scaffold.of(context).showSnackBar(SnackBar(
-        content: Text(error.message),
-        duration: Duration(seconds: 1),
-      ));
+      Fluttertoast.showToast(msg: error.message);
     } catch (_) {
       Navigator.pop(context);
-      Scaffold.of(context).showSnackBar(SnackBar(
-        content: Text('ERROR : something went wrong !'),
-        duration: Duration(seconds: 1),
-      ));
+      Fluttertoast.showToast(msg: 'ERROR : something went wrong!');
     }
   }
 }

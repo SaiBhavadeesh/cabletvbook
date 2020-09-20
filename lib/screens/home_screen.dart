@@ -84,7 +84,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     onPressed: delete
                         ? () async {
                             await DatabaseService.deleteArea(
-                                context, scaffoldKey, areas[index].id);
+                                context, areas[index].id);
                             Navigator.pop(ctx);
                           }
                         : () async {
@@ -102,14 +102,12 @@ class _HomeScreenState extends State<HomeScreen> {
                                       title: 'Alert !',
                                       content: 'Area already exists !');
                                 } else
-                                  await DatabaseService.addArea(
-                                      context, scaffoldKey,
+                                  await DatabaseService.addArea(context,
                                       data: AreaData(
                                               areaName: textController.text)
                                           .toJson());
                               } else
-                                await DatabaseService.updateArea(
-                                    context, scaffoldKey,
+                                await DatabaseService.updateArea(context,
                                     data: areas[index].toJson()
                                       ..['areaName'] = textController.text);
                               Navigator.of(ctx).pop();

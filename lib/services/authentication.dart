@@ -10,6 +10,7 @@ import 'package:cableTvBook/screens/register_screen.dart';
 import 'package:cableTvBook/services/databse_services.dart';
 import 'package:cableTvBook/screens/bottom_tabs_screen.dart';
 import 'package:cableTvBook/widgets/default_dialog_box.dart';
+import 'package:cableTvBook/Payment%20Gateway/razor_pay_screen.dart';
 
 AuthCredential _googleCredential, _phoneCredential;
 AuthResult _authResult;
@@ -24,8 +25,12 @@ class Authentication {
           .signInWithEmailAndPassword(email: email, password: password);
       firebaseUser = _authResult.user;
       await DatabaseService.getuserData();
-      Navigator.of(context).pushNamedAndRemoveUntil(
-          BottomTabsScreen.routeName, (route) => false);
+      if (operatorDetails.isSubscribed)
+        Navigator.of(context).pushNamedAndRemoveUntil(
+            BottomTabsScreen.routeName, (route) => false);
+      else
+        Navigator.of(context).pushNamedAndRemoveUntil(
+            RazorPayScreen.routeName, (route) => false);
     } on PlatformException catch (error) {
       Navigator.pop(context);
       DefaultDialogBox.errorDialog(context, content: error.message);
@@ -111,7 +116,7 @@ class Authentication {
                 areas.first.toJson()..['id'] = _areaInstance.documentID);
             await DatabaseService.getuserData();
             Navigator.of(context).pushNamedAndRemoveUntil(
-                BottomTabsScreen.routeName, (route) => false);
+                RazorPayScreen.routeName, (route) => false);
           } on PlatformException catch (error) {
             Navigator.pop(context);
             DefaultDialogBox.errorDialog(context, content: error.message);
@@ -187,8 +192,8 @@ class Authentication {
       await _areaInstance
           .setData(areas.first.toJson()..['id'] = _areaInstance.documentID);
       await DatabaseService.getuserData();
-      Navigator.of(context).pushNamedAndRemoveUntil(
-          BottomTabsScreen.routeName, (route) => false);
+      Navigator.of(context)
+          .pushNamedAndRemoveUntil(RazorPayScreen.routeName, (route) => false);
     } on PlatformException catch (error) {
       Navigator.pop(context);
       DefaultDialogBox.errorDialog(context, content: error.message);

@@ -18,7 +18,6 @@ class CustomerEditBottomSheet extends StatefulWidget {
 
 class _CustomerEditBottomSheetState extends State<CustomerEditBottomSheet> {
   final _formKey = GlobalKey<FormState>();
-  final scaffoldKey = GlobalKey<ScaffoldState>();
   String _name;
   String _address;
   String _phone;
@@ -30,7 +29,6 @@ class _CustomerEditBottomSheetState extends State<CustomerEditBottomSheet> {
     final size = MediaQuery.of(context).size;
     final top = MediaQuery.of(context).padding.top;
     return Scaffold(
-      key: scaffoldKey,
       backgroundColor: Colors.black45,
       body: BackdropFilter(
         filter: ImageFilter.blur(sigmaX: 2, sigmaY: 2),
@@ -160,8 +158,7 @@ class _CustomerEditBottomSheetState extends State<CustomerEditBottomSheet> {
                               data.addAll({'accountNumber': _account});
                             if (widget.customer.macId != _mac)
                               data.addAll({'macId': _mac});
-                            await DatabaseService.updateCustomerData(
-                                context, scaffoldKey,
+                            await DatabaseService.updateCustomerData(context,
                                 data: data,
                                 customerId: widget.customer.id,
                                 areaId: widget.customer.areaId);

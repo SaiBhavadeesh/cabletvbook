@@ -1,3 +1,4 @@
+import 'package:cableTvBook/Payment%20Gateway/razor_pay_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:loading_indicator/loading_indicator.dart';
@@ -53,6 +54,8 @@ class InitialScreen extends StatelessWidget {
                 return SigninScreen();
               else if (firebaseUser.phoneNumber == null)
                 return SigninScreen();
+              else if (!operatorDetails.isSubscribed)
+                return RazorPayScreen();
               else
                 return BottomTabsScreen();
             }

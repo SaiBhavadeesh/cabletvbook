@@ -31,16 +31,8 @@ class _BottomTabsScreenState extends State<BottomTabsScreen> {
   }
 
   @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-  }
-
-  final scaffolfKey = GlobalKey<ScaffoldState>();
-
-  @override
   Widget build(BuildContext context) {
     return Scaffold(
-      key: scaffolfKey,
       appBar: AppBar(
         title: Text('Cable Tv Book'),
         centerTitle: true,
@@ -59,8 +51,7 @@ class _BottomTabsScreenState extends State<BottomTabsScreen> {
               onTap: () async {
                 _profilePic = await ImageGetter.getImageFromDevice(context);
                 if (_profilePic != null) {
-                  await DatabaseService.uploadProfilePicture(
-                      context, scaffolfKey,
+                  await DatabaseService.uploadProfilePicture(context,
                       file: _profilePic);
                   setState(() {});
                 }

@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:intl/intl.dart';
 
 import 'package:flutter/material.dart';
@@ -45,7 +46,7 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
 
   void onMoreInfo() {
     if (_isEdit && customer.tempInfo != null) {
-      DatabaseService.updateCustomerData(context, scaffoldKey,
+      DatabaseService.updateCustomerData(context,
           data: {'tempInfo': null},
           customerId: customer.id,
           areaId: customer.areaId);
@@ -180,10 +181,8 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
           );
         } catch (_) {}
       } else {
-        scaffoldKey.currentState.showSnackBar(SnackBar(
-          content: Text('Could not process your request, Please try again'),
-          duration: Duration(seconds: 1),
-        ));
+        Fluttertoast.showToast(
+            msg: 'Could not process your request, Please try again');
       }
       await showDialog(
         context: context,
@@ -198,7 +197,7 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
             FlatButton(
               onPressed: () async {
                 Navigator.pop(ctx);
-                await DatabaseService.deactivateCustomer(context, scaffoldKey,
+                await DatabaseService.deactivateCustomer(context,
                     customerId: customer.id,
                     areaId: customer.areaId,
                     year: customer.runningYear.toString());
@@ -233,8 +232,7 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
                 if (_selectedYear != customer.startDate.year)
                   _selectedYear -= 1;
                 Navigator.pop(ctx);
-                final value = await DatabaseService.deleteRecharge(
-                    context, scaffoldKey,
+                final value = await DatabaseService.deleteRecharge(context,
                     customerId: customer.id,
                     areaId: customer.areaId,
                     year: year,
@@ -257,7 +255,6 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
       return null;
   }
 
-  final scaffoldKey = GlobalKey<ScaffoldState>();
   @override
   Widget build(BuildContext context) {
     if (_init) {
@@ -279,7 +276,6 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
           final years = getAllYears(customer.startDate, customer.runningYear);
           moreInfoController.text = customer.tempInfo ?? '';
           return Scaffold(
-            key: scaffoldKey,
             appBar: AppBar(
               backgroundColor: Colors.red[500],
               title: Text(operatorDetails.networkName),
@@ -391,8 +387,7 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
                                               context);
                                       if (_pickedImage != null) {
                                         await DatabaseService
-                                            .updateCustomerPicture(
-                                                context, scaffoldKey,
+                                            .updateCustomerPicture(context,
                                                 file: _pickedImage,
                                                 customerId: customer.id,
                                                 areaId: customer.areaId);
@@ -423,12 +418,9 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
                                       if (await canLaunch(url)) {
                                         await launch(url);
                                       } else {
-                                        scaffoldKey.currentState
-                                            .showSnackBar(SnackBar(
-                                          content: Text(
-                                              'Could not process your request, Please try again'),
-                                          duration: Duration(seconds: 1),
-                                        ));
+                                        Fluttertoast.showToast(
+                                            msg:
+                                                'Could not process your request, Please try again');
                                       }
                                     },
                                   ),
@@ -459,8 +451,7 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
                               enabled: customer.tempInfo == null && _isEdit,
                               onEditingComplete: () {
                                 if (moreInfoController.text.isNotEmpty)
-                                  DatabaseService.updateCustomerData(
-                                      context, scaffoldKey,
+                                  DatabaseService.updateCustomerData(context,
                                       data: {
                                         'tempInfo': moreInfoController.text
                                       },

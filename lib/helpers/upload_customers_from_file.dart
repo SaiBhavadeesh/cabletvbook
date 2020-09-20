@@ -13,6 +13,7 @@ import 'package:cableTvBook/models/customer.dart';
 import 'package:cableTvBook/global/variables.dart';
 import 'package:cableTvBook/global/validators.dart';
 import 'package:cableTvBook/widgets/default_dialog_box.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 
 class PickFile {
   static Future<void> pickFileAndAddCustomers(BuildContext context) async {
@@ -141,23 +142,9 @@ class PickFile {
                 });
                 count += 1;
                 if (count == 1)
-                  Scaffold.of(context).showSnackBar(SnackBar(
-                    content: Text('$count customer added',
-                        style: TextStyle(fontSize: 16)),
-                    backgroundColor: Colors.blue,
-                    behavior: SnackBarBehavior.floating,
-                    onVisible: () => Future.delayed(Duration(seconds: 1),
-                        () => Scaffold.of(context).removeCurrentSnackBar()),
-                  ));
+                  Fluttertoast.showToast(msg: '$count customer added');
                 else
-                  Scaffold.of(context).showSnackBar(SnackBar(
-                    content: Text('$count customers added',
-                        style: TextStyle(fontSize: 16)),
-                    backgroundColor: Colors.blue,
-                    behavior: SnackBarBehavior.floating,
-                    onVisible: () => Future.delayed(Duration(milliseconds: 500),
-                        () => Scaffold.of(context).removeCurrentSnackBar()),
-                  ));
+                  Fluttertoast.showToast(msg: '$count customers added');
               }
               await Future.delayed(Duration(seconds: 3));
               Navigator.of(context).pushNamedAndRemoveUntil(

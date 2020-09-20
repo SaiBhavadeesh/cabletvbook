@@ -1,10 +1,12 @@
 import 'dart:ui';
 
-import 'package:cableTvBook/global/default_buttons.dart';
-import 'package:cableTvBook/global/variables.dart';
-import 'package:cableTvBook/services/databse_services.dart';
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:url_launcher/url_launcher.dart';
+
+import 'package:cableTvBook/global/variables.dart';
+import 'package:cableTvBook/global/default_buttons.dart';
+import 'package:cableTvBook/services/databse_services.dart';
 
 class ActivateBottomSheet extends StatefulWidget {
   final customerId;
@@ -25,7 +27,6 @@ class ActivateBottomSheet extends StatefulWidget {
 }
 
 class _ActivateBottomSheetState extends State<ActivateBottomSheet> {
-  final scaffoldKey = GlobalKey<ScaffoldState>();
   double _selectedPlan;
   bool _checked = true;
   bool _selected = false;
@@ -53,7 +54,6 @@ class _ActivateBottomSheetState extends State<ActivateBottomSheet> {
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
     return Scaffold(
-      key: scaffoldKey,
       backgroundColor: Colors.black45,
       body: BackdropFilter(
         filter: ImageFilter.blur(sigmaX: 2, sigmaY: 2),
@@ -205,7 +205,6 @@ class _ActivateBottomSheetState extends State<ActivateBottomSheet> {
                                       Navigator.pop(ctx);
                                       await DatabaseService.rechargeCustomer(
                                         context,
-                                        scaffoldKey,
                                         customerId: widget.customerId,
                                         areaId: widget.areaId,
                                         status: widget.status,
@@ -225,11 +224,9 @@ class _ActivateBottomSheetState extends State<ActivateBottomSheet> {
                             );
                           } catch (_) {}
                         } else {
-                          scaffoldKey.currentState.showSnackBar(SnackBar(
-                            content: Text(
-                                'Could not process your request, Please try again'),
-                            duration: Duration(seconds: 1),
-                          ));
+                          Fluttertoast.showToast(
+                              msg:
+                                  'Could not process your request, Please try again');
                         }
                       },
                       title: 'Recharge',

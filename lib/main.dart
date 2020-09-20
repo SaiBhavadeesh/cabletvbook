@@ -18,6 +18,7 @@ import 'package:cableTvBook/screens/bottom_tabs_screen.dart';
 import 'package:cableTvBook/screens/add_customer_screen.dart';
 import 'package:cableTvBook/screens/area_customers_screen.dart';
 import 'package:cableTvBook/screens/customer_detail_screen.dart';
+import 'package:cableTvBook/Payment%20Gateway/razor_pay_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -90,6 +91,7 @@ class MyApp extends StatelessWidget {
         SignupScreen.routeName: (ctx) => SignupScreen(),
         SearchScreen.routeName: (ctx) => SearchScreen(),
         ProfileScreen.routeName: (ctx) => ProfileScreen(),
+        RazorPayScreen.routeName: (ctx) => RazorPayScreen(),
         RegisterScreen.routeName: (ctx) => RegisterScreen(),
         SettingsScreen.routeName: (ctx) => SettingsScreen(),
         CropImageScreen.routeName: (ctx) => CropImageScreen(),

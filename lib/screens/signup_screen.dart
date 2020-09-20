@@ -1,7 +1,5 @@
 import 'dart:ui';
 
-import 'package:cableTvBook/global/variables.dart';
-import 'package:cableTvBook/models/operator.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_icons/flutter_icons.dart';
 

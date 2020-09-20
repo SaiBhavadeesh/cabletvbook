@@ -76,12 +76,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  final scaffolfKey = GlobalKey<ScaffoldState>();
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      key: scaffolfKey,
       appBar: AppBar(
         title: Text(
           'Profile',
@@ -111,21 +108,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   Positioned(
                     bottom: 5,
                     left: 0,
-                    child: Builder(
-                      builder: (context) => CircleAvatar(
-                        backgroundColor: Colors.green,
-                        child: IconButton(
-                          color: Colors.white,
-                          icon: Icon(FlutterIcons.ios_camera_ion),
-                          onPressed: () async {
-                            _selectedImageFile =
-                                await ImageGetter.getImageFromDevice(context);
-                            await DatabaseService.uploadProfilePicture(
-                                context, scaffolfKey,
-                                file: _selectedImageFile);
-                            setState(() {});
-                          },
-                        ),
+                    child: CircleAvatar(
+                      backgroundColor: Colors.green,
+                      child: IconButton(
+                        color: Colors.white,
+                        icon: Icon(FlutterIcons.ios_camera_ion),
+                        onPressed: () async {
+                          _selectedImageFile =
+                              await ImageGetter.getImageFromDevice(context);
+                          await DatabaseService.uploadProfilePicture(context,
+                              file: _selectedImageFile);
+                          setState(() {});
+                        },
                       ),
                     ),
                   ),
@@ -188,8 +182,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           onPressed: () async {
                             if (formKey.currentState.validate()) {
                               formKey.currentState.save();
-                              await DatabaseService.updateData(
-                                  context, scaffolfKey,
+                              await DatabaseService.updateData(context,
                                   data: {'name': name});
                               Navigator.of(context).pop();
                               setState(() {});
@@ -251,8 +244,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           onPressed: () async {
                             if (formKey.currentState.validate()) {
                               formKey.currentState.save();
-                              await DatabaseService.updateData(
-                                  context, scaffolfKey,
+                              await DatabaseService.updateData(context,
                                   data: {'networkName': networkName});
                               Navigator.of(context).pop();
                               setState(() {});
@@ -390,8 +382,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                     _formKey.currentState.save();
                                     final list = operatorDetails.plans
                                       ..add(double.parse(_planController.text));
-                                    await DatabaseService.updateData(
-                                        context, scaffolfKey,
+                                    await DatabaseService.updateData(context,
                                         data: {'plans': list});
                                     Navigator.pop(context);
                                     setState(() {});

@@ -64,7 +64,7 @@ class _RazorPayScreenState extends State<RazorPayScreen> {
 
   void _openGateway() async {
     var options = {
-      'key': 'rzp_test_GnZEwrt6jZmeeN',
+      'key': 'rzp_live_VB1FsRjK35lsW5',
       'amount': 199900,
       'currency': 'INR',
       'name': 'Srinivasa Softwares',
@@ -137,14 +137,31 @@ class _RazorPayScreenState extends State<RazorPayScreen> {
                 RichText(
                     textAlign: TextAlign.center,
                     text: TextSpan(
-                        text: 'One year subscription\t\n',
+                        text: 'One time subscription\n',
                         children: [
                           TextSpan(
-                              text: '\u20B9 1999.00 Only',
+                              text: '\u20B9 1999.00 Only\n',
                               style: TextStyle(
                                   color: Colors.white,
                                   fontSize: 18,
                                   fontStyle: FontStyle.italic,
+                                  height: 1.5)),
+                          TextSpan(
+                              text: '  ',
+                              style: TextStyle(
+                                  backgroundColor: Colors.white, fontSize: 16)),
+                          TextSpan(
+                              text: '\u26A0',
+                              style: TextStyle(
+                                  backgroundColor: Colors.white,
+                                  color: Theme.of(context).errorColor,
+                                  fontSize: 14)),
+                          TextSpan(
+                              text: '  Non-Refundable  ',
+                              style: TextStyle(
+                                  backgroundColor: Colors.white,
+                                  color: Theme.of(context).errorColor,
+                                  fontSize: 16,
                                   height: 1.5))
                         ],
                         style: TextStyle(

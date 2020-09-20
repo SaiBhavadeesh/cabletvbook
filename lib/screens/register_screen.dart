@@ -1,12 +1,12 @@
-import 'package:cableTvBook/global/variables.dart';
-import 'package:cableTvBook/models/operator.dart';
-import 'package:cableTvBook/services/authentication.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_icons/flutter_icons.dart';
 
+import 'package:cableTvBook/models/operator.dart';
+import 'package:cableTvBook/global/variables.dart';
 import 'package:cableTvBook/global/validators.dart';
 import 'package:cableTvBook/global/box_decoration.dart';
 import 'package:cableTvBook/global/default_buttons.dart';
+import 'package:cableTvBook/services/authentication.dart';
 import 'package:cableTvBook/widgets/verify_phone_popup.dart';
 
 class RegisterScreen extends StatefulWidget {

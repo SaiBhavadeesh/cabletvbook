@@ -257,7 +257,7 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
                     ),
                     Divider(height: 0),
                     CheckboxListTile(
-                      activeColor: Colors.green,
+                      checkColor: Colors.green[900],
                       controlAffinity: ListTileControlAffinity.leading,
                       value: _checked,
                       title: Text(

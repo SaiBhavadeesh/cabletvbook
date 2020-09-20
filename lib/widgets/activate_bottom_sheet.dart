@@ -152,7 +152,7 @@ class _ActivateBottomSheetState extends State<ActivateBottomSheet> {
                   ),
                   Divider(),
                   CheckboxListTile(
-                    activeColor: Colors.green,
+                    checkColor: Colors.green[900],
                     controlAffinity: ListTileControlAffinity.leading,
                     value: _checked,
                     title: Text('Un-check this box, if bill not paid.'),
@@ -164,7 +164,7 @@ class _ActivateBottomSheetState extends State<ActivateBottomSheet> {
                   ),
                   Divider(),
                   CheckboxListTile(
-                    activeColor: Colors.green,
+                    checkColor: Colors.green[900],
                     controlAffinity: ListTileControlAffinity.leading,
                     value: _selected,
                     title: Text('Launch portal.'),

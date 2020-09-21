@@ -1,6 +1,9 @@
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/gestures.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:flutter_icons/flutter_icons.dart';
 
 import 'package:cableTvBook/global/validators.dart';
@@ -18,6 +21,8 @@ class _SigninScreenState extends State<SigninScreen> {
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
+  TapGestureRecognizer _privacyPolicy;
+  TapGestureRecognizer _termsAndConditions;
 
   Widget getTextWidget(String data, double size, Color color, bool isBold) {
     return Text(
@@ -29,6 +34,48 @@ class _SigninScreenState extends State<SigninScreen> {
         letterSpacing: 0.5,
       ),
     );
+  }
+
+  void _handlePrivacyPolicy() async {
+    final url = "https://sites.google.com/view/srinivasasoftwares-privacy";
+    if (await canLaunch(url)) {
+      try {
+        await launch(
+          url,
+          forceSafariVC: true,
+          forceWebView: true,
+          enableJavaScript: true,
+        );
+      } catch (_) {}
+    } else {
+      Fluttertoast.showToast(
+          msg: 'Could not process your request, Please try again');
+    }
+  }
+
+  void _handleTermsAndConditions() async {
+    final url = "https://sites.google.com/view/srinivasasoftwares-terms";
+    if (await canLaunch(url)) {
+      try {
+        await launch(
+          url,
+          forceSafariVC: true,
+          forceWebView: true,
+          enableJavaScript: true,
+        );
+      } catch (_) {}
+    } else {
+      Fluttertoast.showToast(
+          msg: 'Could not process your request, Please try again');
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _privacyPolicy = TapGestureRecognizer()..onTap = _handlePrivacyPolicy;
+    _termsAndConditions = TapGestureRecognizer()
+      ..onTap = _handleTermsAndConditions;
   }
 
   @override
@@ -160,6 +207,31 @@ class _SigninScreenState extends State<SigninScreen> {
                               Theme.of(context).errorColor, true),
                         ),
                       ],
+                    ),
+                    SizedBox(height: top*2),
+                    Container(
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: RichText(
+                          text: TextSpan(children: [
+                            TextSpan(
+                              text: 'Privacy Policy',
+                              style: TextStyle(
+                                  color: Colors.blue,
+                                  fontWeight: FontWeight.w600),
+                              recognizer: _privacyPolicy,
+                            ),
+                            TextSpan(text: '  and  '),
+                            TextSpan(
+                                text: 'Terms & Conditions',
+                                style: TextStyle(
+                                    color: Colors.blue,
+                                    fontWeight: FontWeight.w600),
+                                recognizer: _termsAndConditions),
+                          ], style: TextStyle(color: Colors.black)),
+                          textAlign: TextAlign.center),
                     ),
                     SizedBox(height: top),
                   ],

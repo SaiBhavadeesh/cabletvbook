@@ -69,10 +69,10 @@ class Operator {
     this.networkName = document['networkName'];
     this.phoneNumber = document['phoneNumber'];
     this.profileImageLink = document['profileImageLink'];
-    this.startDate = document['startDate'].toDate();
+    this.startDate = document['startDate']?.toDate();
     this.plans = [...document['plans']];
     this.transactionId = document['transactionId'];
-    this.transactionTime = document['transactionTime'].toDate();
+    this.transactionTime = document['transactionTime']?.toDate();
     this.amountPaid = document['amountPaid'];
     this.isSubscribed = document['isSubscribed'];
   }

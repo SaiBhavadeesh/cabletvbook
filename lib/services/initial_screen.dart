@@ -1,12 +1,13 @@
-import 'package:cableTvBook/Payment%20Gateway/razor_pay_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:loading_indicator/loading_indicator.dart';
-import 'package:cableTvBook/services/databse_services.dart';
 
 import 'package:cableTvBook/global/variables.dart';
 import 'package:cableTvBook/screens/signin_screen.dart';
+import 'package:cableTvBook/services/databse_services.dart';
 import 'package:cableTvBook/screens/bottom_tabs_screen.dart';
+import 'package:cableTvBook/Payment%20Gateway/razor_pay_screen.dart';
 
 class InitialScreen extends StatelessWidget {
   Future<void> initialData(BuildContext context) async {
@@ -14,8 +15,7 @@ class InitialScreen extends StatelessWidget {
     try {
       await DatabaseService.getuserData();
     } catch (e) {
-      Scaffold.of(context)
-          .showSnackBar(SnackBar(content: Text('Failed getting data !')));
+      Fluttertoast.showToast(msg: 'Failed getting data !');
       await FirebaseAuth.instance.signOut();
       firebaseUser = null;
     }

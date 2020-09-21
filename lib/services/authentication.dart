@@ -143,16 +143,23 @@ class Authentication {
       );
     } on PlatformException catch (error) {
       Navigator.pop(context);
-      DefaultDialogBox.errorDialog(context, content: error.message);
+      if (error.code == 'ERROR_EMAIL_ALREADY_IN_USE')
+        Navigator.of(context)
+            .pushNamedAndRemoveUntil(SigninScreen.routeName, (route) => false);
       try {
         await _authResult.user.delete();
+        Navigator.of(context)
+            .pushNamedAndRemoveUntil(SigninScreen.routeName, (route) => false);
       } catch (_) {}
+      DefaultDialogBox.errorDialog(context, content: error.message);
     } catch (error) {
       Navigator.pop(context);
-      DefaultDialogBox.errorDialog(context);
       try {
         await _authResult.user.delete();
+        Navigator.of(context)
+            .pushNamedAndRemoveUntil(SigninScreen.routeName, (route) => false);
       } catch (_) {}
+      DefaultDialogBox.errorDialog(context);
     }
   }
 
@@ -196,17 +203,26 @@ class Authentication {
           .pushNamedAndRemoveUntil(RazorPayScreen.routeName, (route) => false);
     } on PlatformException catch (error) {
       Navigator.pop(context);
+      if (error.code == 'ERROR_EMAIL_ALREADY_IN_USE')
+        Navigator.of(context)
+            .pushNamedAndRemoveUntil(SigninScreen.routeName, (route) => false);
+      else if (error.code != 'ERROR_INVALID_VERIFICATION_CODE') {
+        Navigator.pop(context);
+        try {
+          await _authResult.user.delete();
+          Navigator.of(context).pushNamedAndRemoveUntil(
+              SigninScreen.routeName, (route) => false);
+        } catch (_) {}
+      }
       DefaultDialogBox.errorDialog(context, content: error.message);
-      try {
-        await _authResult.user.delete();
-      } catch (_) {}
     } catch (error) {
-      print(error);
       Navigator.pop(context);
-      DefaultDialogBox.errorDialog(context);
       try {
         await _authResult.user.delete();
+        Navigator.of(context)
+            .pushNamedAndRemoveUntil(SigninScreen.routeName, (route) => false);
       } catch (_) {}
+      DefaultDialogBox.errorDialog(context);
     }
   }
 

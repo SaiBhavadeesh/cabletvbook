@@ -265,10 +265,10 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
     _init = false;
     size = MediaQuery.of(context).size;
     return StreamBuilder(
-      stream: Firestore.instance
+      stream: FirebaseFirestore.instance
           .collection(
               'users/${operatorDetails.id}/areas/${customer.areaId}/customers')
-          .document(customer.id)
+          .doc(customer.id)
           .snapshots(),
       builder: (context, snapshot) {
         if (snapshot.hasData) {
@@ -490,7 +490,7 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
                       thickness: 3,
                       color: Theme.of(context).primaryColor),
                   StreamBuilder(
-                    stream: Firestore.instance
+                    stream: FirebaseFirestore.instance
                         .collection(
                             'users/${firebaseUser.uid}/areas/${customer.areaId}/customers/${customer.id}/$_selectedYear')
                         .orderBy('code')

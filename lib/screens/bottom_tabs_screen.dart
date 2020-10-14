@@ -74,20 +74,14 @@ class _BottomTabsScreenState extends State<BottomTabsScreen> {
         type: BottomNavigationBarType.fixed,
         items: [
           BottomNavigationBarItem(
-            icon: Icon(FlutterIcons.home_ant),
-            title: Text('Home'),
-          ),
+              icon: Icon(FlutterIcons.home_ant), label: 'Home'),
           BottomNavigationBarItem(
-            icon: Icon(FlutterIcons.search1_ant),
-            title: Text('Search'),
-          ),
+              icon: Icon(FlutterIcons.search1_ant), label: 'Search'),
           BottomNavigationBarItem(
-            icon: Icon(FlutterIcons.adduser_ant),
-            title: Text('Add customer'),
-          ),
+              icon: Icon(FlutterIcons.adduser_ant), label: 'Add customer'),
         ],
       ),
-      bottomSheet: firebaseUser.isEmailVerified
+      bottomSheet: firebaseUser.emailVerified
           ? null
           : Container(
               padding: EdgeInsets.symmetric(horizontal: 20, vertical: 40),

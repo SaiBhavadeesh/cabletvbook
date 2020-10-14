@@ -48,7 +48,7 @@ class AreaCustomersScreen extends StatelessWidget {
           ),
         ),
         body: StreamBuilder(
-            stream: Firestore.instance
+            stream: FirebaseFirestore.instance
                 .collection(
                     'users/${operatorDetails.id}/areas/${area.id}/customers')
                 .orderBy('name')

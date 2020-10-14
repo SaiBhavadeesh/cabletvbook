@@ -16,10 +16,10 @@ import 'package:cableTvBook/widgets/default_dialog_box.dart';
 class DatabaseService {
   static Future<void> getuserData() async {
     final _firestoreInstance =
-        Firestore.instance.collection('users').document(firebaseUser.uid);
+        FirebaseFirestore.instance.collection('users').doc(firebaseUser.uid);
     try {
       DocumentSnapshot document = await _firestoreInstance.get();
-      operatorDetails = Operator.fromMap(document.data);
+      operatorDetails = Operator.fromMap(document.data());
     } on PlatformException catch (error) {
       Fluttertoast.showToast(msg: error.message);
     } catch (_) {
@@ -36,14 +36,14 @@ class DatabaseService {
     try {
       String url;
       final area = areas.firstWhere((element) => element.id == customer.areaId);
-      final _firestoreInstance = Firestore.instance
+      final _firestoreInstance = FirebaseFirestore.instance
           .collection(
               'users/${operatorDetails.id}/areas/${customer.areaId}/customers')
-          .document();
+          .doc();
       if (file != null)
         try {
           final _ref = FirebaseStorage.instance.ref().child(
-              'customerPictures/${operatorDetails.id}/${customer.areaId}/${_firestoreInstance.documentID}/profilePicture.png');
+              'customerPictures/${operatorDetails.id}/${customer.areaId}/${_firestoreInstance.id}/profilePicture.png');
           await _ref.putFile(file).onComplete;
           url = await _ref.getDownloadURL();
           Fluttertoast.showToast(msg: 'Profile picture uploaded!');
@@ -52,16 +52,15 @@ class DatabaseService {
         } catch (_) {
           Fluttertoast.showToast(msg: 'ERROR : picture upload failed!');
         }
-      await _firestoreInstance.setData(customer.toJson()
-        ..['id'] = _firestoreInstance.documentID
+      await _firestoreInstance.set(customer.toJson()
+        ..['id'] = _firestoreInstance.id
         ..['profileImageUrl'] = url);
       if (customer.currentStatus == 'Active') {
-        final _rechargeInstance = _firestoreInstance
-            .collection(DateTime.now().year.toString())
-            .document();
-        recharge.id = _rechargeInstance.documentID;
-        await _rechargeInstance.setData(
-            recharge.toJson()..['date'] = FieldValue.serverTimestamp());
+        final _rechargeInstance =
+            _firestoreInstance.collection(DateTime.now().year.toString()).doc();
+        recharge.id = _rechargeInstance.id;
+        await _rechargeInstance
+            .set(recharge.toJson()..['date'] = FieldValue.serverTimestamp());
       }
       final data = {
         'totalAccounts': area.totalAccounts + 1,
@@ -72,10 +71,10 @@ class DatabaseService {
             ? area.inActiveAccounts
             : area.inActiveAccounts + 1,
       };
-      await Firestore.instance
+      await FirebaseFirestore.instance
           .collection('users/${firebaseUser.uid}/areas')
-          .document(customer.areaId)
-          .updateData(data);
+          .doc(customer.areaId)
+          .update(data);
       Navigator.of(context).pushNamedAndRemoveUntil(
           BottomTabsScreen.routeName, (route) => false);
       Fluttertoast.showToast(msg: 'Customer successfully added!');
@@ -95,10 +94,10 @@ class DatabaseService {
     DefaultDialogBox.loadingDialog(context,
         loaderType: SelectLoader.ballRotateChase);
     try {
-      await Firestore.instance
+      await FirebaseFirestore.instance
           .collection('users/${operatorDetails.id}/areas/$areaId/customers')
-          .document(customerId)
-          .updateData(data);
+          .doc(customerId)
+          .update(data);
       Navigator.pop(context);
       Fluttertoast.showToast(msg: 'Successfully updated!');
     } on PlatformException catch (error) {
@@ -121,10 +120,10 @@ class DatabaseService {
           'customerPictures/${operatorDetails.id}/$areaId/$customerId/profilePicture.png');
       await _ref.putFile(file).onComplete;
       final url = await _ref.getDownloadURL();
-      await Firestore.instance
+      await FirebaseFirestore.instance
           .collection('users/${operatorDetails.id}/areas/$areaId/customers')
-          .document(customerId)
-          .updateData({'profileImageUrl': url});
+          .doc(customerId)
+          .update({'profileImageUrl': url});
       Navigator.pop(context);
       Fluttertoast.showToast(msg: 'Profile picture updated!');
     } on PlatformException catch (error) {
@@ -146,10 +145,10 @@ class DatabaseService {
           .child('profilePictures/${operatorDetails.id}/profilePicture.png');
       await _ref.putFile(file).onComplete;
       final url = await _ref.getDownloadURL();
-      await Firestore.instance
+      await FirebaseFirestore.instance
           .collection('users')
-          .document(operatorDetails.id)
-          .updateData({'profileImageLink': url});
+          .doc(operatorDetails.id)
+          .update({'profileImageLink': url});
       await getuserData();
       Navigator.pop(context);
       Fluttertoast.showToast(msg: 'Profile picture updated!');
@@ -167,10 +166,10 @@ class DatabaseService {
     DefaultDialogBox.loadingDialog(context,
         loaderType: SelectLoader.ballRotateChase);
     try {
-      await Firestore.instance
+      await FirebaseFirestore.instance
           .collection('users')
-          .document(operatorDetails.id)
-          .updateData(data);
+          .doc(operatorDetails.id)
+          .update(data);
       await getuserData();
       Navigator.pop(context);
       Fluttertoast.showToast(msg: 'Successfully updated!');
@@ -188,11 +187,10 @@ class DatabaseService {
     DefaultDialogBox.loadingDialog(context,
         loaderType: SelectLoader.ballRotateChase);
     try {
-      final _firestoreInstance = Firestore.instance
+      final _firestoreInstance = FirebaseFirestore.instance
           .collection('users/${firebaseUser.uid}/areas')
-          .document();
-      await _firestoreInstance
-          .setData(data..['id'] = _firestoreInstance.documentID);
+          .doc();
+      await _firestoreInstance.set(data..['id'] = _firestoreInstance.id);
       Navigator.pop(context);
       Fluttertoast.showToast(msg: 'New area created successfully!');
     } on PlatformException catch (error) {
@@ -208,9 +206,9 @@ class DatabaseService {
     DefaultDialogBox.loadingDialog(context,
         loaderType: SelectLoader.ballRotateChase);
     try {
-      final _instance = Firestore.instance
+      final _instance = FirebaseFirestore.instance
           .collection('users/${operatorDetails.id}/areas')
-          .document(areaId);
+          .doc(areaId);
       await _instance.delete();
       Navigator.pop(context);
       Fluttertoast.showToast(msg: 'Area successfully deleted!');
@@ -228,10 +226,10 @@ class DatabaseService {
     DefaultDialogBox.loadingDialog(context,
         loaderType: SelectLoader.ballRotateChase);
     try {
-      await Firestore.instance
+      await FirebaseFirestore.instance
           .collection('users/${firebaseUser.uid}/areas')
-          .document(data['id'])
-          .updateData(data);
+          .doc(data['id'])
+          .update(data);
       Navigator.pop(context);
     } on PlatformException catch (error) {
       Navigator.pop(context);
@@ -254,42 +252,39 @@ class DatabaseService {
     DefaultDialogBox.loadingDialog(context,
         loaderType: SelectLoader.ballRotateChase);
     try {
-      final _ref = Firestore.instance
+      final _ref = FirebaseFirestore.instance
           .collection('users/${operatorDetails.id}/areas/$areaId/customers')
-          .document(customerId);
-      final docs = await _ref.collection(year).orderBy('code').getDocuments();
+          .doc(customerId);
+      final docs = await _ref.collection(year).orderBy('code').get();
       Recharge recent;
-      if (docs.documents.isNotEmpty) {
-        recent = Recharge.fromMap(docs.documents.last);
+      if (docs.docs.isNotEmpty) {
+        recent = Recharge.fromMap(docs.docs.last);
         if (recent != null) {
           if (recent.date.year == DateTime.now().year)
             for (int i = recent.code + 1; i < DateTime.now().month; i++) {
               final _rechargeRef =
-                  _ref.collection(DateTime.now().year.toString()).document();
+                  _ref.collection(DateTime.now().year.toString()).doc();
               final inactiveRecharge =
-                  Recharge(id: _rechargeRef.documentID, status: false, code: i)
-                      .toJson()
-                        ..['date'] = FieldValue.serverTimestamp();
-              await _rechargeRef.setData(inactiveRecharge);
+                  Recharge(id: _rechargeRef.id, status: false, code: i).toJson()
+                    ..['date'] = FieldValue.serverTimestamp();
+              await _rechargeRef.set(inactiveRecharge);
             }
           else if (recent.date.year < DateTime.now().year) {
             for (int i = recent.code + 1; i <= 12; i++) {
               final _rechargeRef =
-                  _ref.collection(recent.date.year.toString()).document();
+                  _ref.collection(recent.date.year.toString()).doc();
               final inactiveRecharge =
-                  Recharge(id: _rechargeRef.documentID, status: false, code: i)
-                      .toJson()
-                        ..['date'] = FieldValue.serverTimestamp();
-              await _rechargeRef.setData(inactiveRecharge);
+                  Recharge(id: _rechargeRef.id, status: false, code: i).toJson()
+                    ..['date'] = FieldValue.serverTimestamp();
+              await _rechargeRef.set(inactiveRecharge);
             }
             for (int i = 1; i < DateTime.now().month; i++) {
               final _rechargeRef =
-                  _ref.collection(DateTime.now().year.toString()).document();
+                  _ref.collection(DateTime.now().year.toString()).doc();
               final inactiveRecharge =
-                  Recharge(id: _rechargeRef.documentID, status: false, code: i)
-                      .toJson()
-                        ..['date'] = FieldValue.serverTimestamp();
-              await _rechargeRef.setData(inactiveRecharge);
+                  Recharge(id: _rechargeRef.id, status: false, code: i).toJson()
+                    ..['date'] = FieldValue.serverTimestamp();
+              await _rechargeRef.set(inactiveRecharge);
             }
           }
         }
@@ -297,7 +292,7 @@ class DatabaseService {
       int monthCode = DateTime.now().month;
       int rechargeYear = DateTime.now().year;
       if (int.parse(year) > rechargeYear) rechargeYear = int.parse(year);
-      if (docs.documents.isNotEmpty) {
+      if (docs.docs.isNotEmpty) {
         if (recent.date.year > DateTime.now().year)
           monthCode = recent.code + 1;
         else if (recent.date.year == DateTime.now().year &&
@@ -308,23 +303,21 @@ class DatabaseService {
           monthCode = 1;
           rechargeYear += 1;
         }
-        final _rechargeRef =
-            _ref.collection(rechargeYear.toString()).document();
+        final _rechargeRef = _ref.collection(rechargeYear.toString()).doc();
         final activeRecharge = Recharge(
-                id: _rechargeRef.documentID,
+                id: _rechargeRef.id,
                 status: true,
                 code: monthCode,
                 billPay: billPay,
                 plan: plan.toString())
             .toJson()
               ..['date'] = FieldValue.serverTimestamp();
-        await _rechargeRef.setData(activeRecharge);
+        await _rechargeRef.set(activeRecharge);
         monthCode += 1;
       }
-      if (!billPay)
-        await _ref.updateData({'noOfPendingBills': unPaidNo + term});
+      if (!billPay) await _ref.update({'noOfPendingBills': unPaidNo + term});
       await _ref
-          .updateData({'currentStatus': 'Active', 'runningYear': rechargeYear});
+          .update({'currentStatus': 'Active', 'runningYear': rechargeYear});
       if (status != 'Active') {
         final area = areas.firstWhere((element) => element.id == areaId);
         await updateArea(context, data: {
@@ -351,15 +344,15 @@ class DatabaseService {
     DefaultDialogBox.loadingDialog(context,
         loaderType: SelectLoader.ballRotateChase);
     try {
-      final _ref = Firestore.instance
+      final _ref = FirebaseFirestore.instance
           .collection('users/${operatorDetails.id}/areas/$areaId/customers')
-          .document(customerId);
-      final docs = await _ref.collection(year).orderBy('code').getDocuments();
-      final recent = Recharge.fromMap(docs.documents.last.data);
-      await _ref.collection(year).document(recent.id).updateData({
+          .doc(customerId);
+      final docs = await _ref.collection(year).orderBy('code').get();
+      final recent = Recharge.fromMap(docs.docs.last.data);
+      await _ref.collection(year).doc(recent.id).update({
         'addInfo': 'DC: ${DateFormat('dd, MMMM / yyyy').format(DateTime.now())}'
       });
-      await _ref.updateData({'currentStatus': 'Inactive'});
+      await _ref.update({'currentStatus': 'Inactive'});
       final area = areas.firstWhere((element) => element.id == areaId);
       await updateArea(context, data: {
         'id': areaId,
@@ -388,16 +381,14 @@ class DatabaseService {
     DefaultDialogBox.loadingDialog(context,
         loaderType: SelectLoader.ballRotateChase);
     try {
-      final _ref = Firestore.instance
+      final _ref = FirebaseFirestore.instance
           .collection('users/${operatorDetails.id}/areas/$areaId/customers');
+      await _ref.doc(customerId).update({'noOfPendingBills': unpaidBillno - 1});
       await _ref
-          .document(customerId)
-          .updateData({'noOfPendingBills': unpaidBillno - 1});
-      await _ref
-          .document(customerId)
+          .doc(customerId)
           .collection(year)
-          .document(rechargeId)
-          .updateData({'billPay': true});
+          .doc(rechargeId)
+          .update({'billPay': true});
       Navigator.pop(context);
     } on PlatformException catch (error) {
       Navigator.pop(context);
@@ -421,25 +412,19 @@ class DatabaseService {
     bool changed = false;
     Recharge _prev;
     try {
-      final _ref = Firestore.instance
+      final _ref = FirebaseFirestore.instance
           .collection('users/${operatorDetails.id}/areas/$areaId/customers');
-      await _ref
-          .document(customerId)
-          .collection(year)
-          .document(recharge.id)
-          .delete();
+      await _ref.doc(customerId).collection(year).doc(recharge.id).delete();
       if (recharge.code > 1)
         _prev = Recharge.fromMap((await _ref
-                .document(customerId)
+                .doc(customerId)
                 .collection(year)
                 .where('code', isEqualTo: recharge.code - 1)
-                .getDocuments())
-            .documents
+                .get())
+            .docs
             .first);
       if (recharge.billPay != null && !recharge.billPay)
-        await _ref
-            .document(customerId)
-            .updateData({'noOfPendingBills': unPaidNo - 1});
+        await _ref.doc(customerId).update({'noOfPendingBills': unPaidNo - 1});
       int updateYear = int.parse(year);
       String status = 'Inactive';
       if (recharge.code == 1) {
@@ -448,18 +433,16 @@ class DatabaseService {
         } else
           updateYear = int.parse(startYear);
         changed = true;
-        final temp = (await _ref
-                .document(customerId)
-                .collection(updateYear.toString())
-                .getDocuments())
-            .documents;
+        final temp =
+            (await _ref.doc(customerId).collection(updateYear.toString()).get())
+                .docs;
         if (temp.isNotEmpty) _prev = Recharge.fromMap(temp.last);
       }
       if (_prev != null) status = _prev.status ? 'Active' : 'Inactive';
-      await Firestore.instance
+      await FirebaseFirestore.instance
           .collection('users/${operatorDetails.id}/areas/$areaId/customers')
-          .document(customerId)
-          .updateData({'runningYear': updateYear, 'currentStatus': status});
+          .doc(customerId)
+          .update({'runningYear': updateYear, 'currentStatus': status});
       if (status == 'Inactive') {
         final area = areas.firstWhere((element) => element.id == areaId);
         if (area.activeAccounts > 0)
@@ -489,12 +472,12 @@ class DatabaseService {
     DefaultDialogBox.loadingDialog(context,
         loaderType: SelectLoader.ballRotateChase);
     try {
-      final _areaInst = Firestore.instance
+      final _areaInst = FirebaseFirestore.instance
           .collection('users/${operatorDetails.id}/areas')
-          .document(areaId);
-      await _areaInst.collection('customers').document(customerId).delete();
+          .doc(areaId);
+      await _areaInst.collection('customers').doc(customerId).delete();
       final key = isActive ? 'activeAccounts' : 'inActiveAccounts';
-      _areaInst.updateData({
+      _areaInst.update({
         'totalAccounts': totalCount - 1,
         key: otherCount - 1,
       });

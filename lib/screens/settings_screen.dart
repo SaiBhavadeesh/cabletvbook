@@ -111,7 +111,7 @@ class SettingsScreen extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
           getTitle(context, 'Account Settings'),
-          if (!firebaseUser.isEmailVerified)
+          if (!firebaseUser.emailVerified)
             getdetailText(context, 'Verify your email',
                 function: () =>
                     Authentication.sendEmailVerificationMail(context)),

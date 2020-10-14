@@ -50,8 +50,7 @@ class CollectionScreen extends StatelessWidget {
     );
   }
 
-  Widget valueText(double subtotal, double paid,
-      {double total, int inactive}) {
+  Widget valueText(double subtotal, double paid, {double total, int inactive}) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -62,7 +61,8 @@ class CollectionScreen extends StatelessWidget {
         getValueText('Bill amount pending : \t', '\u20B9 ${subtotal - paid}',
             Colors.red),
         if (inactive != null)
-          getValueText('Inactive customers : \t', '$inactive', Colors.deepPurple),
+          getValueText(
+              'Inactive customers : \t', '$inactive', Colors.deepPurple),
       ],
     );
   }
@@ -72,13 +72,13 @@ class CollectionScreen extends StatelessWidget {
     double subtotal = 0;
     double paid = 0;
     for (int i = 0; i < customers.length; i++) {
-      final data = await Firestore.instance
+      final data = await FirebaseFirestore.instance
           .collection(
               'users/${operatorDetails.id}/areas/${customers[i].areaId}/customers/${customers[i].id}/${DateTime.now().year}')
           .where('code', isEqualTo: DateTime.now().month)
-          .getDocuments();
-      if (data.documents.isNotEmpty) {
-        final recharge = Recharge.fromMap(data.documents.first.data);
+          .get();
+      if (data.docs.isNotEmpty) {
+        final recharge = Recharge.fromMap(data.docs.first.data);
         if (recharge.billPay != null) {
           subtotal += double.parse(recharge.plan);
           if (recharge.billPay) {
@@ -97,13 +97,13 @@ class CollectionScreen extends StatelessWidget {
     double subtotal = 0;
     double paid = 0;
     for (int i = 0; i < customers.length; i++) {
-      final data = await Firestore.instance
+      final data = await FirebaseFirestore.instance
           .collection(
               'users/${operatorDetails.id}/areas/${customers[i].areaId}/customers/${customers[i].id}/${DateTime.now().year}')
-          .getDocuments();
-      if (data.documents.isNotEmpty) {
-        for (int i = 0; i < data.documents.length; i++) {
-          final recharge = Recharge.fromMap(data.documents[i].data);
+          .get();
+      if (data.docs.isNotEmpty) {
+        for (int i = 0; i < data.docs.length; i++) {
+          final recharge = Recharge.fromMap(data.docs[i].data);
           if (recharge.billPay != null) {
             subtotal += double.parse(recharge.plan);
             if (recharge.billPay) {
@@ -150,8 +150,10 @@ class CollectionScreen extends StatelessWidget {
                   },
                 ),
                 SizedBox(height: 20),
-                getTitleText(context,
-                    'Upto \t' + DateFormat('MMMM, yyyy').format(DateTime.now())),
+                getTitleText(
+                    context,
+                    'Upto \t' +
+                        DateFormat('MMMM, yyyy').format(DateTime.now())),
                 FutureBuilder(
                   future: getYearlyData(),
                   builder: (context, snapshot) {

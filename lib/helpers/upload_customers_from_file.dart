@@ -37,8 +37,11 @@ class PickFile {
       ),
     );
     try {
-      file = await FilePicker.getFile(
-          type: FileType.custom, allowedExtensions: ['csv']);
+      final pickedfile = await FilePicker.platform.pickFiles(
+          allowMultiple: false,
+          type: FileType.custom,
+          allowedExtensions: ['csv']);
+      file = File(pickedfile.files.first.path);
     } catch (_) {}
     if (file != null) {
       try {
@@ -117,26 +120,25 @@ class PickFile {
                     runningYear: DateTime.now().year,
                     networkProviderId: operatorDetails.id));
               }
-              final _instance = Firestore.instance
+              final _instance = FirebaseFirestore.instance
                   .collection('users/${operatorDetails.id}/areas');
               count = 0;
               for (int i = 0; i < customers.length; i++) {
                 final _newInst = _instance
-                    .document(customers[i].areaId)
+                    .doc(customers[i].areaId)
                     .collection('customers')
-                    .document();
+                    .doc();
                 final area = areas
                     .firstWhere((element) => element.id == customers[i].areaId);
                 containedAreas.update(area, (value) => value + 1,
                     ifAbsent: () => 1);
                 int newVal = area.totalAccounts + containedAreas[area];
                 int newInVal = area.inActiveAccounts + containedAreas[area];
-                await _newInst.setData(
-                    customers[i].toJson()..['id'] = _newInst.documentID);
-                await Firestore.instance
+                await _newInst.set(customers[i].toJson()..['id'] = _newInst.id);
+                await FirebaseFirestore.instance
                     .collection('users/${firebaseUser.uid}/areas')
-                    .document(customers[i].areaId)
-                    .updateData({
+                    .doc(customers[i].areaId)
+                    .update({
                   'totalAccounts': newVal,
                   'inActiveAccounts': newInVal
                 });

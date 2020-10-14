@@ -13,7 +13,7 @@ import 'package:cableTvBook/widgets/default_dialog_box.dart';
 import 'package:cableTvBook/Payment%20Gateway/razor_pay_screen.dart';
 
 AuthCredential _googleCredential, _phoneCredential;
-AuthResult _authResult;
+UserCredential _authResult;
 String _phoneVerificationId;
 
 class Authentication {
@@ -48,7 +48,7 @@ class Authentication {
       final GoogleSignInAccount googleAccount = await _googleSignin.signIn();
       final GoogleSignInAuthentication googleAuthentication =
           await googleAccount.authentication;
-      _googleCredential = GoogleAuthProvider.getCredential(
+      _googleCredential = GoogleAuthProvider.credential(
           idToken: googleAuthentication.idToken,
           accessToken: googleAuthentication.accessToken);
       _authResult =
@@ -106,14 +106,13 @@ class Authentication {
             }
             firebaseUser = _authResult.user;
             operatorDetails.id = firebaseUser.uid;
-            final _firestoreInstance = Firestore.instance
+            final _firestoreInstance = FirebaseFirestore.instance
                 .collection('users')
-                .document(firebaseUser.uid);
-            await _firestoreInstance.setData(operatorDetails.toJson());
-            final _areaInstance =
-                _firestoreInstance.collection('areas').document();
-            await _areaInstance.setData(
-                areas.first.toJson()..['id'] = _areaInstance.documentID);
+                .doc(firebaseUser.uid);
+            await _firestoreInstance.set(operatorDetails.toJson());
+            final _areaInstance = _firestoreInstance.collection('areas').doc();
+            await _areaInstance
+                .set(areas.first.toJson()..['id'] = _areaInstance.id);
             await DatabaseService.getuserData();
             Navigator.of(context).pushNamedAndRemoveUntil(
                 RazorPayScreen.routeName, (route) => false);
@@ -170,7 +169,7 @@ class Authentication {
       @required String password}) async {
     try {
       DefaultDialogBox.loadingDialog(context);
-      _phoneCredential = PhoneAuthProvider.getCredential(
+      _phoneCredential = PhoneAuthProvider.credential(
           verificationId: _phoneVerificationId, smsCode: otp);
       if (isGoogleUser)
         try {
@@ -193,11 +192,10 @@ class Authentication {
       firebaseUser = _authResult.user;
       operatorDetails.id = firebaseUser.uid;
       final _firestoreInstance =
-          Firestore.instance.collection('users').document(firebaseUser.uid);
-      await _firestoreInstance.setData(operatorDetails.toJson());
-      final _areaInstance = _firestoreInstance.collection('areas').document();
-      await _areaInstance
-          .setData(areas.first.toJson()..['id'] = _areaInstance.documentID);
+          FirebaseFirestore.instance.collection('users').doc(firebaseUser.uid);
+      await _firestoreInstance.set(operatorDetails.toJson());
+      final _areaInstance = _firestoreInstance.collection('areas').doc();
+      await _areaInstance.set(areas.first.toJson()..['id'] = _areaInstance.id);
       await DatabaseService.getuserData();
       Navigator.of(context)
           .pushNamedAndRemoveUntil(RazorPayScreen.routeName, (route) => false);
@@ -249,12 +247,12 @@ class Authentication {
     Navigator.pop(context);
     DefaultDialogBox.loadingDialog(context);
     try {
-      firebaseUser = await FirebaseAuth.instance.currentUser();
+      firebaseUser = FirebaseAuth.instance.currentUser;
       await firebaseUser.updatePassword(password);
-      await Firestore.instance
+      await FirebaseFirestore.instance
           .collection('users')
-          .document(firebaseUser.uid)
-          .updateData({'password': password});
+          .doc(firebaseUser.uid)
+          .update({'password': password});
       Navigator.pop(context);
     } on PlatformException catch (error) {
       Navigator.pop(context);
@@ -276,13 +274,13 @@ class Authentication {
     Navigator.pop(context);
     DefaultDialogBox.loadingDialog(context);
     try {
-      firebaseUser = await FirebaseAuth.instance.currentUser();
+      firebaseUser = FirebaseAuth.instance.currentUser;
       await firebaseUser.updateEmail(email);
-      firebaseUser = await FirebaseAuth.instance.currentUser();
-      await Firestore.instance
+      firebaseUser = FirebaseAuth.instance.currentUser;
+      await FirebaseFirestore.instance
           .collection('users')
-          .document(firebaseUser.uid)
-          .updateData({'email': firebaseUser.email});
+          .doc(firebaseUser.uid)
+          .update({'email': firebaseUser.email});
       Navigator.pop(context);
     } on PlatformException catch (error) {
       Navigator.pop(context);
@@ -302,18 +300,18 @@ class Authentication {
   static void changePhoneNumber(BuildContext context,
       {@required String phoneNumber}) async {
     try {
-      firebaseUser = await FirebaseAuth.instance.currentUser();
+      firebaseUser = FirebaseAuth.instance.currentUser;
       await FirebaseAuth.instance.verifyPhoneNumber(
         phoneNumber: phoneNumber,
         timeout: Duration(seconds: 60),
         verificationCompleted: (phoneAuthCredential) async {
           DefaultDialogBox.loadingDialog(context);
-          await firebaseUser.updatePhoneNumberCredential(phoneAuthCredential);
-          firebaseUser = await FirebaseAuth.instance.currentUser();
-          await Firestore.instance
+          await firebaseUser.updatePhoneNumber(phoneAuthCredential);
+          firebaseUser = FirebaseAuth.instance.currentUser;
+          await FirebaseFirestore.instance
               .collection('users')
-              .document(firebaseUser.uid)
-              .updateData({'phoneNumber': firebaseUser.phoneNumber});
+              .doc(firebaseUser.uid)
+              .update({'phoneNumber': firebaseUser.phoneNumber});
           Navigator.pop(context);
           Navigator.pop(context);
         },
@@ -346,15 +344,15 @@ class Authentication {
       {@required String otp}) async {
     DefaultDialogBox.loadingDialog(context);
     try {
-      firebaseUser = await FirebaseAuth.instance.currentUser();
-      _phoneCredential = PhoneAuthProvider.getCredential(
+      firebaseUser = FirebaseAuth.instance.currentUser;
+      _phoneCredential = PhoneAuthProvider.credential(
           verificationId: _phoneVerificationId, smsCode: otp);
-      await firebaseUser.updatePhoneNumberCredential(_phoneCredential);
-      firebaseUser = await FirebaseAuth.instance.currentUser();
-      await Firestore.instance
+      await firebaseUser.updatePhoneNumber(_phoneCredential);
+      firebaseUser = FirebaseAuth.instance.currentUser;
+      await FirebaseFirestore.instance
           .collection('users')
-          .document(firebaseUser.uid)
-          .updateData({'phoneNumber': firebaseUser.phoneNumber});
+          .doc(firebaseUser.uid)
+          .update({'phoneNumber': firebaseUser.phoneNumber});
       Navigator.pop(context);
       Navigator.pop(context);
     } on PlatformException catch (error) {
@@ -375,7 +373,7 @@ class Authentication {
   static void sendEmailVerificationMail(BuildContext context) async {
     DefaultDialogBox.loadingDialog(context);
     try {
-      firebaseUser = await FirebaseAuth.instance.currentUser();
+      firebaseUser = FirebaseAuth.instance.currentUser;
       await firebaseUser.sendEmailVerification();
       Navigator.pop(context);
       await DefaultDialogBox.errorDialog(context,

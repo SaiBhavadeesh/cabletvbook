@@ -58,7 +58,7 @@ class VerifyPhonePopup extends StatelessWidget {
                       child: PinCodeTextField(
                           length: 6,
                           inputFormatters: [
-                            WhitelistingTextInputFormatter.digitsOnly
+                            FilteringTextInputFormatter.digitsOnly
                           ],
                           autoDismissKeyboard: true,
                           pinTheme: PinTheme(

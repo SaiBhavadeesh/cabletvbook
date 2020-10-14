@@ -120,12 +120,12 @@ List<Customer> getAreaCustomers(List<DocumentSnapshot> docs) {
 Future<List<Customer>> getAllCustomers() async {
   List<DocumentSnapshot> doc = [];
   for (int i = 0; i < areas.length; i++) {
-    doc += (await Firestore.instance
+    doc += (await FirebaseFirestore.instance
             .collection(
                 'users/${firebaseUser.uid}/areas/${areas[i].id}/customers')
             .orderBy('name')
-            .getDocuments())
-        .documents;
+            .get())
+        .docs;
   }
   return doc.map((e) => Customer.fromMap(e)).toList();
 }

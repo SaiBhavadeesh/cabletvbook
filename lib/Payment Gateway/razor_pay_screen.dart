@@ -42,7 +42,7 @@ class _RazorPayScreenState extends State<RazorPayScreen> {
     DatabaseService.updateData(context, data: {
       'transactionId': response.paymentId,
       'transactionTime': FieldValue.serverTimestamp(),
-      'amountPaid': 1999.00,
+      'amountPaid': 4999.00,
       'isSubscribed': true,
     }).then((value) => Navigator.of(context)
         .pushNamedAndRemoveUntil(BottomTabsScreen.routeName, (route) => false));
@@ -65,7 +65,7 @@ class _RazorPayScreenState extends State<RazorPayScreen> {
   void _openGateway() async {
     var options = {
       'key': 'rzp_live_VB1FsRjK35lsW5',
-      'amount': 199900,
+      'amount': 499900,
       'currency': 'INR',
       'name': 'Srinivasa Softwares',
       'description': 'Subscription for Cable Tv Book',
@@ -140,7 +140,7 @@ class _RazorPayScreenState extends State<RazorPayScreen> {
                         text: 'One time subscription\n',
                         children: [
                           TextSpan(
-                              text: '\u20B9 1999.00 Only\n',
+                              text: '\u20B9 4999.00 Only\n',
                               style: TextStyle(
                                   color: Colors.white,
                                   fontSize: 18,

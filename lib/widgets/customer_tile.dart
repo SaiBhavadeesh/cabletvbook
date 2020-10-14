@@ -2,8 +2,6 @@ import 'package:cableTvBook/global/variables.dart';
 import 'package:cableTvBook/models/customer.dart';
 import 'package:cableTvBook/screens/customer_detail_screen.dart';
 import 'package:cableTvBook/services/databse_services.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';

@@ -48,7 +48,9 @@ class _HomeScreenState extends State<HomeScreen> {
               title: Text(
                 delete
                     ? 'Delete area'
-                    : index < 0 ? 'Add new area' : 'Edit area name',
+                    : index < 0
+                        ? 'Add new area'
+                        : 'Edit area name',
               ),
               content: delete
                   ? Text('Are you sure ?')
@@ -199,7 +201,7 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
       ),
       body: StreamBuilder(
-        stream: Firestore.instance
+        stream: FirebaseFirestore.instance
             .collection('users/${operatorDetails.id}/areas')
             .snapshots(),
         builder: (context, snapshot) {

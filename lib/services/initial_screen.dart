@@ -11,7 +11,7 @@ import 'package:cableTvBook/Payment%20Gateway/razor_pay_screen.dart';
 
 class InitialScreen extends StatelessWidget {
   Future<void> initialData(BuildContext context) async {
-    firebaseUser = await FirebaseAuth.instance.currentUser();
+    firebaseUser = FirebaseAuth.instance.currentUser;
     try {
       await DatabaseService.getuserData();
     } catch (e) {
@@ -38,6 +38,7 @@ class InitialScreen extends StatelessWidget {
                 height: MediaQuery.of(context).size.height,
                 decoration: BoxDecoration(
                     image: DecorationImage(
+                        fit: BoxFit.fill,
                         image: AssetImage('assets/images/splash.png'))),
                 alignment: Alignment.bottomCenter,
                 padding: const EdgeInsets.only(bottom: 30),

@@ -245,7 +245,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             if (formKey.currentState.validate()) {
                               formKey.currentState.save();
                               await DatabaseService.updateData(context,
-                                  data: {'networkName': networkName});
+                                  data: {'nn': networkName});
                               Navigator.of(context).pop();
                               setState(() {});
                             }

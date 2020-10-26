@@ -151,11 +151,11 @@ class _CustomerEditBottomSheetState extends State<CustomerEditBottomSheet> {
                             if (widget.customer.name != _name)
                               data.addAll({'name': _name});
                             if (widget.customer.address != _address)
-                              data.addAll({'address': _address});
+                              data.addAll({'adrs': _address});
                             if (widget.customer.phoneNumber != '+ 91 ' + _phone)
-                              data.addAll({'phoneNumber': '+ 91 ' + _phone});
+                              data.addAll({'pn': '+ 91 ' + _phone});
                             if (widget.customer.accountNumber != _account)
-                              data.addAll({'accountNumber': _account});
+                              data.addAll({'accNo': _account});
                             if (widget.customer.macId != _mac)
                               data.addAll({'macId': _mac});
                             await DatabaseService.updateCustomerData(context,

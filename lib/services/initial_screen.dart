@@ -13,6 +13,7 @@ class InitialScreen extends StatelessWidget {
   Future<void> initialData(BuildContext context) async {
     firebaseUser = FirebaseAuth.instance.currentUser;
     try {
+      firebaseUser.reload();
       await DatabaseService.getuserData();
     } catch (e) {
       Fluttertoast.showToast(msg: 'Failed getting data !');

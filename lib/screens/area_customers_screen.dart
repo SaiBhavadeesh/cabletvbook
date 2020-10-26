@@ -15,8 +15,8 @@ class AreaCustomersScreen extends StatelessWidget {
     final size = MediaQuery.of(context).size;
     final AreaData area = ModalRoute.of(context).settings.arguments;
     return DefaultTabController(
-      initialIndex: 1,
-      length: 3,
+      length: 5,
+      initialIndex: 0,
       child: Scaffold(
         appBar: AppBar(
           title: Text(area.areaName),
@@ -24,6 +24,7 @@ class AreaCustomersScreen extends StatelessWidget {
             child: Container(
               color: Colors.amber[700],
               child: TabBar(
+                isScrollable: true,
                 labelColor: Theme.of(context).primaryColor,
                 labelStyle: TextStyle(
                   fontSize: size.height * 0.03,
@@ -35,9 +36,21 @@ class AreaCustomersScreen extends StatelessWidget {
                   fontWeight: FontWeight.bold,
                 ),
                 tabs: [
-                  Text('Active'),
-                  Text('All'),
-                  Text('Inactive'),
+                  SizedBox(
+                      width: size.width * 0.225,
+                      child: Align(child: Text('All'))),
+                  SizedBox(
+                      width: size.width * 0.225,
+                      child: Align(child: Text('Pending'))),
+                  SizedBox(
+                      width: size.width * 0.225,
+                      child: Align(child: Text('Credits'))),
+                  SizedBox(
+                      width: size.width * 0.225,
+                      child: Align(child: Text('Active'))),
+                  SizedBox(
+                      width: size.width * 0.225,
+                      child: Align(child: Text('Inactive'))),
                 ],
               ),
             ),
@@ -69,9 +82,13 @@ class AreaCustomersScreen extends StatelessWidget {
                     : TabBarView(
                         children: [
                           SearchScreenWidget(
-                              active: true, providedCustomers: customers),
-                          SearchScreenWidget(
                               all: true, providedCustomers: customers),
+                          SearchScreenWidget(
+                              inactive: true, providedCustomers: customers),
+                          SearchScreenWidget(
+                              credits: true, providedCustomers: customers),
+                          SearchScreenWidget(
+                              active: true, providedCustomers: customers),
                           SearchScreenWidget(
                               inactive: true, providedCustomers: customers),
                         ],

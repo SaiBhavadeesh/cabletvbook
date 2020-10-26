@@ -20,14 +20,15 @@ class _SearchScreenState extends State<SearchScreen> {
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
     return DefaultTabController(
-      length: 3,
-      initialIndex: 1,
+      length: 5,
+      initialIndex: 0,
       child: Scaffold(
         appBar: AppBar(
           leading: SizedBox(),
           backgroundColor: Colors.amber[700],
           bottom: PreferredSize(
             child: TabBar(
+              isScrollable: true,
               labelColor: Theme.of(context).primaryColor,
               labelStyle: TextStyle(
                 fontSize: size.height * 0.03,
@@ -39,9 +40,21 @@ class _SearchScreenState extends State<SearchScreen> {
                 fontWeight: FontWeight.bold,
               ),
               tabs: [
-                Text('Active'),
-                Text('All'),
-                Text('Inactive'),
+                SizedBox(
+                    width: size.width * 0.225,
+                    child: Align(child: Text('All'))),
+                SizedBox(
+                    width: size.width * 0.225,
+                    child: Align(child: Text('Pending'))),
+                SizedBox(
+                    width: size.width * 0.225,
+                    child: Align(child: Text('Credits'))),
+                SizedBox(
+                    width: size.width * 0.225,
+                    child: Align(child: Text('Active'))),
+                SizedBox(
+                    width: size.width * 0.225,
+                    child: Align(child: Text('Inactive'))),
               ],
             ),
             preferredSize: Size(
@@ -67,8 +80,10 @@ class _SearchScreenState extends State<SearchScreen> {
                     )
                   : TabBarView(
                       children: <Widget>[
-                        SearchScreenWidget(active: true, isRefreshable: true),
                         SearchScreenWidget(all: true, isRefreshable: true),
+                        SearchScreenWidget(pending: true, isRefreshable: true),
+                        SearchScreenWidget(credits: true, isRefreshable: true),
+                        SearchScreenWidget(active: true, isRefreshable: true),
                         SearchScreenWidget(inactive: true, isRefreshable: true),
                       ],
                     );

@@ -54,7 +54,7 @@ class DatabaseService {
         }
       await _firestoreInstance.set(customer.toJson()
         ..['id'] = _firestoreInstance.id
-        ..['profileImageUrl'] = url);
+        ..['pil'] = url);
       if (customer.currentStatus == 'Active') {
         final _rechargeInstance =
             _firestoreInstance.collection(DateTime.now().year.toString()).doc();
@@ -63,11 +63,11 @@ class DatabaseService {
             .set(recharge.toJson()..['date'] = FieldValue.serverTimestamp());
       }
       final data = {
-        'totalAccounts': area.totalAccounts + 1,
-        'activeAccounts': customer.currentStatus == 'Active'
+        'ta': area.totalAccounts + 1,
+        'aa': customer.currentStatus == 'Active'
             ? area.activeAccounts + 1
             : area.activeAccounts,
-        'inActiveAccounts': customer.currentStatus == 'Active'
+        'iaa': customer.currentStatus == 'Active'
             ? area.inActiveAccounts
             : area.inActiveAccounts + 1,
       };
@@ -123,7 +123,7 @@ class DatabaseService {
       await FirebaseFirestore.instance
           .collection('users/${operatorDetails.id}/areas/$areaId/customers')
           .doc(customerId)
-          .update({'profileImageUrl': url});
+          .update({'piUrl': url});
       Navigator.pop(context);
       Fluttertoast.showToast(msg: 'Profile picture updated!');
     } on PlatformException catch (error) {
@@ -148,7 +148,7 @@ class DatabaseService {
       await FirebaseFirestore.instance
           .collection('users')
           .doc(operatorDetails.id)
-          .update({'profileImageLink': url});
+          .update({'pil': url});
       await getuserData();
       Navigator.pop(context);
       Fluttertoast.showToast(msg: 'Profile picture updated!');
@@ -259,35 +259,6 @@ class DatabaseService {
       Recharge recent;
       if (docs.docs.isNotEmpty) {
         recent = Recharge.fromMap(docs.docs.last);
-        if (recent != null) {
-          if (recent.date.year == DateTime.now().year)
-            for (int i = recent.code + 1; i < DateTime.now().month; i++) {
-              final _rechargeRef =
-                  _ref.collection(DateTime.now().year.toString()).doc();
-              final inactiveRecharge =
-                  Recharge(id: _rechargeRef.id, status: false, code: i).toJson()
-                    ..['date'] = FieldValue.serverTimestamp();
-              await _rechargeRef.set(inactiveRecharge);
-            }
-          else if (recent.date.year < DateTime.now().year) {
-            for (int i = recent.code + 1; i <= 12; i++) {
-              final _rechargeRef =
-                  _ref.collection(recent.date.year.toString()).doc();
-              final inactiveRecharge =
-                  Recharge(id: _rechargeRef.id, status: false, code: i).toJson()
-                    ..['date'] = FieldValue.serverTimestamp();
-              await _rechargeRef.set(inactiveRecharge);
-            }
-            for (int i = 1; i < DateTime.now().month; i++) {
-              final _rechargeRef =
-                  _ref.collection(DateTime.now().year.toString()).doc();
-              final inactiveRecharge =
-                  Recharge(id: _rechargeRef.id, status: false, code: i).toJson()
-                    ..['date'] = FieldValue.serverTimestamp();
-              await _rechargeRef.set(inactiveRecharge);
-            }
-          }
-        }
       }
       int monthCode = DateTime.now().month;
       int rechargeYear = DateTime.now().year;
@@ -315,15 +286,18 @@ class DatabaseService {
         await _rechargeRef.set(activeRecharge);
         monthCode += 1;
       }
-      if (!billPay) await _ref.update({'noOfPendingBills': unPaidNo + term});
-      await _ref
-          .update({'currentStatus': 'Active', 'runningYear': rechargeYear});
+      if (!billPay) await _ref.update({'noOfPenBil': unPaidNo + term});
+      await _ref.update({
+        'curSts': 'Active',
+        'runYear': rechargeYear,
+        'expMon': monthCode - 1
+      });
       if (status != 'Active') {
         final area = areas.firstWhere((element) => element.id == areaId);
         await updateArea(context, data: {
           'id': areaId,
-          'activeAccounts': area.activeAccounts + 1,
-          'inActiveAccounts': area.inActiveAccounts - 1
+          'aa': area.activeAccounts + 1,
+          'iaa': area.inActiveAccounts - 1
         });
       }
       Navigator.pop(context);
@@ -352,12 +326,12 @@ class DatabaseService {
       await _ref.collection(year).doc(recent.id).update({
         'addInfo': 'DC: ${DateFormat('dd, MMMM / yyyy').format(DateTime.now())}'
       });
-      await _ref.update({'currentStatus': 'Inactive'});
+      await _ref.update({'curSts': 'Inactive'});
       final area = areas.firstWhere((element) => element.id == areaId);
       await updateArea(context, data: {
         'id': areaId,
-        'activeAccounts': area.activeAccounts - 1,
-        'inActiveAccounts': area.inActiveAccounts + 1
+        'aa': area.activeAccounts - 1,
+        'iaa': area.inActiveAccounts + 1
       });
       Navigator.pop(context);
       Fluttertoast.showToast(msg: 'Deactivation successful!');
@@ -383,7 +357,7 @@ class DatabaseService {
     try {
       final _ref = FirebaseFirestore.instance
           .collection('users/${operatorDetails.id}/areas/$areaId/customers');
-      await _ref.doc(customerId).update({'noOfPendingBills': unpaidBillno - 1});
+      await _ref.doc(customerId).update({'noOfPenBil': unpaidBillno - 1});
       await _ref
           .doc(customerId)
           .collection(year)
@@ -424,7 +398,7 @@ class DatabaseService {
             .docs
             .first);
       if (recharge.billPay != null && !recharge.billPay)
-        await _ref.doc(customerId).update({'noOfPendingBills': unPaidNo - 1});
+        await _ref.doc(customerId).update({'noOfPenBil': unPaidNo - 1});
       int updateYear = int.parse(year);
       String status = 'Inactive';
       if (recharge.code == 1) {
@@ -442,14 +416,18 @@ class DatabaseService {
       await FirebaseFirestore.instance
           .collection('users/${operatorDetails.id}/areas/$areaId/customers')
           .doc(customerId)
-          .update({'runningYear': updateYear, 'currentStatus': status});
+          .update({
+        'runYear': updateYear,
+        'curSts': status,
+        'expMon': recharge.code > 1 ? recharge.code - 1 : 12
+      });
       if (status == 'Inactive') {
         final area = areas.firstWhere((element) => element.id == areaId);
         if (area.activeAccounts > 0)
           await updateArea(context, data: {
             'id': areaId,
-            'activeAccounts': area.activeAccounts - 1,
-            'inActiveAccounts': area.inActiveAccounts + 1
+            'aa': area.activeAccounts - 1,
+            'iaa': area.inActiveAccounts + 1
           });
       }
       Navigator.pop(context);
@@ -476,9 +454,9 @@ class DatabaseService {
           .collection('users/${operatorDetails.id}/areas')
           .doc(areaId);
       await _areaInst.collection('customers').doc(customerId).delete();
-      final key = isActive ? 'activeAccounts' : 'inActiveAccounts';
+      final key = isActive ? 'aa' : 'iaa';
       _areaInst.update({
-        'totalAccounts': totalCount - 1,
+        'ta': totalCount - 1,
         key: otherCount - 1,
       });
       Navigator.pop(context);

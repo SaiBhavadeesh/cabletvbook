@@ -23,7 +23,7 @@ class Recharge {
   Recharge.fromMap(doc) {
     this.id = doc['id'];
     this.code = doc['code'];
-    this.date = doc['date'] == null ? null : doc['date'].toDate();
+    this.date = doc['date']?.toDate();
     this.plan = doc['plan'];
     this.status = doc['status'];
     this.billPay = doc['billPay'];
@@ -51,6 +51,7 @@ class Customer {
   double currentPlan;
   DateTime startDate;
   int runningYear;
+  int expiryMonth;
   int noOfPendingBills;
   String phoneNumber;
   String accountNumber;
@@ -67,6 +68,7 @@ class Customer {
     this.tempInfo,
     this.startDate,
     this.runningYear,
+    this.expiryMonth,
     this.profileImageUrl,
     this.noOfPendingBills = 0,
     @required this.currentPlan,
@@ -81,17 +83,18 @@ class Customer {
     this.name = document['name'];
     this.macId = document['macId'];
     this.areaId = document['areaId'];
-    this.address = document['address'];
+    this.address = document['adrs'];
     this.tempInfo = document['tempInfo'];
-    this.startDate = document['startDate'].toDate();
-    this.runningYear = document['runningYear'];
-    this.noOfPendingBills = document['noOfPendingBills'];
-    this.profileImageUrl = document['profileImageUrl'];
-    this.currentPlan = document['currentPlan'];
-    this.phoneNumber = document['phoneNumber'];
-    this.accountNumber = document['accountNumber'];
-    this.currentStatus = document['currentStatus'];
-    this.networkProviderId = document['networkProviderId'];
+    this.startDate = document['sd']?.toDate();
+    this.runningYear = document['runYear'];
+    this.expiryMonth = document['expMon'];
+    this.noOfPendingBills = document['noOfPenBil'];
+    this.profileImageUrl = document['piUrl'];
+    this.currentPlan = document['curPlan'];
+    this.phoneNumber = document['pn'];
+    this.accountNumber = document['accNo'];
+    this.currentStatus = document['curSts'];
+    this.networkProviderId = document['npId'];
   }
 
   Map<String, dynamic> toJson() => {
@@ -99,17 +102,18 @@ class Customer {
         'name': this.name,
         'macId': this.macId,
         'areaId': this.areaId,
-        'address': this.address,
+        'adrs': this.address,
         'tempInfo': this.tempInfo,
-        'currentPlan': this.currentPlan,
-        'runningYear': this.runningYear,
-        'phoneNumber': this.phoneNumber,
-        'accountNumber': this.accountNumber,
-        'currentStatus': this.currentStatus,
-        'profileImageUrl': this.profileImageUrl,
-        'noOfPendingBills': this.noOfPendingBills,
-        'startDate': FieldValue.serverTimestamp(),
-        'networkProviderId': this.networkProviderId,
+        'curPlan': this.currentPlan,
+        'runYear': this.runningYear,
+        'expMon': this.expiryMonth,
+        'pn': this.phoneNumber,
+        'accNo': this.accountNumber,
+        'curSts': this.currentStatus,
+        'piUrl': this.profileImageUrl,
+        'noOfPenBil': this.noOfPendingBills,
+        'sd': FieldValue.serverTimestamp(),
+        'npId': this.networkProviderId,
       };
 }
 
@@ -131,28 +135,35 @@ Future<List<Customer>> getAllCustomers() async {
 }
 
 List<Customer> getSelectedCustomers({
-  bool active = false,
   bool all = false,
+  bool pending = false,
+  bool credits = false,
+  bool active = false,
   bool inactive = false,
   List<Customer> providedCustomers,
 }) {
-  List<Customer> selectedCustomers = [];
-  if (all) {
+  if (all)
     return providedCustomers;
-  } else if (active) {
-    providedCustomers.forEach((element) {
-      if (element.currentStatus == 'Active') {
-        selectedCustomers.add(element);
-      }
-    });
-  } else if (inactive) {
-    providedCustomers.forEach((element) {
-      if (element.currentStatus == 'Inactive') {
-        selectedCustomers.add(element);
-      }
-    });
-  }
-  return selectedCustomers;
+  else if (pending)
+    return providedCustomers
+        .where((element) =>
+            element.expiryMonth <= DateTime.now().month &&
+            element.runningYear <= DateTime.now().year)
+        .toList();
+  else if (credits)
+    return providedCustomers
+        .where((element) => element.noOfPendingBills > 0)
+        .toList();
+  else if (active)
+    return providedCustomers
+        .where((element) => element.currentStatus == 'Active')
+        .toList();
+  else if (inactive)
+    return providedCustomers
+        .where((element) => element.currentStatus == 'Inactive')
+        .toList();
+  else
+    return [];
 }
 
 List<Recharge> getCustomerYearlyRecharge(List<DocumentSnapshot> docs) {

@@ -6,16 +6,20 @@ import 'package:cableTvBook/widgets/customer_tile.dart';
 import 'package:cableTvBook/screens/search_screen.dart';
 import 'package:cableTvBook/global/box_decoration.dart';
 
-bool showed = false;
+bool _showed = false;
 
 class SearchScreenWidget extends StatefulWidget {
   final bool all;
+  final bool pending;
   final bool active;
+  final bool credits;
   final bool inactive;
   final bool isRefreshable;
   final List<Customer> providedCustomers;
   SearchScreenWidget({
     this.all = false,
+    this.pending = false,
+    this.credits = false,
     this.active = false,
     this.inactive = false,
     this.isRefreshable = false,
@@ -28,7 +32,6 @@ class SearchScreenWidget extends StatefulWidget {
 
 class _SearchScreenWidgetState extends State<SearchScreenWidget> {
   final searchController = TextEditingController();
-  bool _val = false;
 
   List<Customer> filteredCustomers = [];
 
@@ -36,8 +39,10 @@ class _SearchScreenWidgetState extends State<SearchScreenWidget> {
     if (widget.isRefreshable) {
       customers = await getAllCustomers();
       filteredCustomers = getSelectedCustomers(
-          active: widget.active,
           all: widget.all,
+          pending: widget.pending,
+          credits: widget.credits,
+          active: widget.active,
           inactive: widget.inactive,
           providedCustomers: customers);
       if (mounted) setState(() {});
@@ -46,8 +51,10 @@ class _SearchScreenWidgetState extends State<SearchScreenWidget> {
 
   void onTextChange(String value) {
     filteredCustomers = getSelectedCustomers(
-      active: widget.active,
       all: widget.all,
+      pending: widget.pending,
+      credits: widget.credits,
+      active: widget.active,
       inactive: widget.inactive,
       providedCustomers: widget.providedCustomers ?? customers,
     );
@@ -61,35 +68,20 @@ class _SearchScreenWidgetState extends State<SearchScreenWidget> {
     });
   }
 
-  void showPending(bool value) {
-    setState(() {
-      if (value)
-        filteredCustomers = filteredCustomers
-            .where((element) => element.noOfPendingBills > 0)
-            .toList();
-      else
-        filteredCustomers = getSelectedCustomers(
-          active: widget.active,
-          all: widget.all,
-          inactive: widget.inactive,
-          providedCustomers: widget.providedCustomers ?? customers,
-        );
-      _val = !_val;
-    });
-  }
-
   @override
   void initState() {
     super.initState();
     filteredCustomers = getSelectedCustomers(
-      active: widget.active,
       all: widget.all,
+      pending: widget.pending,
+      credits: widget.credits,
+      active: widget.active,
       inactive: widget.inactive,
       providedCustomers: widget.providedCustomers ?? customers,
     );
     try {
-      if (widget.isRefreshable && !showed) {
-        showed = true;
+      if (widget.isRefreshable && !_showed) {
+        _showed = true;
         Future.delayed(
             Duration(seconds: 0),
             () => Scaffold.of(context).showSnackBar(SnackBar(
@@ -158,29 +150,6 @@ class _SearchScreenWidgetState extends State<SearchScreenWidget> {
                   hint: 'Search by Name / mac no / acc no.',
                   icon: FlutterIcons.ios_search_ion,
                   radius: 30),
-            ),
-          ),
-          Positioned(
-            bottom: 0,
-            right: 8,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                Switch(
-                    activeTrackColor: Colors.lightGreen,
-                    activeColor: Theme.of(context).primaryColor,
-                    inactiveThumbColor: Colors.black45,
-                    inactiveTrackColor: Colors.black38,
-                    value: _val,
-                    onChanged: showPending),
-                Text(
-                  'Show Pending',
-                  style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 16,
-                      color: Colors.red),
-                ),
-              ],
             ),
           ),
         ],

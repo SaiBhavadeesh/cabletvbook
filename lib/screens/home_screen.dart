@@ -206,8 +206,8 @@ class _HomeScreenState extends State<HomeScreen> {
             .snapshots(),
         builder: (context, snapshot) {
           if (snapshot.hasData) {
-            areas = [...snapshot.data.documents]
-                .map((e) => AreaData.fromMap(e.data))
+            areas = [...snapshot.data.docs]
+                .map((e) => AreaData.fromMap(e.data()))
                 .toList();
             return areas.isEmpty
                 ? Center(

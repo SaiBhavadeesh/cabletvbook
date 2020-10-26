@@ -200,7 +200,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
             defaultbutton(
                 context: context,
                 function: () {
-                  if (_formKey.currentState.validate() && _accepted) {
+                  if (_formKey.currentState.validate() && (!isGoogleUser || _accepted)) {
                     _formKey.currentState.save();
                     operatorDetails = Operator(
                         id: null,

@@ -503,10 +503,14 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
                           shrinkWrap: true,
                           physics: NeverScrollableScrollPhysics(),
                           itemBuilder: (context, index) {
+                            final rec = rechargeData.firstWhere(
+                                (element) => element.code == index + 1,
+                                orElse: () =>
+                                    Recharge(code: index + 1, status: false));
                             return GestureDetector(
                               onLongPress: () => deleteRecharge(
                                   context,
-                                  rechargeData[index],
+                                  rec,
                                   _selectedYear != customer.startDate.year ||
                                           index > 0
                                       ? true
@@ -514,28 +518,24 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
                               child: CustomerPlanList(
                                 customerId: customer.id,
                                 areaId: customer.areaId,
-                                id: rechargeData[index].id,
-                                billPay: rechargeData[index].billPay,
+                                id: rec.id,
+                                billPay: rec.billPay,
                                 year: _selectedYear.toString(),
                                 month: DateFormat('MMMM').format(
-                                  DateTime(
-                                      _selectedYear, rechargeData[index].code),
+                                  DateTime(_selectedYear, rec.code),
                                 ),
-                                billDate: rechargeData[index].billPay == null
+                                billDate: rec.billPay == null
                                     ? ''
-                                    : DateFormat('dd/MM/yyyy').format(
-                                        rechargeData[index].date ??
-                                            DateTime.now()),
-                                billAmount: rechargeData[index].plan ?? '',
-                                status: rechargeData[index].status
-                                    ? 'Active'
-                                    : 'Inactive',
-                                addInfo: rechargeData[index].addInfo,
+                                    : DateFormat('dd/MM/yyyy')
+                                        .format(rec.date ?? DateTime.now()),
+                                billAmount: rec.plan ?? '',
+                                status: rec.status ? 'Active' : 'Inactive',
+                                addInfo: rec.addInfo,
                                 unpaidBill: customer.noOfPendingBills,
                               ),
                             );
                           },
-                          itemCount: rechargeData.length,
+                          itemCount: 12,
                         );
                       }
                       return Container(

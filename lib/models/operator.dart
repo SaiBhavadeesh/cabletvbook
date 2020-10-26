@@ -16,18 +16,18 @@ class AreaData {
 
   AreaData.fromMap(Map<String, dynamic> doc) {
     this.id = doc['id'];
-    this.areaName = doc['areaName'];
-    this.totalAccounts = doc['totalAccounts'];
-    this.activeAccounts = doc['activeAccounts'];
-    this.inActiveAccounts = doc['inActiveAccounts'];
+    this.areaName = doc['an'];
+    this.totalAccounts = doc['ta'];
+    this.activeAccounts = doc['aa'];
+    this.inActiveAccounts = doc['iaa'];
   }
 
   Map<String, dynamic> toJson() => {
         'id': this.id,
-        'areaName': this.areaName,
-        'totalAccounts': this.totalAccounts,
-        'activeAccounts': this.activeAccounts,
-        'inActiveAccounts': this.inActiveAccounts,
+        'an': this.areaName,
+        'ta': this.totalAccounts,
+        'aa': this.activeAccounts,
+        'iaa': this.inActiveAccounts,
       };
 }
 
@@ -65,31 +65,31 @@ class Operator {
     this.id = document['id'];
     this.name = document['name'];
     this.email = document['email'];
-    this.password = document['password'];
-    this.networkName = document['networkName'];
-    this.phoneNumber = document['phoneNumber'];
-    this.profileImageLink = document['profileImageLink'];
-    this.startDate = document['startDate']?.toDate();
+    this.password = document['pswd'];
+    this.networkName = document['nn'];
+    this.phoneNumber = document['pn'];
+    this.profileImageLink = document['pil'];
+    this.startDate = document['sd']?.toDate();
     this.plans = [...document['plans']];
-    this.transactionId = document['transactionId'];
-    this.transactionTime = document['transactionTime']?.toDate();
-    this.amountPaid = document['amountPaid'];
-    this.isSubscribed = document['isSubscribed'];
+    this.transactionId = document['tId'];
+    this.transactionTime = document['tt']?.toDate();
+    this.amountPaid = document['mnyPd'];
+    this.isSubscribed = document['isSub'];
   }
 
   Map<String, dynamic> toJson() => {
         'id': this.id,
         'name': this.name,
         'email': this.email,
-        'password': this.password,
-        'networkName': this.networkName,
-        'profileImageLink': this.profileImageLink,
-        'phoneNumber': this.phoneNumber,
-        'startDate': FieldValue.serverTimestamp(),
+        'pswd': this.password,
+        'nn': this.networkName,
+        'pil': this.profileImageLink,
+        'pn': this.phoneNumber,
+        'sd': FieldValue.serverTimestamp(),
         'plans': this.plans,
-        'transactionId': this.transactionId,
-        'transactionTime': this.transactionTime,
-        'amountPaid': this.amountPaid,
-        'isSubscribed': this.isSubscribed,
+        'tId': this.transactionId,
+        'tt': this.transactionTime,
+        'mnyPd': this.amountPaid,
+        'isSub': this.isSubscribed,
       };
 }

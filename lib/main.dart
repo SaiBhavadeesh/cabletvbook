@@ -1,10 +1,10 @@
 import 'dart:ui';
 
-import 'package:cableTvBook/global/variables.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:firebase_core/firebase_core.dart';
 
+import 'package:cableTvBook/global/variables.dart';
 import 'package:cableTvBook/screens/home_screen.dart';
 import 'package:cableTvBook/screens/signin_screen.dart';
 import 'package:cableTvBook/screens/search_screen.dart';

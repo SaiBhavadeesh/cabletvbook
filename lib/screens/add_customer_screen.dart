@@ -261,7 +261,7 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
                       controlAffinity: ListTileControlAffinity.leading,
                       value: _checked,
                       title: Text(
-                          'Check this box, if customer\'s current status is active.'),
+                          'Check this box, if customer bill paid.'),
                       onChanged: (value) {
                         setState(() {
                           _checked = !_checked;

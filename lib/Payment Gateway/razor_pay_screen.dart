@@ -40,10 +40,10 @@ class _RazorPayScreenState extends State<RazorPayScreen> {
         msg: 'Payment successful!\nTransaction-Id : ${response.paymentId}');
     DefaultDialogBox.loadingDialog(context);
     DatabaseService.updateData(context, data: {
-      'transactionId': response.paymentId,
-      'transactionTime': FieldValue.serverTimestamp(),
-      'amountPaid': 4999.00,
-      'isSubscribed': true,
+      'tId': response.paymentId,
+      'tt': FieldValue.serverTimestamp(),
+      'mnyPd': 4999.00,
+      'isSub': true,
     }).then((value) => Navigator.of(context)
         .pushNamedAndRemoveUntil(BottomTabsScreen.routeName, (route) => false));
   }

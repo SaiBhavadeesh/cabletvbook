@@ -139,8 +139,8 @@ class PickFile {
                     .collection('users/${firebaseUser.uid}/areas')
                     .doc(customers[i].areaId)
                     .update({
-                  'totalAccounts': newVal,
-                  'inActiveAccounts': newInVal
+                  'ta': newVal,
+                  'iaa': newInVal
                 });
                 count += 1;
                 if (count == 1)

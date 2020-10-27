@@ -31,7 +31,7 @@ class SettingsScreen extends StatelessWidget {
             controller: _textController,
             validator: validator,
             keyboardType: textInputType,
-            decoration: inputDecoration(icon: icon,prefixText: prefix),
+            decoration: inputDecoration(icon: icon, prefixText: prefix),
           ),
           actions: [
             FlatButton(
@@ -113,8 +113,8 @@ class SettingsScreen extends StatelessWidget {
           getTitle(context, 'Account Settings'),
           if (!firebaseUser.emailVerified)
             getdetailText(context, 'Verify your email',
-                function: () =>
-                    Authentication.sendEmailVerificationMail(context)),
+                function: () async =>
+                    await Authentication.sendEmailVerificationMail(context)),
           if (operatorDetails.password != null)
             getdetailText(
               context,
@@ -125,10 +125,10 @@ class SettingsScreen extends StatelessWidget {
                 validator: emailValidator,
                 icon: Icons.email,
                 textInputType: TextInputType.emailAddress,
-                onSaved: () {
+                onSaved: () async {
                   if (_formKey.currentState.validate()) {
                     _formKey.currentState.save();
-                    Authentication.changeEmailAddress(context,
+                    await Authentication.changeEmailAddress(context,
                         email: _textController.text);
                   }
                 },
@@ -179,10 +179,10 @@ class SettingsScreen extends StatelessWidget {
                 title: 'Change password !',
                 validator: (value) => passwordValidator(value, false),
                 icon: FlutterIcons.vpn_key_mdi,
-                onSaved: () {
+                onSaved: () async {
                   if (_formKey.currentState.validate()) {
                     _formKey.currentState.save();
-                    Authentication.changePassword(context,
+                    await Authentication.changePassword(context,
                         password: _textController.text);
                   }
                 },

@@ -65,7 +65,7 @@ class HomeDrawer extends StatelessWidget {
           ),
           Divider(),
           FlatButton.icon(
-            onPressed: () => Authentication.signout(context),
+            onPressed: () async => await Authentication.signout(context),
             icon: Icon(Icons.power_settings_new),
             label: styledTitleText('Logout'),
           ),

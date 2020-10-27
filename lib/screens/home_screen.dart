@@ -111,7 +111,7 @@ class _HomeScreenState extends State<HomeScreen> {
                               } else
                                 await DatabaseService.updateArea(context,
                                     data: areas[index].toJson()
-                                      ..['areaName'] = textController.text);
+                                      ..['an'] = textController.text);
                               Navigator.of(ctx).pop();
                             }
                           }),

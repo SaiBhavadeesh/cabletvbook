@@ -82,10 +82,10 @@ class VerifyPhonePopup extends StatelessWidget {
                         Expanded(
                           child: defaultbutton(
                               context: context,
-                              function: () => isUpdate
-                                  ? Authentication.changeNumberWithOtp(context,
+                              function: () async=> isUpdate
+                                  ?await Authentication.changeNumberWithOtp(context,
                                       otp: otp)
-                                  : Authentication.verifyOTPAndRegister(
+                                  :await Authentication.verifyOTPAndRegister(
                                       context: context,
                                       otp: otp,
                                       email: operatorDetails.email,
@@ -188,11 +188,11 @@ class _ResendTimerWidgetState extends State<ResendTimerWidget> {
                     letterSpacing: 0.5,
                     fontWeight: FontWeight.w400),
               ),
-              onPressed: () {
+              onPressed: () async{
                 widget.isUpdate
-                    ? Authentication.changePhoneNumber(context,
+                    ?await Authentication.changePhoneNumber(context,
                         phoneNumber: widget.phoneNumber)
-                    : Authentication.verifyPhoneNumberAndRegister(
+                    : await Authentication.verifyPhoneNumberAndRegister(
                         context: context,
                         phoneNumber: operatorDetails.phoneNumber,
                         email: operatorDetails.email,

@@ -17,7 +17,7 @@ UserCredential _authResult;
 String _phoneVerificationId;
 
 class Authentication {
-  static void signinWithEmailAndPassword(BuildContext context,
+  static Future<void> signinWithEmailAndPassword(BuildContext context,
       {@required String email, @required String password}) async {
     DefaultDialogBox.loadingDialog(context);
     try {
@@ -25,12 +25,21 @@ class Authentication {
           .signInWithEmailAndPassword(email: email, password: password);
       firebaseUser = _authResult.user;
       await DatabaseService.getuserData();
-      if (operatorDetails.isSubscribed)
+      if (operatorDetails.isSubscribed) {
+        await DatabaseService.getuserData();
         Navigator.of(context).pushNamedAndRemoveUntil(
             BottomTabsScreen.routeName, (route) => false);
-      else
+      } else if (firebaseUser.phoneNumber == null)
+        Navigator.of(context).pushNamedAndRemoveUntil(
+            RegisterScreen.routeName, (route) => false);
+      else {
+        await DatabaseService.getuserData();
         Navigator.of(context).pushNamedAndRemoveUntil(
             RazorPayScreen.routeName, (route) => false);
+      }
+    } on FirebaseAuthException catch (error) {
+      Navigator.pop(context);
+      DefaultDialogBox.errorDialog(context, content: error.message);
     } on PlatformException catch (error) {
       Navigator.pop(context);
       DefaultDialogBox.errorDialog(context, content: error.message);
@@ -40,7 +49,7 @@ class Authentication {
     }
   }
 
-  static void signinWithGoogle(BuildContext context) async {
+  static Future<void> signinWithGoogle(BuildContext context) async {
     DefaultDialogBox.loadingDialog(context);
     try {
       final GoogleSignIn _googleSignin =
@@ -55,14 +64,24 @@ class Authentication {
           await FirebaseAuth.instance.signInWithCredential(_googleCredential);
       firebaseUser = _authResult.user;
       isGoogleUser = true;
-      if (firebaseUser.phoneNumber != null) {
+      _googleSignin.signOut();
+      if (operatorDetails != null && operatorDetails.isSubscribed) {
         await DatabaseService.getuserData();
         Navigator.of(context).pushNamedAndRemoveUntil(
             BottomTabsScreen.routeName, (route) => false);
-      } else
+      }
+      if (firebaseUser.phoneNumber == null)
         Navigator.of(context).pushNamedAndRemoveUntil(
             RegisterScreen.routeName, (route) => false,
             arguments: {'email': firebaseUser.email, 'password': null});
+      else {
+        await DatabaseService.getuserData();
+        Navigator.of(context).pushNamedAndRemoveUntil(
+            RazorPayScreen.routeName, (route) => false);
+      }
+    } on FirebaseAuthException catch (error) {
+      Navigator.pop(context);
+      DefaultDialogBox.errorDialog(context, content: error.message);
     } on PlatformException catch (error) {
       Navigator.pop(context);
       DefaultDialogBox.errorDialog(context, content: error.message);
@@ -72,7 +91,7 @@ class Authentication {
     }
   }
 
-  static void verifyPhoneNumberAndRegister(
+  static Future<void> verifyPhoneNumberAndRegister(
       {@required BuildContext context,
       @required String phoneNumber,
       @required String email,
@@ -87,15 +106,10 @@ class Authentication {
             _phoneCredential = phoneAuthCredential;
             if (isGoogleUser)
               try {
-                _authResult =
-                    await _authResult.user.linkWithCredential(_phoneCredential);
+                _authResult = await FirebaseAuth.instance.currentUser
+                    .linkWithCredential(_phoneCredential);
               } catch (error) {
-                try {
-                  _authResult =
-                      await firebaseUser.linkWithCredential(_phoneCredential);
-                } catch (error) {
-                  throw error;
-                }
+                throw error;
               }
             else {
               _authResult = await FirebaseAuth.instance
@@ -140,18 +154,23 @@ class Authentication {
         },
         codeAutoRetrievalTimeout: (verificationId) {},
       );
-    } on PlatformException catch (error) {
+    } on FirebaseAuthException catch (error) {
       Navigator.pop(context);
-      if (error.code == 'ERROR_EMAIL_ALREADY_IN_USE')
-        Navigator.of(context)
-            .pushNamedAndRemoveUntil(SigninScreen.routeName, (route) => false);
       try {
         await _authResult.user.delete();
-        Navigator.of(context)
-            .pushNamedAndRemoveUntil(SigninScreen.routeName, (route) => false);
       } catch (_) {}
+      Navigator.of(context)
+          .pushNamedAndRemoveUntil(SigninScreen.routeName, (route) => false);
       DefaultDialogBox.errorDialog(context, content: error.message);
-    } catch (error) {
+    } on PlatformException catch (error) {
+      Navigator.pop(context);
+      try {
+        await _authResult.user.delete();
+      } catch (_) {}
+      Navigator.of(context)
+          .pushNamedAndRemoveUntil(SigninScreen.routeName, (route) => false);
+      DefaultDialogBox.errorDialog(context, content: error.message);
+    } catch (_) {
       Navigator.pop(context);
       try {
         await _authResult.user.delete();
@@ -162,7 +181,7 @@ class Authentication {
     }
   }
 
-  static void verifyOTPAndRegister(
+  static Future<void> verifyOTPAndRegister(
       {@required BuildContext context,
       @required String otp,
       @required String email,
@@ -173,15 +192,10 @@ class Authentication {
           verificationId: _phoneVerificationId, smsCode: otp);
       if (isGoogleUser)
         try {
-          _authResult =
-              await _authResult.user.linkWithCredential(_phoneCredential);
+          _authResult = await FirebaseAuth.instance.currentUser
+              .linkWithCredential(_phoneCredential);
         } catch (error) {
-          try {
-            _authResult =
-                await firebaseUser.linkWithCredential(_phoneCredential);
-          } catch (error) {
-            throw error;
-          }
+          throw error;
         }
       else {
         _authResult = await FirebaseAuth.instance
@@ -199,19 +213,23 @@ class Authentication {
       await DatabaseService.getuserData();
       Navigator.of(context)
           .pushNamedAndRemoveUntil(RazorPayScreen.routeName, (route) => false);
-    } on PlatformException catch (error) {
+    } on FirebaseAuthException catch (error) {
       Navigator.pop(context);
-      if (error.code == 'ERROR_EMAIL_ALREADY_IN_USE')
-        Navigator.of(context)
-            .pushNamedAndRemoveUntil(SigninScreen.routeName, (route) => false);
-      else if (error.code != 'ERROR_INVALID_VERIFICATION_CODE') {
-        Navigator.pop(context);
+      if (error.code != 'invalid-verification-code') {
         try {
           await _authResult.user.delete();
-          Navigator.of(context).pushNamedAndRemoveUntil(
-              SigninScreen.routeName, (route) => false);
         } catch (_) {}
+        Navigator.of(context)
+            .pushNamedAndRemoveUntil(SigninScreen.routeName, (route) => false);
       }
+      DefaultDialogBox.errorDialog(context, content: error.message);
+    } on PlatformException catch (error) {
+      Navigator.pop(context);
+      try {
+        await _authResult.user.delete();
+      } catch (_) {}
+      Navigator.of(context)
+          .pushNamedAndRemoveUntil(SigninScreen.routeName, (route) => false);
       DefaultDialogBox.errorDialog(context, content: error.message);
     } catch (error) {
       Navigator.pop(context);
@@ -224,7 +242,7 @@ class Authentication {
     }
   }
 
-  static void signout(BuildContext context) async {
+  static Future<void> signout(BuildContext context) async {
     try {
       DefaultDialogBox.loadingDialog(context);
       await FirebaseAuth.instance.signOut();
@@ -242,7 +260,7 @@ class Authentication {
     }
   }
 
-  static void changePassword(BuildContext context,
+  static Future<void> changePassword(BuildContext context,
       {@required String password}) async {
     Navigator.pop(context);
     DefaultDialogBox.loadingDialog(context);
@@ -254,22 +272,23 @@ class Authentication {
           .doc(firebaseUser.uid)
           .update({'password': password});
       Navigator.pop(context);
-    } on PlatformException catch (error) {
+    } on FirebaseAuthException catch (error) {
       Navigator.pop(context);
-      if (error.code == 'ERROR_REQUIRES_RECENT_LOGIN')
+      if (error.code == 'requires-recent-login')
         await DefaultDialogBox.errorDialog(context,
             title: error.message,
             content: 'Do you want to proceed wih this action?',
             function: () => signout(context));
-      else
-        DefaultDialogBox.errorDialog(context, content: error.message);
+    } on PlatformException catch (error) {
+      Navigator.pop(context);
+      DefaultDialogBox.errorDialog(context, content: error.message);
     } catch (_) {
       Navigator.pop(context);
       DefaultDialogBox.errorDialog(context);
     }
   }
 
-  static void changeEmailAddress(BuildContext context,
+  static Future<void> changeEmailAddress(BuildContext context,
       {@required String email}) async {
     Navigator.pop(context);
     DefaultDialogBox.loadingDialog(context);
@@ -282,22 +301,23 @@ class Authentication {
           .doc(firebaseUser.uid)
           .update({'email': firebaseUser.email});
       Navigator.pop(context);
-    } on PlatformException catch (error) {
+    } on FirebaseAuthException catch (error) {
       Navigator.pop(context);
-      if (error.code == 'ERROR_REQUIRES_RECENT_LOGIN')
+      if (error.code == 'requires-recent-login')
         await DefaultDialogBox.errorDialog(context,
             title: error.message,
             content: 'Do you want to proceed wih this action?',
             function: () => signout(context));
-      else
-        DefaultDialogBox.errorDialog(context, content: error.message);
+    } on PlatformException catch (error) {
+      Navigator.pop(context);
+      DefaultDialogBox.errorDialog(context, content: error.message);
     } catch (_) {
       Navigator.pop(context);
       DefaultDialogBox.errorDialog(context);
     }
   }
 
-  static void changePhoneNumber(BuildContext context,
+  static Future<void> changePhoneNumber(BuildContext context,
       {@required String phoneNumber}) async {
     try {
       firebaseUser = FirebaseAuth.instance.currentUser;
@@ -325,22 +345,23 @@ class Authentication {
         },
         codeAutoRetrievalTimeout: (verificationId) {},
       );
-    } on PlatformException catch (error) {
+    } on FirebaseAuthException catch (error) {
       Navigator.pop(context);
-      if (error.code == 'ERROR_REQUIRES_RECENT_LOGIN')
+      if (error.code == 'requires-recent-login')
         await DefaultDialogBox.errorDialog(context,
             title: error.message,
             content: 'Do you want to proceed wih this action?',
             function: () => signout(context));
-      else
-        DefaultDialogBox.errorDialog(context, content: error.message);
+    } on PlatformException catch (error) {
+      Navigator.pop(context);
+      DefaultDialogBox.errorDialog(context, content: error.message);
     } catch (_) {
       Navigator.pop(context);
       DefaultDialogBox.errorDialog(context);
     }
   }
 
-  static void changeNumberWithOtp(BuildContext context,
+  static Future<void> changeNumberWithOtp(BuildContext context,
       {@required String otp}) async {
     DefaultDialogBox.loadingDialog(context);
     try {
@@ -355,22 +376,23 @@ class Authentication {
           .update({'phoneNumber': firebaseUser.phoneNumber});
       Navigator.pop(context);
       Navigator.pop(context);
-    } on PlatformException catch (error) {
+    } on FirebaseAuthException catch (error) {
       Navigator.pop(context);
-      if (error.code == 'ERROR_REQUIRES_RECENT_LOGIN')
+      if (error.code == 'requires-recent-login')
         await DefaultDialogBox.errorDialog(context,
             title: error.message,
             content: 'Do you want to proceed wih this action?',
             function: () => signout(context));
-      else
-        DefaultDialogBox.errorDialog(context, content: error.message);
+    } on PlatformException catch (error) {
+      Navigator.pop(context);
+      DefaultDialogBox.errorDialog(context, content: error.message);
     } catch (_) {
       Navigator.pop(context);
       DefaultDialogBox.errorDialog(context);
     }
   }
 
-  static void sendEmailVerificationMail(BuildContext context) async {
+  static Future<void> sendEmailVerificationMail(BuildContext context) async {
     DefaultDialogBox.loadingDialog(context);
     try {
       firebaseUser = FirebaseAuth.instance.currentUser;

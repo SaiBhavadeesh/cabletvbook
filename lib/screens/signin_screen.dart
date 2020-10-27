@@ -156,10 +156,10 @@ class _SigninScreenState extends State<SigninScreen> {
                     Align(
                       child: FloatingActionButton.extended(
                         heroTag: 'login',
-                        onPressed: () {
+                        onPressed: ()async {
                           if (_formKey.currentState.validate()) {
                             _formKey.currentState.save();
-                            Authentication.signinWithEmailAndPassword(context,
+                            await Authentication.signinWithEmailAndPassword(context,
                                 email: _emailController.text.trim(),
                                 password: _passwordController.text);
                           }
@@ -186,8 +186,8 @@ class _SigninScreenState extends State<SigninScreen> {
                     Align(
                       child: FloatingActionButton.extended(
                           heroTag: 'google',
-                          onPressed: () =>
-                              Authentication.signinWithGoogle(context),
+                          onPressed: ()async =>
+                              await Authentication.signinWithGoogle(context),
                           icon: SizedBox(
                               height: 25,
                               child: Image.asset('assets/images/google.png')),

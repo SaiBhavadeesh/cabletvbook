@@ -11,9 +11,9 @@ import 'package:cableTvBook/Payment%20Gateway/razor_pay_screen.dart';
 
 class InitialScreen extends StatelessWidget {
   Future<void> initialData(BuildContext context) async {
-    firebaseUser = FirebaseAuth.instance.currentUser;
     try {
-      firebaseUser.reload();
+      firebaseUser = FirebaseAuth.instance.currentUser;
+      await firebaseUser.reload();
       await DatabaseService.getuserData();
     } catch (e) {
       Fluttertoast.showToast(msg: 'Failed getting data !');
@@ -36,25 +36,23 @@ class InitialScreen extends StatelessWidget {
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting)
               return Container(
-                height: MediaQuery.of(context).size.height,
-                decoration: BoxDecoration(
-                    image: DecorationImage(
-                        fit: BoxFit.fill,
-                        image: AssetImage('assets/images/splash.png'))),
-                alignment: Alignment.bottomCenter,
-                padding: const EdgeInsets.only(bottom: 30),
-                child: SizedBox(
-                  height: MediaQuery.of(context).size.width * 0.15,
-                  width: MediaQuery.of(context).size.width * 0.15,
-                  child: LoadingIndicator(
-                      color: Colors.orange,
-                      indicatorType: Indicator.ballSpinFadeLoader),
-                ),
-              );
+                  height: MediaQuery.of(context).size.height,
+                  decoration: BoxDecoration(
+                      image: DecorationImage(
+                          fit: BoxFit.fill,
+                          image: AssetImage('assets/images/splash.png'))),
+                  alignment: Alignment.bottomCenter,
+                  padding: const EdgeInsets.only(bottom: 30),
+                  child: SizedBox(
+                      height: MediaQuery.of(context).size.width * 0.15,
+                      width: MediaQuery.of(context).size.width * 0.15,
+                      child: LoadingIndicator(
+                          color: Colors.orange,
+                          indicatorType: Indicator.ballSpinFadeLoader)));
             else {
-              if (firebaseUser == null)
-                return SigninScreen();
-              else if (firebaseUser.phoneNumber == null)
+              if (firebaseUser == null ||
+                  firebaseUser.phoneNumber == null ||
+                  operatorDetails == null)
                 return SigninScreen();
               else if (!operatorDetails.isSubscribed)
                 return RazorPayScreen();

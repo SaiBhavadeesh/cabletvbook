@@ -121,6 +121,14 @@ List<Customer> getAreaCustomers(List<DocumentSnapshot> docs) {
   return docs.map((e) => Customer.fromMap(e)).toList();
 }
 
+Future<List<Customer>> getSelectedAreaCustomers(String id) async {
+  final snap = await FirebaseFirestore.instance
+      .collection('users/${operatorDetails.id}/areas/$id/customers')
+      .orderBy('name')
+      .get();
+  return snap.docs.map((e) => Customer.fromMap(e)).toList();
+}
+
 Future<List<Customer>> getAllCustomers() async {
   List<DocumentSnapshot> doc = [];
   for (int i = 0; i < areas.length; i++) {
@@ -147,7 +155,7 @@ List<Customer> getSelectedCustomers({
   else if (pending)
     return providedCustomers
         .where((element) =>
-            element.expiryMonth <= DateTime.now().month &&
+            element.expiryMonth < DateTime.now().month &&
             element.runningYear <= DateTime.now().year)
         .toList();
   else if (credits)

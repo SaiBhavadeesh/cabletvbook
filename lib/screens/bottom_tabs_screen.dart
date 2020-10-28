@@ -10,7 +10,7 @@ import 'package:cableTvBook/widgets/home_drawer.dart';
 import 'package:cableTvBook/screens/home_screen.dart';
 import 'package:cableTvBook/helpers/image_getter.dart';
 import 'package:cableTvBook/screens/search_screen.dart';
-import 'package:cableTvBook/services/databse_services.dart';
+import 'package:cableTvBook/services/database_services.dart';
 import 'package:cableTvBook/screens/add_customer_screen.dart';
 
 class BottomTabsScreen extends StatefulWidget {

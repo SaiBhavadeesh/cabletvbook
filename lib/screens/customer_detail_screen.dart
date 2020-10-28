@@ -12,7 +12,7 @@ import 'package:progress_indicators/progress_indicators.dart';
 import 'package:cableTvBook/models/customer.dart';
 import 'package:cableTvBook/global/variables.dart';
 import 'package:cableTvBook/helpers/image_getter.dart';
-import 'package:cableTvBook/services/databse_services.dart';
+import 'package:cableTvBook/services/database_services.dart';
 import 'package:cableTvBook/widgets/default_dialog_box.dart';
 import 'package:cableTvBook/widgets/customer_plan_list.dart';
 import 'package:cableTvBook/widgets/activate_bottom_sheet.dart';
@@ -213,7 +213,11 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
 
   void deleteRecharge(
       BuildContext ctx, Recharge recharge, bool prevRecharge) async {
+    final bool valid =
+        rechargeData.any((element) => element.code > recharge.code);
     if (recharge.status &&
+        customer.runningYear == _selectedYear &&
+        !valid &&
         DateTime.now().difference(recharge.date) < Duration(days: 10))
       await showDialog(
         context: context,
@@ -237,7 +241,6 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
                     areaId: customer.areaId,
                     year: year,
                     startYear: customer.startDate.year.toString(),
-                    prevRecharge: prevRecharge,
                     recharge: recharge,
                     unPaidNo: customer.noOfPendingBills);
                 setState(() {
@@ -251,6 +254,8 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
           ],
         ),
       );
+    else if (customer.runningYear == _selectedYear || !valid)
+      Fluttertoast.showToast(msg: 'Delete recent recharge first');
     else
       return null;
   }

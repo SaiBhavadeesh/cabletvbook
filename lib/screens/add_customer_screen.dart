@@ -2,7 +2,7 @@ import 'dart:io';
 import 'dart:ui';
 
 import 'package:cableTvBook/helpers/upload_customers_from_file.dart';
-import 'package:cableTvBook/services/databse_services.dart';
+import 'package:cableTvBook/services/database_services.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/cupertino.dart';
@@ -61,6 +61,7 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
         macId: _macController.text.trim(),
         networkProviderId: operatorDetails.id,
         areaId: _selectedAreaId,
+        expiryMonth: _checked ? DateTime.now().month : 0,
         currentPlan: _selectedPlan,
         runningYear: DateTime.now().year,
         currentStatus: _checked ? 'Active' : 'Inactive',
@@ -260,8 +261,7 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
                       checkColor: Colors.green[900],
                       controlAffinity: ListTileControlAffinity.leading,
                       value: _checked,
-                      title: Text(
-                          'Check this box, if customer bill paid.'),
+                      title: Text('Check this box, if customer bill paid.'),
                       onChanged: (value) {
                         setState(() {
                           _checked = !_checked;

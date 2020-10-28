@@ -1,9 +1,9 @@
+import 'package:cableTvBook/global/variables.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_icons/flutter_icons.dart';
 
 import 'package:cableTvBook/models/customer.dart';
 import 'package:cableTvBook/widgets/customer_tile.dart';
-import 'package:cableTvBook/screens/search_screen.dart';
 import 'package:cableTvBook/global/box_decoration.dart';
 
 bool _showed = false;
@@ -14,17 +14,14 @@ class SearchScreenWidget extends StatefulWidget {
   final bool active;
   final bool credits;
   final bool inactive;
-  final bool isRefreshable;
-  final List<Customer> providedCustomers;
-  SearchScreenWidget({
-    this.all = false,
-    this.pending = false,
-    this.credits = false,
-    this.active = false,
-    this.inactive = false,
-    this.isRefreshable = false,
-    this.providedCustomers,
-  });
+  final String areaId;
+  SearchScreenWidget(
+      {this.all = false,
+      this.pending = false,
+      this.credits = false,
+      this.active = false,
+      this.inactive = false,
+      this.areaId});
 
   @override
   _SearchScreenWidgetState createState() => _SearchScreenWidgetState();
@@ -32,21 +29,21 @@ class SearchScreenWidget extends StatefulWidget {
 
 class _SearchScreenWidgetState extends State<SearchScreenWidget> {
   final searchController = TextEditingController();
-
   List<Customer> filteredCustomers = [];
 
   Future<void> _refreshCustomers() async {
-    if (widget.isRefreshable) {
+    if (widget.areaId == null)
       customers = await getAllCustomers();
-      filteredCustomers = getSelectedCustomers(
-          all: widget.all,
-          pending: widget.pending,
-          credits: widget.credits,
-          active: widget.active,
-          inactive: widget.inactive,
-          providedCustomers: customers);
-      if (mounted) setState(() {});
-    }
+    else
+      customers = await getSelectedAreaCustomers(widget.areaId);
+    filteredCustomers = getSelectedCustomers(
+        all: widget.all,
+        pending: widget.pending,
+        credits: widget.credits,
+        active: widget.active,
+        inactive: widget.inactive,
+        providedCustomers: customers);
+    if (mounted) setState(() {});
   }
 
   void onTextChange(String value) {
@@ -56,7 +53,7 @@ class _SearchScreenWidgetState extends State<SearchScreenWidget> {
       credits: widget.credits,
       active: widget.active,
       inactive: widget.inactive,
-      providedCustomers: widget.providedCustomers ?? customers,
+      providedCustomers: customers,
     );
     setState(() {
       if (value.isNotEmpty)
@@ -77,10 +74,10 @@ class _SearchScreenWidgetState extends State<SearchScreenWidget> {
       credits: widget.credits,
       active: widget.active,
       inactive: widget.inactive,
-      providedCustomers: widget.providedCustomers ?? customers,
+      providedCustomers: customers,
     );
     try {
-      if (widget.isRefreshable && !_showed) {
+      if (!_showed) {
         _showed = true;
         Future.delayed(
             Duration(seconds: 0),
@@ -114,9 +111,7 @@ class _SearchScreenWidgetState extends State<SearchScreenWidget> {
           Scrollbar(
             child: ListView.builder(
               itemCount: filteredCustomers.length,
-              physics: widget.isRefreshable
-                  ? const AlwaysScrollableScrollPhysics()
-                  : const BouncingScrollPhysics(),
+              physics: AlwaysScrollableScrollPhysics(),
               itemBuilder: (context, index) {
                 if (index == 0) {
                   return Column(
@@ -125,16 +120,16 @@ class _SearchScreenWidgetState extends State<SearchScreenWidget> {
                         height: 55,
                       ),
                       CustomerTile(
-                        customer: filteredCustomers[index],
-                        index: index,
-                      ),
+                          customer: filteredCustomers[index],
+                          refresh: _refreshCustomers,
+                          index: index),
                     ],
                   );
                 }
                 return CustomerTile(
-                  customer: filteredCustomers[index],
-                  index: index,
-                );
+                    customer: filteredCustomers[index],
+                    refresh: _refreshCustomers,
+                    index: index);
               },
             ),
           ),

@@ -6,7 +6,7 @@ import 'package:razorpay_flutter/razorpay_flutter.dart';
 
 import 'package:cableTvBook/global/variables.dart';
 import 'package:cableTvBook/global/default_buttons.dart';
-import 'package:cableTvBook/services/databse_services.dart';
+import 'package:cableTvBook/services/database_services.dart';
 import 'package:cableTvBook/screens/bottom_tabs_screen.dart';
 import 'package:cableTvBook/widgets/default_dialog_box.dart';
 

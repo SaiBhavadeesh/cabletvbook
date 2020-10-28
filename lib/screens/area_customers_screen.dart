@@ -60,15 +60,15 @@ class AreaCustomersScreen extends StatelessWidget {
             ),
           ),
         ),
-        body: StreamBuilder(
-            stream: FirebaseFirestore.instance
+        body: FutureBuilder(
+            future: FirebaseFirestore.instance
                 .collection(
                     'users/${operatorDetails.id}/areas/${area.id}/customers')
                 .orderBy('name')
-                .snapshots(),
+                .get(),
             builder: (context, snapshot) {
               if (snapshot.hasData) {
-                final customers = getAreaCustomers(snapshot.data.documents);
+                customers = getAreaCustomers(snapshot.data.documents);
                 return customers.isEmpty
                     ? Center(
                         child: Text('No customer to show',
@@ -81,16 +81,11 @@ class AreaCustomersScreen extends StatelessWidget {
                       )
                     : TabBarView(
                         children: [
-                          SearchScreenWidget(
-                              all: true, providedCustomers: customers),
-                          SearchScreenWidget(
-                              inactive: true, providedCustomers: customers),
-                          SearchScreenWidget(
-                              credits: true, providedCustomers: customers),
-                          SearchScreenWidget(
-                              active: true, providedCustomers: customers),
-                          SearchScreenWidget(
-                              inactive: true, providedCustomers: customers),
+                          SearchScreenWidget(all: true, areaId: area.id),
+                          SearchScreenWidget(pending: true, areaId: area.id),
+                          SearchScreenWidget(credits: true, areaId: area.id),
+                          SearchScreenWidget(active: true, areaId: area.id),
+                          SearchScreenWidget(inactive: true, areaId: area.id),
                         ],
                       );
               }

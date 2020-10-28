@@ -6,7 +6,7 @@ import 'package:url_launcher/url_launcher.dart';
 
 import 'package:cableTvBook/global/variables.dart';
 import 'package:cableTvBook/global/default_buttons.dart';
-import 'package:cableTvBook/services/databse_services.dart';
+import 'package:cableTvBook/services/database_services.dart';
 
 class ActivateBottomSheet extends StatefulWidget {
   final customerId;

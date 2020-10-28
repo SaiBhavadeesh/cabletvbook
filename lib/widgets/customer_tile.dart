@@ -1,7 +1,7 @@
 import 'package:cableTvBook/global/variables.dart';
 import 'package:cableTvBook/models/customer.dart';
 import 'package:cableTvBook/screens/customer_detail_screen.dart';
-import 'package:cableTvBook/services/databse_services.dart';
+import 'package:cableTvBook/services/database_services.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
@@ -9,10 +9,12 @@ import 'package:flutter_icons/flutter_icons.dart';
 
 class CustomerTile extends StatefulWidget {
   final Customer customer;
+  final Function refresh;
   final int index;
 
   CustomerTile({
     @required this.customer,
+    this.refresh,
     @required this.index,
   });
 
@@ -62,6 +64,7 @@ class _CustomerTileState extends State<CustomerTile> {
                               ? area.activeAccounts
                               : area.inActiveAccounts);
                       Navigator.pop(ctx);
+                      if (widget.refresh != null) widget.refresh();
                     }),
                 SizedBox(width: 10),
                 IconButton(

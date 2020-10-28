@@ -1,10 +1,9 @@
+import 'package:cableTvBook/global/variables.dart';
 import 'package:flutter/material.dart';
 import 'package:loading_indicator/loading_indicator.dart';
 
 import 'package:cableTvBook/models/customer.dart';
 import 'package:cableTvBook/widgets/search_screen_widget.dart';
-
-List<Customer> customers = [];
 
 class SearchScreen extends StatefulWidget {
   static const routeName = '/searchScreen';
@@ -80,11 +79,11 @@ class _SearchScreenState extends State<SearchScreen> {
                     )
                   : TabBarView(
                       children: <Widget>[
-                        SearchScreenWidget(all: true, isRefreshable: true),
-                        SearchScreenWidget(pending: true, isRefreshable: true),
-                        SearchScreenWidget(credits: true, isRefreshable: true),
-                        SearchScreenWidget(active: true, isRefreshable: true),
-                        SearchScreenWidget(inactive: true, isRefreshable: true),
+                        SearchScreenWidget(all: true),
+                        SearchScreenWidget(pending: true),
+                        SearchScreenWidget(credits: true),
+                        SearchScreenWidget(active: true),
+                        SearchScreenWidget(inactive: true),
                       ],
                     );
             }

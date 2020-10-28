@@ -7,7 +7,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cableTvBook/global/variables.dart';
 import 'package:cableTvBook/screens/signin_screen.dart';
 import 'package:cableTvBook/screens/register_screen.dart';
-import 'package:cableTvBook/services/databse_services.dart';
+import 'package:cableTvBook/services/database_services.dart';
 import 'package:cableTvBook/screens/bottom_tabs_screen.dart';
 import 'package:cableTvBook/widgets/default_dialog_box.dart';
 import 'package:cableTvBook/Payment%20Gateway/razor_pay_screen.dart';

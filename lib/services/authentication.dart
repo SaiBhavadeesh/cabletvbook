@@ -65,19 +65,18 @@ class Authentication {
       firebaseUser = _authResult.user;
       isGoogleUser = true;
       _googleSignin.signOut();
-      if (operatorDetails != null && operatorDetails.isSubscribed) {
-        await DatabaseService.getuserData();
-        Navigator.of(context).pushNamedAndRemoveUntil(
-            BottomTabsScreen.routeName, (route) => false);
-      }
       if (firebaseUser.phoneNumber == null)
         Navigator.of(context).pushNamedAndRemoveUntil(
             RegisterScreen.routeName, (route) => false,
             arguments: {'email': firebaseUser.email, 'password': null});
       else {
         await DatabaseService.getuserData();
-        Navigator.of(context).pushNamedAndRemoveUntil(
-            RazorPayScreen.routeName, (route) => false);
+        if (operatorDetails != null && operatorDetails.isSubscribed)
+          Navigator.of(context).pushNamedAndRemoveUntil(
+              BottomTabsScreen.routeName, (route) => false);
+        else
+          Navigator.of(context).pushNamedAndRemoveUntil(
+              RazorPayScreen.routeName, (route) => false);
       }
     } on FirebaseAuthException catch (error) {
       Navigator.pop(context);

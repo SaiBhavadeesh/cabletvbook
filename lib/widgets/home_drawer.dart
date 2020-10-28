@@ -1,6 +1,8 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import 'package:cableTvBook/screens/profile_screen.dart';
 import 'package:cableTvBook/services/authentication.dart';
@@ -68,6 +70,67 @@ class HomeDrawer extends StatelessWidget {
             onPressed: () async => await Authentication.signout(context),
             icon: Icon(Icons.power_settings_new),
             label: styledTitleText('Logout'),
+          ),
+          Divider(),
+          FlatButton.icon(
+            onPressed: () async {
+              final _emailLaunchUri =
+                  Uri(scheme: 'mailto', path: 'srinivasasoftwares@gmail.com');
+              if (await canLaunch(_emailLaunchUri.toString())) {
+                try {
+                  await launch(_emailLaunchUri.toString());
+                } catch (_) {}
+              } else {
+                Fluttertoast.showToast(
+                    msg: 'Could not process your request, Please try again');
+              }
+            },
+            icon: Icon(Icons.help_outline),
+            label: styledTitleText('Help'),
+          ),
+          Divider(),
+          FlatButton.icon(
+            onPressed: () async {
+              final url =
+                  "https://sites.google.com/view/srinivasasoftwares-privacy";
+              if (await canLaunch(url)) {
+                try {
+                  await launch(
+                    url,
+                    forceSafariVC: true,
+                    forceWebView: true,
+                    enableJavaScript: true,
+                  );
+                } catch (_) {}
+              } else {
+                Fluttertoast.showToast(
+                    msg: 'Could not process your request, Please try again');
+              }
+            },
+            icon: Icon(Icons.security),
+            label: styledTitleText('Privacy Policy'),
+          ),
+          Divider(),
+          FlatButton.icon(
+            onPressed: () async {
+              final url =
+                  "https://sites.google.com/view/srinivasasoftwares-terms";
+              if (await canLaunch(url)) {
+                try {
+                  await launch(
+                    url,
+                    forceSafariVC: true,
+                    forceWebView: true,
+                    enableJavaScript: true,
+                  );
+                } catch (_) {}
+              } else {
+                Fluttertoast.showToast(
+                    msg: 'Could not process your request, Please try again');
+              }
+            },
+            icon: Icon(Icons.notes_outlined),
+            label: styledTitleText('Terms & Conditions'),
           ),
         ],
       ),

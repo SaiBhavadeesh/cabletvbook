@@ -1,19 +1,19 @@
 import 'dart:io';
 import 'dart:convert';
 
-import 'package:cableTvBook/models/operator.dart';
-import 'package:cableTvBook/screens/bottom_tabs_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:flutter_icons/flutter_icons.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 import 'package:cableTvBook/models/customer.dart';
+import 'package:cableTvBook/models/operator.dart';
 import 'package:cableTvBook/global/variables.dart';
 import 'package:cableTvBook/global/validators.dart';
+import 'package:cableTvBook/screens/bottom_tabs_screen.dart';
 import 'package:cableTvBook/widgets/default_dialog_box.dart';
-import 'package:fluttertoast/fluttertoast.dart';
 
 class PickFile {
   static Future<void> pickFileAndAddCustomers(BuildContext context) async {

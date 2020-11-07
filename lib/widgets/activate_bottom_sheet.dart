@@ -152,10 +152,10 @@ class _ActivateBottomSheetState extends State<ActivateBottomSheet> {
                   ),
                   Divider(),
                   CheckboxListTile(
-                    checkColor: Colors.green[900],
+                    activeColor: Colors.green,
                     controlAffinity: ListTileControlAffinity.leading,
                     value: _checked,
-                    title: Text('Un-check this box, if bill not paid.'),
+                    title: Text('If bill paid'),
                     onChanged: (value) {
                       setState(() {
                         _checked = !_checked;
@@ -164,7 +164,7 @@ class _ActivateBottomSheetState extends State<ActivateBottomSheet> {
                   ),
                   Divider(),
                   CheckboxListTile(
-                    checkColor: Colors.green[900],
+                    activeColor: Colors.green,
                     controlAffinity: ListTileControlAffinity.leading,
                     value: _selected,
                     title: Text('Launch portal.'),
@@ -204,16 +204,14 @@ class _ActivateBottomSheetState extends State<ActivateBottomSheet> {
                                     onPressed: () async {
                                       Navigator.pop(ctx);
                                       await DatabaseService.rechargeCustomer(
-                                        context,
-                                        customerId: widget.customerId,
-                                        areaId: widget.areaId,
-                                        status: widget.status,
-                                        year: widget.year.toString(),
-                                        plan: _selectedPlan,
-                                        term: _selectedTerm,
-                                        billPay: _checked,
-                                        unPaidNo: widget.unpaidNo,
-                                      );
+                                          context,
+                                          customerId: widget.customerId,
+                                          areaId: widget.areaId,
+                                          status: widget.status,
+                                          plan: _selectedPlan,
+                                          term: _selectedTerm,
+                                          billPay: _checked,
+                                          unPaidNo: widget.unpaidNo);
                                       Navigator.pop(context);
                                     },
                                     child: Text('yes'),

@@ -27,7 +27,7 @@ class AreaData {
         'an': this.areaName,
         'ta': this.totalAccounts,
         'aa': this.activeAccounts,
-        'iaa': this.inActiveAccounts,
+        // 'iaa': this.inActiveAccounts,
       };
 }
 

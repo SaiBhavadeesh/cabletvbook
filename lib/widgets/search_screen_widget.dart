@@ -1,6 +1,8 @@
 import 'package:cableTvBook/global/variables.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_icons/flutter_icons.dart';
+import 'package:loading_indicator/loading_indicator.dart';
 
 import 'package:cableTvBook/models/customer.dart';
 import 'package:cableTvBook/widgets/customer_tile.dart';
@@ -28,54 +30,10 @@ class SearchScreenWidget extends StatefulWidget {
 }
 
 class _SearchScreenWidgetState extends State<SearchScreenWidget> {
-  final searchController = TextEditingController();
-  List<Customer> filteredCustomers = [];
-
-  Future<void> _refreshCustomers() async {
-    if (widget.areaId == null)
-      customers = await getAllCustomers();
-    else
-      customers = await getSelectedAreaCustomers(widget.areaId);
-    filteredCustomers = getSelectedCustomers(
-        all: widget.all,
-        pending: widget.pending,
-        credits: widget.credits,
-        active: widget.active,
-        inactive: widget.inactive,
-        providedCustomers: customers);
-    if (mounted) setState(() {});
-  }
-
-  void onTextChange(String value) {
-    filteredCustomers = getSelectedCustomers(
-      all: widget.all,
-      pending: widget.pending,
-      credits: widget.credits,
-      active: widget.active,
-      inactive: widget.inactive,
-      providedCustomers: customers,
-    );
-    setState(() {
-      if (value.isNotEmpty)
-        filteredCustomers = filteredCustomers
-            .where((customer) => (customer.name.contains(value) ||
-                customer.accountNumber.contains(value) ||
-                customer.macId.contains(value)))
-            .toList();
-    });
-  }
 
   @override
   void initState() {
     super.initState();
-    filteredCustomers = getSelectedCustomers(
-      all: widget.all,
-      pending: widget.pending,
-      credits: widget.credits,
-      active: widget.active,
-      inactive: widget.inactive,
-      providedCustomers: customers,
-    );
     try {
       if (!_showed) {
         _showed = true;
@@ -103,52 +61,129 @@ class _SearchScreenWidgetState extends State<SearchScreenWidget> {
 
   @override
   Widget build(BuildContext context) {
-    return RefreshIndicator(
-      color: Theme.of(context).primaryColor,
-      onRefresh: _refreshCustomers,
-      child: Stack(
-        children: <Widget>[
-          Scrollbar(
-            child: ListView.builder(
-              itemCount: filteredCustomers.length,
-              physics: AlwaysScrollableScrollPhysics(),
-              itemBuilder: (context, index) {
-                if (index == 0) {
-                  return Column(
-                    children: <Widget>[
-                      SizedBox(
-                        height: 55,
-                      ),
-                      CustomerTile(
-                          customer: filteredCustomers[index],
-                          refresh: _refreshCustomers,
-                          index: index),
-                    ],
-                  );
-                }
-                return CustomerTile(
-                    customer: filteredCustomers[index],
-                    refresh: _refreshCustomers,
-                    index: index);
-              },
-            ),
+    return StreamBuilder(
+        stream: FirebaseFirestore.instance
+            .collection('users/${operatorDetails.id}/customers')
+            .where(widget.areaId != null ? 'areaId' : '',
+                isEqualTo: widget.areaId)
+            .snapshots(),
+        builder: (context, snapshot) {
+          if (snapshot.hasData) {
+            final customers = getCustomersFromDoc(snapshot.data);
+            if (customers.isEmpty) {
+              return Center(
+                child: Text('No customer to show',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                        fontSize: 20,
+                        fontStyle: FontStyle.italic,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: 1)),
+              );
+            }
+            return CustomerListView(
+                customers: customers);
+          } else if (snapshot.connectionState == ConnectionState.waiting)
+            return Container(
+              padding: EdgeInsets.symmetric(
+                  horizontal: MediaQuery.of(context).size.width * 0.3),
+              child: Center(
+                child: LoadingIndicator(
+                    indicatorType: Indicator.ballClipRotateMultiple),
+              ),
+            );
+          else
+            return Center(child: Text('Something went wrong!'));
+        });
+  }
+}
+
+class CustomerListView extends StatefulWidget {
+  const CustomerListView(
+      {Key key,
+      @required this.customers,
+      this.all = false,
+      this.pending = false,
+      this.credits = false,
+      this.active = false,
+      this.inactive = false})
+      : super(key: key);
+
+  final List<Customer> customers;
+  final bool all;
+  final bool pending;
+  final bool active;
+  final bool credits;
+  final bool inactive;
+
+  @override
+  _CustomerListViewState createState() => _CustomerListViewState();
+}
+
+class _CustomerListViewState extends State<CustomerListView> {
+  final searchController = TextEditingController();
+  List<Customer> filteredCustomers = [];
+  void onTextChange(String value) {
+    setState(() {
+      if (value.isNotEmpty)
+        filteredCustomers = widget.customers
+            .where((customer) => (customer.name.contains(value) ||
+                customer.accountNumber.contains(value) ||
+                customer.macId.contains(value)))
+            .toList();
+      else
+        filteredCustomers = widget.customers;
+    });
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    filteredCustomers = widget.customers;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      children: <Widget>[
+        Scrollbar(
+          child: ListView.builder(
+            itemCount: filteredCustomers.length,
+            physics: AlwaysScrollableScrollPhysics(),
+            itemBuilder: (context, index) {
+              if (index == 0) {
+                return Column(
+                  children: <Widget>[
+                    SizedBox(
+                      height: 55,
+                    ),
+                    CustomerTile(
+                        customer: filteredCustomers[index],
+                        index: index),
+                  ],
+                );
+              }
+              return CustomerTile(
+                  customer: filteredCustomers[index],
+                  index: index);
+            },
           ),
-          Padding(
-            padding: const EdgeInsets.all(4.0),
-            child: TextField(
-              controller: searchController,
-              textInputAction: TextInputAction.search,
-              onChanged: onTextChange,
-              decoration: inputDecoration(
-                  filled: true,
-                  filledColor: Colors.white,
-                  hint: 'Search by Name / mac no / acc no.',
-                  icon: FlutterIcons.ios_search_ion,
-                  radius: 30),
-            ),
+        ),
+        Padding(
+          padding: const EdgeInsets.all(4.0),
+          child: TextField(
+            controller: searchController,
+            textInputAction: TextInputAction.search,
+            onChanged: onTextChange,
+            decoration: inputDecoration(
+                filled: true,
+                filledColor: Colors.white,
+                hint: 'Search by Name / mac no / acc no.',
+                icon: FlutterIcons.ios_search_ion,
+                radius: 30),
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 }

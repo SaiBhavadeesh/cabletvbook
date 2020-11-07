@@ -43,7 +43,6 @@ class CustomerPlanList extends StatelessWidget {
               onPressed: () async {
                 await DatabaseService.billPaid(context,
                     customerId: customerId,
-                    areaId: areaId,
                     year: year,
                     rechargeId: id,
                     unpaidBillno: unpaidBill);

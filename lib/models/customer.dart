@@ -1,28 +1,27 @@
 import 'package:flutter/foundation.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:cableTvBook/global/variables.dart';
 
 class Recharge {
   String id;
-  int code;
   DateTime date;
+  DateTime ymRec;
   String plan;
   bool billPay;
   bool status;
   String addInfo;
   Recharge({
-    this.id,
-    this.code,
-    this.date,
-    this.plan,
-    this.status,
-    this.billPay,
-    this.addInfo,
+    @required this.id,
+    @required this.ymRec,
+    @required this.date,
+    @required this.plan,
+    @required this.status,
+    @required this.billPay,
+    @required this.addInfo,
   });
 
   Recharge.fromMap(doc) {
     this.id = doc['id'];
-    this.code = doc['code'];
+    this.ymRec = doc['ymRec']?.toDate();
     this.date = doc['date']?.toDate();
     this.plan = doc['plan'];
     this.status = doc['status'];
@@ -33,7 +32,7 @@ class Recharge {
   Map<String, dynamic> toJson() => {
         'id': this.id,
         'date': this.date,
-        'code': this.code,
+        'ymRec': this.ymRec,
         'plan': this.plan,
         'status': this.status,
         'billPay': this.billPay,
@@ -117,29 +116,8 @@ class Customer {
       };
 }
 
-List<Customer> getAreaCustomers(List<DocumentSnapshot> docs) {
-  return docs.map((e) => Customer.fromMap(e)).toList();
-}
-
-Future<List<Customer>> getSelectedAreaCustomers(String id) async {
-  final snap = await FirebaseFirestore.instance
-      .collection('users/${operatorDetails.id}/areas/$id/customers')
-      .orderBy('name')
-      .get();
-  return snap.docs.map((e) => Customer.fromMap(e)).toList();
-}
-
-Future<List<Customer>> getAllCustomers() async {
-  List<DocumentSnapshot> doc = [];
-  for (int i = 0; i < areas.length; i++) {
-    doc += (await FirebaseFirestore.instance
-            .collection(
-                'users/${firebaseUser.uid}/areas/${areas[i].id}/customers')
-            .orderBy('name')
-            .get())
-        .docs;
-  }
-  return doc.map((e) => Customer.fromMap(e)).toList();
+List<Customer> getCustomersFromDoc(QuerySnapshot snapshot) {
+  return snapshot.docs.map((e) => Customer.fromMap(e.data())).toList();
 }
 
 List<Customer> getSelectedCustomers({
@@ -174,6 +152,11 @@ List<Customer> getSelectedCustomers({
     return [];
 }
 
-List<Recharge> getCustomerYearlyRecharge(List<DocumentSnapshot> docs) {
-  return docs.map((e) => Recharge.fromMap(e)).toList();
+List<Recharge> getCustomerYearlyRecharge(
+    List<DocumentSnapshot> docs, int year) {
+  return docs
+      .where((element) => Recharge.fromMap(element.data()).ymRec.year == year)
+      .toList()
+      .map((e) => Recharge.fromMap(e.data()))
+      .toList();
 }

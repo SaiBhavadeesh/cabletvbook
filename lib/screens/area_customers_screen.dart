@@ -1,10 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:loading_indicator/loading_indicator.dart';
-
-import 'package:cableTvBook/models/customer.dart';
 import 'package:cableTvBook/models/operator.dart';
-import 'package:cableTvBook/global/variables.dart';
 import 'package:cableTvBook/widgets/search_screen_widget.dart';
 
 class AreaCustomersScreen extends StatelessWidget {
@@ -15,90 +10,57 @@ class AreaCustomersScreen extends StatelessWidget {
     final size = MediaQuery.of(context).size;
     final AreaData area = ModalRoute.of(context).settings.arguments;
     return DefaultTabController(
-      length: 5,
-      initialIndex: 0,
-      child: Scaffold(
-        appBar: AppBar(
-          title: Text(area.areaName),
-          bottom: PreferredSize(
-            child: Container(
-              color: Colors.amber[700],
-              child: TabBar(
-                isScrollable: true,
-                labelColor: Theme.of(context).primaryColor,
-                labelStyle: TextStyle(
-                  fontSize: size.height * 0.03,
-                  fontWeight: FontWeight.bold,
+        length: 5,
+        initialIndex: 0,
+        child: Scaffold(
+            appBar: AppBar(
+              title: Text(area.areaName),
+              bottom: PreferredSize(
+                child: Container(
+                  color: Colors.amber[700],
+                  child: TabBar(
+                    isScrollable: true,
+                    labelColor: Theme.of(context).primaryColor,
+                    labelStyle: TextStyle(
+                      fontSize: size.height * 0.03,
+                      fontWeight: FontWeight.bold,
+                    ),
+                    unselectedLabelColor: Colors.white,
+                    unselectedLabelStyle: TextStyle(
+                      fontSize: size.height * 0.02,
+                      fontWeight: FontWeight.bold,
+                    ),
+                    tabs: [
+                      SizedBox(
+                          width: size.width * 0.225,
+                          child: Align(child: Text('All'))),
+                      SizedBox(
+                          width: size.width * 0.225,
+                          child: Align(child: Text('Pending'))),
+                      SizedBox(
+                          width: size.width * 0.225,
+                          child: Align(child: Text('Credits'))),
+                      SizedBox(
+                          width: size.width * 0.225,
+                          child: Align(child: Text('Active'))),
+                      SizedBox(
+                          width: size.width * 0.225,
+                          child: Align(child: Text('Inactive'))),
+                    ],
+                  ),
                 ),
-                unselectedLabelColor: Colors.white,
-                unselectedLabelStyle: TextStyle(
-                  fontSize: size.height * 0.02,
-                  fontWeight: FontWeight.bold,
+                preferredSize: Size(
+                  size.width,
+                  size.height * 0.025,
                 ),
-                tabs: [
-                  SizedBox(
-                      width: size.width * 0.225,
-                      child: Align(child: Text('All'))),
-                  SizedBox(
-                      width: size.width * 0.225,
-                      child: Align(child: Text('Pending'))),
-                  SizedBox(
-                      width: size.width * 0.225,
-                      child: Align(child: Text('Credits'))),
-                  SizedBox(
-                      width: size.width * 0.225,
-                      child: Align(child: Text('Active'))),
-                  SizedBox(
-                      width: size.width * 0.225,
-                      child: Align(child: Text('Inactive'))),
-                ],
               ),
             ),
-            preferredSize: Size(
-              size.width,
-              size.height * 0.025,
-            ),
-          ),
-        ),
-        body: FutureBuilder(
-            future: FirebaseFirestore.instance
-                .collection(
-                    'users/${operatorDetails.id}/areas/${area.id}/customers')
-                .orderBy('name')
-                .get(),
-            builder: (context, snapshot) {
-              if (snapshot.hasData) {
-                customers = getAreaCustomers(snapshot.data.documents);
-                return customers.isEmpty
-                    ? Center(
-                        child: Text('No customer to show',
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                                fontSize: 20,
-                                fontStyle: FontStyle.italic,
-                                fontWeight: FontWeight.bold,
-                                letterSpacing: 1)),
-                      )
-                    : TabBarView(
-                        children: [
-                          SearchScreenWidget(all: true, areaId: area.id),
-                          SearchScreenWidget(pending: true, areaId: area.id),
-                          SearchScreenWidget(credits: true, areaId: area.id),
-                          SearchScreenWidget(active: true, areaId: area.id),
-                          SearchScreenWidget(inactive: true, areaId: area.id),
-                        ],
-                      );
-              }
-              return Container(
-                padding: EdgeInsets.symmetric(
-                    horizontal: MediaQuery.of(context).size.width * 0.3),
-                child: Center(
-                  child: LoadingIndicator(
-                      indicatorType: Indicator.ballClipRotateMultiple),
-                ),
-              );
-            }),
-      ),
-    );
+            body: TabBarView(children: [
+              SearchScreenWidget(all: true, areaId: area.id),
+              SearchScreenWidget(pending: true, areaId: area.id),
+              SearchScreenWidget(credits: true, areaId: area.id),
+              SearchScreenWidget(active: true, areaId: area.id),
+              SearchScreenWidget(inactive: true, areaId: area.id),
+            ])));
   }
 }

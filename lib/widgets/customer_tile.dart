@@ -1,5 +1,6 @@
 import 'package:cableTvBook/global/variables.dart';
 import 'package:cableTvBook/models/customer.dart';
+import 'package:cableTvBook/screens/bottom_tabs_screen.dart';
 import 'package:cableTvBook/screens/customer_detail_screen.dart';
 import 'package:cableTvBook/services/database_services.dart';
 import 'package:flutter/material.dart';
@@ -9,14 +10,9 @@ import 'package:flutter_icons/flutter_icons.dart';
 
 class CustomerTile extends StatefulWidget {
   final Customer customer;
-  final Function refresh;
   final int index;
 
-  CustomerTile({
-    @required this.customer,
-    this.refresh,
-    @required this.index,
-  });
+  CustomerTile({@required this.customer, @required this.index});
 
   @override
   _CustomerTileState createState() => _CustomerTileState();
@@ -25,7 +21,10 @@ class CustomerTile extends StatefulWidget {
 class _CustomerTileState extends State<CustomerTile> {
   void gestureNavigator(BuildContext ctx) {
     Navigator.of(ctx)
-        .pushNamed(CustomerDetailScreen.routeName, arguments: widget.customer);
+        .pushNamed(CustomerDetailScreen.routeName, arguments: widget.customer)
+        .then((value) => Navigator.of(context).pushAndRemoveUntil(
+            MaterialPageRoute(builder: (ctx) => BottomTabsScreen(index: 1)),
+            (route) => false));
   }
 
   void copyAndShowSnackBar(BuildContext ctx, String copy, String text) {
@@ -41,9 +40,9 @@ class _CustomerTileState extends State<CustomerTile> {
     );
   }
 
-  Future<void> deleteCustomer(BuildContext context) async {
-    showDialog(
-        context: context,
+  Future<void> deleteCustomer(BuildContext ctx) async {
+    return showDialog(
+        context: ctx,
         builder: (ctx) => AlertDialog(
               title: Text('Delete customer'),
               content: Text('Are you sure?'),
@@ -53,7 +52,7 @@ class _CustomerTileState extends State<CustomerTile> {
                     onPressed: () async {
                       final area = areas.firstWhere(
                           (element) => element.id == widget.customer.areaId);
-                      await DatabaseService.deleteCustomer(context,
+                      await DatabaseService.deleteCustomer(ctx,
                           areaId: area.id,
                           customerId: widget.customer.id,
                           isActive: widget.customer.currentStatus == 'Active'
@@ -63,14 +62,16 @@ class _CustomerTileState extends State<CustomerTile> {
                           otherCount: widget.customer.currentStatus == 'Active'
                               ? area.activeAccounts
                               : area.inActiveAccounts);
-                      Navigator.pop(ctx);
-                      if (widget.refresh != null) widget.refresh();
+                      Navigator.of(ctx).pushAndRemoveUntil(
+                          MaterialPageRoute(
+                              builder: (ctx) => BottomTabsScreen(index: 1)),
+                          (route) => false);
                     }),
                 SizedBox(width: 10),
                 IconButton(
                     icon: Icon(FlutterIcons.cancel_mdi,
                         color: Theme.of(context).errorColor),
-                    onPressed: () => Navigator.pop(context))
+                    onPressed: () => Navigator.pop(ctx))
               ],
             ));
   }

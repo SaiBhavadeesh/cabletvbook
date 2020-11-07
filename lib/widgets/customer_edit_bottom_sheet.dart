@@ -1,12 +1,12 @@
 import 'dart:ui';
 
-import 'package:cableTvBook/services/database_services.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_icons/flutter_icons.dart';
 
 import 'package:cableTvBook/models/customer.dart';
 import 'package:cableTvBook/global/validators.dart';
 import 'package:cableTvBook/global/box_decoration.dart';
+import 'package:cableTvBook/services/database_services.dart';
 
 class CustomerEditBottomSheet extends StatefulWidget {
   final Customer customer;
@@ -159,9 +159,7 @@ class _CustomerEditBottomSheetState extends State<CustomerEditBottomSheet> {
                             if (widget.customer.macId != _mac)
                               data.addAll({'macId': _mac});
                             await DatabaseService.updateCustomerData(context,
-                                data: data,
-                                customerId: widget.customer.id,
-                                areaId: widget.customer.areaId);
+                                data: data, customerId: widget.customer.id);
                             Navigator.of(context).pop();
                           }
                         },

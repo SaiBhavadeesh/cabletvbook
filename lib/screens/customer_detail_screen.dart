@@ -47,9 +47,7 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
   void onMoreInfo() {
     if (_isEdit && customer.tempInfo != null) {
       DatabaseService.updateCustomerData(context,
-          data: {'tempInfo': null},
-          customerId: customer.id,
-          areaId: customer.areaId);
+          data: {'tempInfo': null}, customerId: customer.id);
       moreInfoController.clear();
       customer.tempInfo = null;
     }
@@ -213,8 +211,8 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
 
   void deleteRecharge(
       BuildContext ctx, Recharge recharge, bool prevRecharge) async {
-    final bool valid =
-        rechargeData.any((element) => element.code > recharge.code);
+    final bool valid = rechargeData
+        .any((element) => element.ymRec.month > recharge.ymRec.month);
     if (recharge.status &&
         customer.runningYear == _selectedYear &&
         !valid &&
@@ -239,8 +237,6 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
                 final value = await DatabaseService.deleteRecharge(context,
                     customerId: customer.id,
                     areaId: customer.areaId,
-                    year: year,
-                    startYear: customer.startDate.year.toString(),
                     recharge: recharge,
                     unPaidNo: customer.noOfPendingBills);
                 setState(() {
@@ -271,8 +267,7 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
     size = MediaQuery.of(context).size;
     return StreamBuilder(
       stream: FirebaseFirestore.instance
-          .collection(
-              'users/${operatorDetails.id}/areas/${customer.areaId}/customers')
+          .collection('users/${operatorDetails.id}/customers')
           .doc(customer.id)
           .snapshots(),
       builder: (context, snapshot) {
@@ -394,8 +389,7 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
                                         await DatabaseService
                                             .updateCustomerPicture(context,
                                                 file: _pickedImage,
-                                                customerId: customer.id,
-                                                areaId: customer.areaId);
+                                                customerId: customer.id);
                                         setState(() {});
                                       }
                                     },
@@ -460,8 +454,7 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
                                       data: {
                                         'tempInfo': moreInfoController.text
                                       },
-                                      customerId: customer.id,
-                                      areaId: customer.areaId);
+                                      customerId: customer.id);
                                 customer.tempInfo = moreInfoController.text;
                               },
                               decoration: InputDecoration(
@@ -497,21 +490,26 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
                   StreamBuilder(
                     stream: FirebaseFirestore.instance
                         .collection(
-                            'users/${firebaseUser.uid}/areas/${customer.areaId}/customers/${customer.id}/$_selectedYear')
-                        .orderBy('code')
+                            'users/${firebaseUser.uid}/customers/${customer.id}/recharges')
                         .snapshots(),
                     builder: (context, snapshot) {
                       if (snapshot.hasData) {
-                        rechargeData =
-                            getCustomerYearlyRecharge(snapshot.data.documents);
+                        rechargeData = getCustomerYearlyRecharge(
+                            snapshot.data.documents, _selectedYear);
                         return ListView.builder(
                           shrinkWrap: true,
                           physics: NeverScrollableScrollPhysics(),
                           itemBuilder: (context, index) {
                             final rec = rechargeData.firstWhere(
-                                (element) => element.code == index + 1,
-                                orElse: () =>
-                                    Recharge(code: index + 1, status: false));
+                                (element) => element.ymRec.month == index + 1,
+                                orElse: () => Recharge(
+                                    ymRec: DateTime(_selectedYear, index + 1),
+                                    status: false,
+                                    addInfo: null,
+                                    billPay: null,
+                                    date: null,
+                                    id: '${index + 1}',
+                                    plan: null));
                             return GestureDetector(
                               onLongPress: () => deleteRecharge(
                                   context,
@@ -527,7 +525,7 @@ class _CustomerDetailScreenState extends State<CustomerDetailScreen> {
                                 billPay: rec.billPay,
                                 year: _selectedYear.toString(),
                                 month: DateFormat('MMMM').format(
-                                  DateTime(_selectedYear, rec.code),
+                                  DateTime(_selectedYear, rec.ymRec.month),
                                 ),
                                 billDate: rec.billPay == null
                                     ? ''

@@ -33,7 +33,6 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
   String _selectedAreaId;
   double _selectedPlan;
   File _selectedImageFile;
-  bool _checked = false;
 
   void _selectAreaField(String value) {
     setState(() {
@@ -61,23 +60,13 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
         macId: _macController.text.trim(),
         networkProviderId: operatorDetails.id,
         areaId: _selectedAreaId,
-        expiryMonth: _checked ? DateTime.now().month : 0,
+        expiryMonth: 0,
         currentPlan: _selectedPlan,
         runningYear: DateTime.now().year,
-        currentStatus: _checked ? 'Active' : 'Inactive',
+        currentStatus: 'Inactive',
       );
-      Recharge rechargeData;
-      if (_checked)
-        rechargeData = Recharge(
-          code: DateTime.now().month,
-          status: true,
-          plan: _selectedPlan.toString(),
-          billPay: true,
-        );
       await DatabaseService.addNewCustomer(context,
-          customer: newCustomer,
-          recharge: rechargeData,
-          file: _selectedImageFile);
+          customer: newCustomer, file: _selectedImageFile);
     } else if (_selectedAreaId == null || _selectedPlan == null) {
       String msg;
       if (_selectedAreaId == null && _selectedPlan == null)
@@ -256,22 +245,11 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
                         ),
                       ],
                     ),
-                    Divider(height: 0),
-                    CheckboxListTile(
-                      checkColor: Colors.green[900],
-                      controlAffinity: ListTileControlAffinity.leading,
-                      value: _checked,
-                      title: Text('Check this box, if customer bill paid.'),
-                      onChanged: (value) {
-                        setState(() {
-                          _checked = !_checked;
-                        });
-                      },
-                    ),
+                    SizedBox(height: 20),
                     defaultbutton(
                         context: context,
                         function: saveDetails,
-                        title: 'Submit'),
+                        title: 'Add customer'),
                     SizedBox(height: 20),
                     Row(
                       children: [

@@ -123,11 +123,13 @@ class CollectionScreen extends StatelessWidget {
       appBar: AppBar(
         title: Text('Collection Information'),
       ),
-      body: FutureBuilder(
-        future: getAllCustomers(),
+      body: StreamBuilder(
+        stream: FirebaseFirestore.instance
+            .collection('users/${operatorDetails.id}/customers')
+            .snapshots(),
         builder: (context, snapshot) {
           if (snapshot.hasData) {
-            customers = snapshot.data;
+            customers = getCustomersFromDoc(snapshot.data);
             return ListView(
               padding: const EdgeInsets.all(30),
               physics: BouncingScrollPhysics(),

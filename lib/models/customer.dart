@@ -116,8 +116,22 @@ class Customer {
       };
 }
 
-List<Customer> getCustomersFromDoc(QuerySnapshot snapshot) {
-  return snapshot.docs.map((e) => Customer.fromMap(e.data())).toList();
+List<Customer> getCustomersFromDoc(
+  QuerySnapshot snapshot, {
+  bool all = false,
+  bool pending = false,
+  bool credits = false,
+  bool active = false,
+  bool inactive = false,
+}) {
+  final cust = snapshot.docs.map((e) => Customer.fromMap(e.data())).toList();
+  return getSelectedCustomers(
+      active: active,
+      all: all,
+      credits: credits,
+      inactive: inactive,
+      pending: pending,
+      providedCustomers: cust);
 }
 
 List<Customer> getSelectedCustomers({
@@ -159,4 +173,13 @@ List<Recharge> getCustomerYearlyRecharge(
       .toList()
       .map((e) => Recharge.fromMap(e.data()))
       .toList();
+}
+
+Recharge getMonthlyRecharge(List<DocumentSnapshot> docs, int year, int month) {
+  return Recharge.fromMap(docs
+      .where((element) =>
+          Recharge.fromMap(element.data()).ymRec.year == year &&
+          Recharge.fromMap(element.data()).ymRec.month == month)
+      .first
+      .data());
 }

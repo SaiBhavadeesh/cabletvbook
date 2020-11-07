@@ -30,7 +30,6 @@ class SearchScreenWidget extends StatefulWidget {
 }
 
 class _SearchScreenWidgetState extends State<SearchScreenWidget> {
-
   @override
   void initState() {
     super.initState();
@@ -69,7 +68,12 @@ class _SearchScreenWidgetState extends State<SearchScreenWidget> {
             .snapshots(),
         builder: (context, snapshot) {
           if (snapshot.hasData) {
-            final customers = getCustomersFromDoc(snapshot.data);
+            final customers = getCustomersFromDoc(snapshot.data,
+                active: widget.active,
+                all: widget.all,
+                credits: widget.credits,
+                inactive: widget.inactive,
+                pending: widget.pending);
             if (customers.isEmpty) {
               return Center(
                 child: Text('No customer to show',
@@ -81,8 +85,7 @@ class _SearchScreenWidgetState extends State<SearchScreenWidget> {
                         letterSpacing: 1)),
               );
             }
-            return CustomerListView(
-                customers: customers);
+            return CustomerListView(customers: customers);
           } else if (snapshot.connectionState == ConnectionState.waiting)
             return Container(
               padding: EdgeInsets.symmetric(
@@ -99,22 +102,12 @@ class _SearchScreenWidgetState extends State<SearchScreenWidget> {
 }
 
 class CustomerListView extends StatefulWidget {
-  const CustomerListView(
-      {Key key,
-      @required this.customers,
-      this.all = false,
-      this.pending = false,
-      this.credits = false,
-      this.active = false,
-      this.inactive = false})
-      : super(key: key);
+  const CustomerListView({
+    Key key,
+    @required this.customers,
+  }) : super(key: key);
 
   final List<Customer> customers;
-  final bool all;
-  final bool pending;
-  final bool active;
-  final bool credits;
-  final bool inactive;
 
   @override
   _CustomerListViewState createState() => _CustomerListViewState();
@@ -158,14 +151,12 @@ class _CustomerListViewState extends State<CustomerListView> {
                       height: 55,
                     ),
                     CustomerTile(
-                        customer: filteredCustomers[index],
-                        index: index),
+                        customer: filteredCustomers[index], index: index),
                   ],
                 );
               }
               return CustomerTile(
-                  customer: filteredCustomers[index],
-                  index: index);
+                  customer: filteredCustomers[index], index: index);
             },
           ),
         ),

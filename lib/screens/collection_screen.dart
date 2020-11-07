@@ -74,11 +74,11 @@ class CollectionScreen extends StatelessWidget {
     for (int i = 0; i < customers.length; i++) {
       final data = await FirebaseFirestore.instance
           .collection(
-              'users/${operatorDetails.id}/areas/${customers[i].areaId}/customers/${customers[i].id}/${DateTime.now().year}')
-          .where('code', isEqualTo: DateTime.now().month)
+              'users/${operatorDetails.id}/customers/${customers[i].id}/recharges')
           .get();
       if (data.docs.isNotEmpty) {
-        final recharge = Recharge.fromMap(data.docs.first.data);
+        final recharge = getMonthlyRecharge(
+            data.docs, DateTime.now().year, DateTime.now().month);
         if (recharge.billPay != null) {
           subtotal += double.parse(recharge.plan);
           if (recharge.billPay) {
@@ -99,15 +99,16 @@ class CollectionScreen extends StatelessWidget {
     for (int i = 0; i < customers.length; i++) {
       final data = await FirebaseFirestore.instance
           .collection(
-              'users/${operatorDetails.id}/areas/${customers[i].areaId}/customers/${customers[i].id}/${DateTime.now().year}')
+              'users/${operatorDetails.id}/customers/${customers[i].id}/recharges')
           .get();
-      if (data.docs.isNotEmpty) {
-        for (int i = 0; i < data.docs.length; i++) {
-          final recharge = Recharge.fromMap(data.docs[i].data);
-          if (recharge.billPay != null) {
-            subtotal += double.parse(recharge.plan);
-            if (recharge.billPay) {
-              paid += double.parse(recharge.plan);
+      final yearlyRecharges =
+          getCustomerYearlyRecharge(data.docs, DateTime.now().year);
+      if (yearlyRecharges.isNotEmpty) {
+        for (int i = 0; i < yearlyRecharges.length; i++) {
+          if (yearlyRecharges[i].billPay != null) {
+            subtotal += double.parse(yearlyRecharges[i].plan);
+            if (yearlyRecharges[i].billPay) {
+              paid += double.parse(yearlyRecharges[i].plan);
             }
           }
         }
@@ -129,7 +130,7 @@ class CollectionScreen extends StatelessWidget {
             .snapshots(),
         builder: (context, snapshot) {
           if (snapshot.hasData) {
-            customers = getCustomersFromDoc(snapshot.data);
+            customers = getCustomersFromDoc(snapshot.data, all: true);
             return ListView(
               padding: const EdgeInsets.all(30),
               physics: BouncingScrollPhysics(),

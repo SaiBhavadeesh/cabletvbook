@@ -11,9 +11,10 @@ import 'package:cableTvBook/services/authentication.dart';
 
 class VerifyPhonePopup extends StatelessWidget {
   final bool isUpdate;
-  final String phoneNumber;
-  VerifyPhonePopup({this.isUpdate = false, this.phoneNumber});
-  static String otp;
+  final String? phoneNumber;
+
+  const VerifyPhonePopup({super.key, this.isUpdate = false, this.phoneNumber});
+  static String otp = '';
 
   @override
   Widget build(BuildContext context) {
@@ -21,82 +22,83 @@ class VerifyPhonePopup extends StatelessWidget {
     return BackdropFilter(
       filter: ImageFilter.blur(sigmaX: 2, sigmaY: 2),
       child: Scaffold(
-        backgroundColor: Colors.black.withOpacity(0.7),
-        body: Builder(
-          builder: (context) => Container(
-            alignment: Alignment.bottomCenter,
-            child: Container(
-              padding: EdgeInsets.symmetric(horizontal: 12, vertical: 32),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.vertical(
-                  top: Radius.circular(30),
+        backgroundColor: Colors.black.withAlpha(178),
+        body: Container(
+          alignment: Alignment.bottomCenter,
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 32),
+            decoration: const BoxDecoration(
+              borderRadius: BorderRadius.vertical(
+                top: Radius.circular(30),
+              ),
+              color: Colors.white,
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: <Widget>[
+                Padding(
+                  padding: EdgeInsets.symmetric(
+                    horizontal: size.width * 0.06,
+                    vertical: size.height * 0.03,
+                  ),
+                  child: const Text(
+                    'Confirm verification code',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w500,
+                      letterSpacing: 0.5,
+                    ),
+                  ),
                 ),
-                color: Colors.white,
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: <Widget>[
-                  Padding(
-                    padding: EdgeInsets.symmetric(
-                      horizontal: size.width * 0.06,
-                      vertical: size.height * 0.03,
-                    ),
-                    child: Text(
-                      'Confirm verification code',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w500,
-                        letterSpacing: 0.5,
-                      ),
-                    ),
-                  ),
-                  Center(
-                    child: Container(
-                      width: size.width * .8,
-                      alignment: Alignment.center,
-                      child: PinCodeTextField(
-                          length: 6,
-                          inputFormatters: [
-                            FilteringTextInputFormatter.digitsOnly
-                          ],
-                          autoDismissKeyboard: true,
-                          pinTheme: PinTheme(
-                              inactiveColor: Colors.black26,
-                              borderWidth: 1.5,
-                              shape: PinCodeFieldShape.circle,
-                              fieldWidth: size.width * 0.125,
-                              fieldHeight: size.width * 0.125),
-                          onChanged: (str) => otp = str),
-                    ),
-                  ),
-                  Padding(
-                    padding: EdgeInsets.symmetric(
-                      vertical: size.height * 0.03,
-                      horizontal: size.width * 0.025,
-                    ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: <Widget>[
-                        ResendTimerWidget(isUpdate: isUpdate),
-                        Expanded(
-                          child: defaultbutton(
-                              context: context,
-                              function: () async=> isUpdate
-                                  ?await Authentication.changeNumberWithOtp(context,
-                                      otp: otp)
-                                  :await Authentication.verifyOTPAndRegister(
-                                      context: context,
-                                      otp: otp,
-                                      email: operatorDetails.email,
-                                      password: operatorDetails.password),
-                              title: 'Done'),
-                        ),
+                Center(
+                  child: SizedBox(
+                    width: size.width * .8,
+                    child: PinCodeTextField(
+                      appContext: context,
+                      length: 6,
+                      inputFormatters: [
+                        FilteringTextInputFormatter.digitsOnly
                       ],
+                      autoDismissKeyboard: true,
+                      pinTheme: PinTheme(
+                        inactiveColor: Colors.black26,
+                        borderWidth: 1.5,
+                        shape: PinCodeFieldShape.circle,
+                        fieldWidth: size.width * 0.125,
+                        fieldHeight: size.width * 0.125,
+                      ),
+                      onChanged: (str) => otp = str,
                     ),
                   ),
-                ],
-              ),
+                ),
+                Padding(
+                  padding: EdgeInsets.symmetric(
+                    vertical: size.height * 0.03,
+                    horizontal: size.width * 0.025,
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: <Widget>[
+                      ResendTimerWidget(isUpdate: isUpdate, phoneNumber: phoneNumber),
+                      Expanded(
+                        child: defaultbutton(
+                          context: context,
+                          function: () async => isUpdate
+                              ? await Authentication.changeNumberWithOtp(context,
+                                  otp: otp)
+                              : await Authentication.verifyOTPAndRegister(
+                                  context: context,
+                                  otp: otp,
+                                  email: operatorDetails?.email ?? '',
+                                  password: operatorDetails?.password),
+                          title: 'Done',
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
             ),
           ),
         ),
@@ -107,8 +109,10 @@ class VerifyPhonePopup extends StatelessWidget {
 
 class ResendTimerWidget extends StatefulWidget {
   final bool isUpdate;
-  final String phoneNumber;
-  ResendTimerWidget({this.isUpdate = false, this.phoneNumber});
+  final String? phoneNumber;
+
+  const ResendTimerWidget({super.key, this.isUpdate = false, this.phoneNumber});
+
   @override
   _ResendTimerWidgetState createState() => _ResendTimerWidgetState();
 }
@@ -116,8 +120,8 @@ class ResendTimerWidget extends StatefulWidget {
 class _ResendTimerWidgetState extends State<ResendTimerWidget> {
   String _remainingTime = '00 : 60';
   bool _isRequested = true;
-  Timer _timer;
-  Timer _countTimer;
+  Timer? _timer;
+  Timer? _countTimer;
 
   void alterButton() {
     setState(() {
@@ -130,24 +134,31 @@ class _ResendTimerWidgetState extends State<ResendTimerWidget> {
   }
 
   void setTimerWidget() {
-    int _time = 59;
+    int time = 59;
     setState(() {
       _remainingTime = '00 : 60';
-      _time = 59;
     });
-    _countTimer = Timer.periodic(Duration(seconds: 1), (timer) {
-      if (_time >= 0)
-        setState(() {
-          _remainingTime = '00 : $_time';
-          _time = _time - 1;
-        });
+    _countTimer?.cancel();
+    _countTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (time >= 0) {
+        if (mounted) {
+          setState(() {
+            _remainingTime =
+                '00 : ${time < 10 ? '0$time' : time}';
+            time = time - 1;
+          });
+        }
+      } else {
+        timer.cancel();
+      }
     });
   }
 
   void setBackButton() {
-    _timer = Timer(Duration(seconds: 60), () {
+    _timer?.cancel();
+    _timer = Timer(const Duration(seconds: 60), () {
       alterButton();
-      _countTimer.cancel();
+      _countTimer?.cancel();
     });
   }
 
@@ -160,9 +171,9 @@ class _ResendTimerWidgetState extends State<ResendTimerWidget> {
 
   @override
   void dispose() {
+    _timer?.cancel();
+    _countTimer?.cancel();
     super.dispose();
-    _timer.cancel();
-    _countTimer.cancel();
   }
 
   @override
@@ -173,32 +184,40 @@ class _ResendTimerWidgetState extends State<ResendTimerWidget> {
               alignment: Alignment.center,
               child: Text(
                 _remainingTime,
-                style: TextStyle(fontSize: 18),
+                style: const TextStyle(fontSize: 18),
               ),
             ),
           )
         : Expanded(
-            child: FlatButton(
+            child: TextButton(
+              onPressed: () async {
+                final phone = widget.phoneNumber;
+                if (widget.isUpdate && phone != null) {
+                  await Authentication.changePhoneNumber(context,
+                      phoneNumber: phone);
+                } else {
+                  final op = operatorDetails;
+                  if (op != null) {
+                    await Authentication.verifyPhoneNumberAndRegister(
+                      context: context,
+                      phoneNumber: op.phoneNumber,
+                      email: op.email,
+                      password: null,
+                    );
+                  }
+                }
+                alterButton();
+              },
               child: Text(
                 'Re-send',
                 textAlign: TextAlign.left,
                 style: TextStyle(
-                    color: Theme.of(context).errorColor,
-                    fontSize: 18,
-                    letterSpacing: 0.5,
-                    fontWeight: FontWeight.w400),
+                  color: Theme.of(context).colorScheme.error,
+                  fontSize: 18,
+                  letterSpacing: 0.5,
+                  fontWeight: FontWeight.w400,
+                ),
               ),
-              onPressed: () async{
-                widget.isUpdate
-                    ?await Authentication.changePhoneNumber(context,
-                        phoneNumber: widget.phoneNumber)
-                    : await Authentication.verifyPhoneNumberAndRegister(
-                        context: context,
-                        phoneNumber: operatorDetails.phoneNumber,
-                        email: operatorDetails.email,
-                        password: null);
-                alterButton();
-              },
             ),
           );
   }

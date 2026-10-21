@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_icons/flutter_icons.dart';
 
 import 'package:cableTvBook/global/variables.dart';
 import 'package:cableTvBook/global/validators.dart';
@@ -10,43 +9,48 @@ import 'package:cableTvBook/widgets/verify_phone_popup.dart';
 class SettingsScreen extends StatelessWidget {
   static const routeName = '/settingsScreen';
 
-  final _textController = TextEditingController();
-  final _formKey = GlobalKey<FormState>();
-  static Size size;
+  const SettingsScreen({super.key});
 
-  Future<dynamic> getChangeDialog(BuildContext context,
-      {@required String title,
-      @required Function validator,
-      @required IconData icon,
-      TextInputType textInputType,
-      String prefix,
-      @required Function onSaved}) {
+  Future<dynamic> getChangeDialog(
+    BuildContext context, {
+    required String title,
+    required FormFieldValidator<String> validator,
+    required IconData icon,
+    TextInputType? textInputType,
+    String? prefix,
+    required VoidCallback onSaved,
+    required TextEditingController textController,
+    required GlobalKey<FormState> formKey,
+  }) {
     return showDialog(
       context: context,
-      builder: (context) => Form(
-        key: _formKey,
+      builder: (ctx) => Form(
+        key: formKey,
         child: AlertDialog(
           title: Text(title),
           content: TextFormField(
-            controller: _textController,
+            controller: textController,
             validator: validator,
             keyboardType: textInputType,
             decoration: inputDecoration(icon: icon, prefixText: prefix),
           ),
           actions: [
-            FlatButton(
-              onPressed: () => Navigator.pop(context),
-              child: Text(
-                'cancel',
-                style: TextStyle(color: Theme.of(context).errorColor),
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              style: TextButton.styleFrom(
+                foregroundColor: Theme.of(ctx).colorScheme.error,
               ),
+              child: const Text('cancel'),
             ),
-            FlatButton(
-              color: Theme.of(context).primaryColor,
+            TextButton(
+              style: TextButton.styleFrom(
+                backgroundColor: Theme.of(ctx).primaryColor,
+                foregroundColor: Colors.white,
+              ),
               onPressed: onSaved,
-              child: Text(
+              child: const Text(
                 'save',
-                style: TextStyle(color: Colors.white, fontSize: 18),
+                style: TextStyle(fontSize: 18),
               ),
             ),
           ],
@@ -59,15 +63,15 @@ class SettingsScreen extends StatelessWidget {
     return Column(
       children: <Widget>[
         Container(
-          margin: EdgeInsets.all(16),
-          padding: EdgeInsets.all(8),
+          margin: const EdgeInsets.all(16),
+          padding: const EdgeInsets.all(8),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(10),
             color: Theme.of(context).primaryColor,
           ),
           child: Text(
             title,
-            style: TextStyle(
+            style: const TextStyle(
               color: Colors.white,
               fontWeight: FontWeight.bold,
               fontSize: 16,
@@ -78,7 +82,8 @@ class SettingsScreen extends StatelessWidget {
     );
   }
 
-  Widget getdetailText(BuildContext context, String text, {Function function}) {
+  Widget getdetailText(BuildContext context, String text,
+      {VoidCallback? function}) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 4),
       child: Column(
@@ -88,13 +93,13 @@ class SettingsScreen extends StatelessWidget {
             onTap: function,
             child: Text(
               text,
-              style: TextStyle(
+              style: const TextStyle(
                 fontWeight: FontWeight.bold,
                 fontSize: 16,
               ),
             ),
           ),
-          Divider(color: Colors.transparent),
+          const Divider(color: Colors.transparent),
         ],
       ),
     );
@@ -102,20 +107,27 @@ class SettingsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    size = MediaQuery.of(context).size;
+    final user = firebaseUser;
+    final op = operatorDetails;
+    final textController = TextEditingController();
+    final formKey = GlobalKey<FormState>();
+
     return Scaffold(
       appBar: AppBar(
-        title: Text('General Settings'),
+        title: const Text('General Settings'),
       ),
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
           getTitle(context, 'Account Settings'),
-          if (!firebaseUser.emailVerified)
-            getdetailText(context, 'Verify your email',
-                function: () async =>
-                    await Authentication.sendEmailVerificationMail(context)),
-          if (operatorDetails.password != null)
+          if (user != null && !user.emailVerified)
+            getdetailText(
+              context,
+              'Verify your email',
+              function: () async =>
+                  await Authentication.sendEmailVerificationMail(context),
+            ),
+          if (op?.password != null)
             getdetailText(
               context,
               'Change Email',
@@ -125,11 +137,13 @@ class SettingsScreen extends StatelessWidget {
                 validator: emailValidator,
                 icon: Icons.email,
                 textInputType: TextInputType.emailAddress,
+                textController: textController,
+                formKey: formKey,
                 onSaved: () async {
-                  if (_formKey.currentState.validate()) {
-                    _formKey.currentState.save();
+                  if (formKey.currentState?.validate() == true) {
+                    formKey.currentState?.save();
                     await Authentication.changeEmailAddress(context,
-                        email: _textController.text);
+                        email: textController.text.trim());
                   }
                 },
               ),
@@ -144,16 +158,18 @@ class SettingsScreen extends StatelessWidget {
               icon: Icons.phone,
               textInputType: TextInputType.phone,
               prefix: '+91 ',
+              textController: textController,
+              formKey: formKey,
               onSaved: () {
-                if (_formKey.currentState.validate()) {
-                  _formKey.currentState.save();
+                if (formKey.currentState?.validate() == true) {
+                  formKey.currentState?.save();
                   Authentication.changePhoneNumber(context,
-                      phoneNumber: '+ 91 ' + _textController.text);
+                      phoneNumber: '+ 91 ${textController.text.trim()}');
                   Navigator.of(context).pushReplacement(
                     PageRouteBuilder(
                       pageBuilder: (context, _, __) => VerifyPhonePopup(
                         isUpdate: true,
-                        phoneNumber: '+ 91 ' + _textController.text,
+                        phoneNumber: '+ 91 ${textController.text.trim()}',
                       ),
                       opaque: false,
                     ),
@@ -162,15 +178,9 @@ class SettingsScreen extends StatelessWidget {
               },
             ),
           ),
-          if (operatorDetails.password != null)
+          if (op?.password != null)
             getTitle(context, 'Privacy Settings'),
-          // getdetailText(context, 'Change Security pin',
-          //     function: () => getChangeDialog(context,
-          //         title: 'Currently unavailable',
-          //         validator: null,
-          //         icon: null,
-          //         onSaved: null)),
-          if (operatorDetails.password != null)
+          if (op?.password != null)
             getdetailText(
               context,
               'Change Password',
@@ -178,12 +188,14 @@ class SettingsScreen extends StatelessWidget {
                 context,
                 title: 'Change password !',
                 validator: (value) => passwordValidator(value, false),
-                icon: FlutterIcons.vpn_key_mdi,
+                icon: Icons.vpn_key,
+                textController: textController,
+                formKey: formKey,
                 onSaved: () async {
-                  if (_formKey.currentState.validate()) {
-                    _formKey.currentState.save();
+                  if (formKey.currentState?.validate() == true) {
+                    formKey.currentState?.save();
                     await Authentication.changePassword(context,
-                        password: _textController.text);
+                        password: textController.text);
                   }
                 },
               ),

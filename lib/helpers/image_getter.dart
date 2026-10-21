@@ -1,15 +1,13 @@
 import 'dart:io';
 import 'dart:ui';
 
-import 'package:cableTvBook/screens/crop_image_screen.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_icons/flutter_icons.dart';
 import 'package:image_picker/image_picker.dart';
 
 class ImageGetter {
-  static Future<File> getImageFromDevice(BuildContext ctx) async {
-    final _imagePicker = ImagePicker();
-    File selectedImageFile;
+  static Future<File?> getImageFromDevice(BuildContext ctx) async {
+    final imagePicker = ImagePicker();
+    File? selectedImageFile;
     await showDialog(
       context: ctx,
       builder: (c) => BackdropFilter(
@@ -18,27 +16,24 @@ class ImageGetter {
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: <Widget>[
-              FlatButton.icon(
+              TextButton.icon(
                 onPressed: () async {
-                  final pickedImage = await _imagePicker.getImage(
+                  final pickedImage = await imagePicker.pickImage(
                     source: ImageSource.camera,
+                    maxWidth: 1024,
+                    maxHeight: 1024,
+                    imageQuality: 85,
                   );
-                  try {
+                  if (pickedImage != null) {
                     selectedImageFile = File(pickedImage.path);
-                    Navigator.of(ctx)
-                        .pushNamed(CropImageScreen.routeName,
-                            arguments: File(pickedImage.path))
-                        .then((value) {
-                      selectedImageFile = value;
-                      if (selectedImageFile != null) Navigator.of(c).pop();
-                    });
-                  } catch (error) {}
+                    if (ctx.mounted) Navigator.of(c).pop();
+                  }
                 },
-                icon: Icon(
-                  FlutterIcons.ios_camera_ion,
-                  size: 36,
+                icon: const Icon(
+                  Icons.camera_alt,
+                  size: 32,
                 ),
-                label: Text(
+                label: const Text(
                   'Take Image',
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
@@ -46,27 +41,24 @@ class ImageGetter {
                   ),
                 ),
               ),
-              FlatButton.icon(
+              TextButton.icon(
                 onPressed: () async {
-                  final pickedImage = await _imagePicker.getImage(
+                  final pickedImage = await imagePicker.pickImage(
                     source: ImageSource.gallery,
+                    maxWidth: 1024,
+                    maxHeight: 1024,
+                    imageQuality: 85,
                   );
-                  try {
+                  if (pickedImage != null) {
                     selectedImageFile = File(pickedImage.path);
-                    Navigator.of(ctx)
-                        .pushNamed(CropImageScreen.routeName,
-                            arguments: File(pickedImage.path))
-                        .then((value) {
-                      selectedImageFile = value;
-                      if (selectedImageFile != null) Navigator.of(c).pop();
-                    });
-                  } catch (error) {}
+                    if (ctx.mounted) Navigator.of(c).pop();
+                  }
                 },
-                icon: Icon(
-                  FlutterIcons.ios_images_ion,
-                  size: 36,
+                icon: const Icon(
+                  Icons.photo_library,
+                  size: 32,
                 ),
-                label: Text(
+                label: const Text(
                   'Select Image',
                   style: TextStyle(
                     fontWeight: FontWeight.bold,

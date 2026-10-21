@@ -1,5 +1,3 @@
-import 'dart:ui';
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -13,18 +11,17 @@ import 'package:cableTvBook/screens/profile_screen.dart';
 import 'package:cableTvBook/screens/register_screen.dart';
 import 'package:cableTvBook/services/initial_screen.dart';
 import 'package:cableTvBook/screens/settings_screen.dart';
-import 'package:cableTvBook/screens/crop_image_screen.dart';
 import 'package:cableTvBook/screens/collection_screen.dart';
 import 'package:cableTvBook/helpers/custom_transition.dart';
 import 'package:cableTvBook/screens/bottom_tabs_screen.dart';
 import 'package:cableTvBook/screens/add_customer_screen.dart';
 import 'package:cableTvBook/screens/area_customers_screen.dart';
 import 'package:cableTvBook/screens/customer_detail_screen.dart';
-import 'package:cableTvBook/Payment%20Gateway/razor_pay_screen.dart';
+import 'package:cableTvBook/payment_gateway/razor_pay_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
+  SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
     statusBarColor: Colors.transparent,
     statusBarBrightness: Brightness.dark,
     statusBarIconBrightness: Brightness.dark,
@@ -37,72 +34,69 @@ void main() async {
     DeviceOrientation.portraitDown,
   ]);
   app = await Firebase.initializeApp();
-  runApp(MyApp());
+  runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
   @override
   Widget build(BuildContext context) {
+    const primaryBlue = Color.fromRGBO(14, 137, 234, 1);
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Cable Tv Book',
       theme: ThemeData(
-        primaryColor: Color.fromRGBO(14, 137, 234, 1),
-        accentColor: Colors.white,
-        primaryColorBrightness: Brightness.dark,
-        accentColorBrightness: Brightness.light,
-        cursorColor: Color.fromRGBO(14, 137, 234, 1),
-        iconTheme: IconThemeData(
-          color: Color.fromRGBO(14, 137, 234, 1),
+        useMaterial3: false,
+        primaryColor: primaryBlue,
+        colorScheme: ColorScheme.fromSwatch(
+          primarySwatch: Colors.blue,
+        ).copyWith(
+          secondary: Colors.white,
+          error: Colors.red,
         ),
-        buttonTheme: ButtonThemeData(
-          buttonColor: Color.fromRGBO(14, 137, 234, 1),
-          disabledColor: Colors.blueGrey,
-          textTheme: ButtonTextTheme.primary,
+        iconTheme: const IconThemeData(
+          color: primaryBlue,
         ),
-        disabledColor: Colors.blueGrey,
-        dividerColor: Color.fromRGBO(14, 137, 234, 1),
         pageTransitionsTheme: PageTransitionsTheme(
           builders: {
             TargetPlatform.android: CustomPageTransitionBuilder(),
           },
         ),
-        platform: TargetPlatform.android,
         dividerTheme: DividerThemeData(
-          color: Color.fromRGBO(14, 137, 234, 1).withOpacity(0.2),
+          color: primaryBlue.withAlpha(51),
           endIndent: 10,
           indent: 10,
           thickness: 1.5,
         ),
-        dialogTheme: DialogTheme(
+        dialogTheme: DialogThemeData(
           elevation: 5,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(15),
           ),
-          titleTextStyle: TextStyle(
-            color: Color.fromRGBO(14, 137, 234, 1),
+          titleTextStyle: const TextStyle(
+            color: primaryBlue,
             fontWeight: FontWeight.bold,
             fontSize: 25,
           ),
         ),
         fontFamily: 'Roboto',
       ),
-      home: InitialScreen(),
+      home: const InitialScreen(),
       routes: {
-        HomeScreen.routeName: (ctx) => HomeScreen(),
-        SigninScreen.routeName: (ctx) => SigninScreen(),
-        SignupScreen.routeName: (ctx) => SignupScreen(),
-        SearchScreen.routeName: (ctx) => SearchScreen(),
-        ProfileScreen.routeName: (ctx) => ProfileScreen(),
-        RazorPayScreen.routeName: (ctx) => RazorPayScreen(),
-        RegisterScreen.routeName: (ctx) => RegisterScreen(),
-        SettingsScreen.routeName: (ctx) => SettingsScreen(),
-        CropImageScreen.routeName: (ctx) => CropImageScreen(),
-        CollectionScreen.routeName: (ctx) => CollectionScreen(),
-        BottomTabsScreen.routeName: (ctx) => BottomTabsScreen(),
-        AddCustomerScreen.routeName: (ctx) => AddCustomerScreen(),
-        AreaCustomersScreen.routeName: (ctx) => AreaCustomersScreen(),
-        CustomerDetailScreen.routeName: (ctx) => CustomerDetailScreen(),
+        HomeScreen.routeName: (ctx) => const HomeScreen(),
+        SigninScreen.routeName: (ctx) => const SigninScreen(),
+        SignupScreen.routeName: (ctx) => const SignupScreen(),
+        SearchScreen.routeName: (ctx) => const SearchScreen(),
+        ProfileScreen.routeName: (ctx) => const ProfileScreen(),
+        RazorPayScreen.routeName: (ctx) => const RazorPayScreen(),
+        RegisterScreen.routeName: (ctx) => const RegisterScreen(),
+        SettingsScreen.routeName: (ctx) => const SettingsScreen(),
+        CollectionScreen.routeName: (ctx) => const CollectionScreen(),
+        BottomTabsScreen.routeName: (ctx) => const BottomTabsScreen(),
+        AddCustomerScreen.routeName: (ctx) => const AddCustomerScreen(),
+        AreaCustomersScreen.routeName: (ctx) => const AreaCustomersScreen(),
+        CustomerDetailScreen.routeName: (ctx) => const CustomerDetailScreen(),
       },
     );
   }

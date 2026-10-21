@@ -1,64 +1,70 @@
 import 'package:validators/validators.dart' as validate;
-import 'package:regexed_validator/regexed_validator.dart';
 
-String defaultValidator(String value) {
-  if (value.isEmpty) return 'This field is required !';
+String? defaultValidator(String? value) {
+  if (value == null || value.trim().isEmpty) return 'This field is required !';
   if (value.length > 20) return 'value is not supported !';
   return null;
 }
 
-String emailValidator(String value) {
-  if (value.isEmpty) return 'This field is required !';
-  if (validate.isEmail(value)) return null;
+String? emailValidator(String? value) {
+  if (value == null || value.trim().isEmpty) return 'This field is required !';
+  if (validate.isEmail(value.trim())) return null;
   return 'please enter valid email !';
 }
 
-String passwordValidator(String value, bool isLogin) {
-  if (value.isEmpty) return 'This field is required !';
+String? passwordValidator(String? value, bool isLogin) {
+  if (value == null || value.isEmpty) return 'This field is required !';
   if (!isLogin) {
-    if (validator.password(value)) return null;
-    return 'must contain atleast 1 number,1 special character,\n1 capital letter and 1 small letter !';
+    final hasUpper = RegExp(r'[A-Z]').hasMatch(value);
+    final hasLower = RegExp(r'[a-z]').hasMatch(value);
+    final hasDigit = RegExp(r'[0-9]').hasMatch(value);
+    final hasSpecial = RegExp(r'[!@#\$&*~]').hasMatch(value);
+    if (value.length >= 6 && hasUpper && hasLower && hasDigit && hasSpecial) {
+      return null;
+    }
+    return 'must contain atleast 1 number, 1 special character,\n1 capital letter and 1 small letter !';
   }
   return null;
 }
 
-String reCheckValidator(String value, String otherValue) {
-  if (value.isEmpty) return 'This field is required !';
+String? reCheckValidator(String? value, String? otherValue) {
+  if (value == null || value.isEmpty) return 'This field is required !';
   if (value == otherValue) return null;
-  return 'password\'s did not match !';
+  return "passwords did not match !";
 }
 
-String phoneValidator(String value) {
-  if (value.isEmpty) return 'This field is required !';
-  if (!validate.isNumeric(value)) return 'please enter valid number !';
-  if (value.length != 10) return 'please enter valid number !';
+String? phoneValidator(String? value) {
+  if (value == null || value.trim().isEmpty) return 'This field is required !';
+  final trimmed = value.trim();
+  if (!validate.isNumeric(trimmed) || trimmed.length != 10) {
+    return 'please enter valid number !';
+  }
   return null;
 }
 
-String nameValidator(String value, {int maxLength = 30}) {
-  if (value.isEmpty) return 'This field is required !';
-  if (validator.name(value)) return null;
-  String error;
-  final sub = value.split(' ');
-  sub.forEach((element) {
-    if (!validate.isAlphanumeric(element)) {
-      error = 'must be a combination of alphabet & number !';
-    } else if (value.length > maxLength) {
-      error = 'name is too long !';
-    }
-  });
-  return error;
-}
-
-String addressValidator(String value) {
-  if (value.isEmpty) return 'This field is required !';
-  if (value.length > 50) return 'address is too long !';
+String? nameValidator(String? value, {int maxLength = 30}) {
+  if (value == null || value.trim().isEmpty) return 'This field is required !';
+  final trimmed = value.trim();
+  if (trimmed.length > maxLength) return 'name is too long !';
+  final nameRegex = RegExp(r'^[a-zA-Z0-9 ]+$');
+  if (!nameRegex.hasMatch(trimmed)) {
+    return 'must be a combination of alphabet & number !';
+  }
   return null;
 }
 
-String planValidator(String value) {
-  if (value.isEmpty) return 'This field is required !';
-  if (!validate.isInt(value)) return 'not a valid number !';
-  if (value.length > 3) return 'amount is too high!';
+String? addressValidator(String? value) {
+  if (value == null || value.trim().isEmpty) return 'This field is required !';
+  if (value.trim().length > 50) return 'address is too long !';
+  return null;
+}
+
+String? planValidator(String? value) {
+  if (value == null || value.trim().isEmpty) return 'This field is required !';
+  final trimmed = value.trim();
+  if (!validate.isNumeric(trimmed)) return 'not a valid number !';
+  final parsed = double.tryParse(trimmed);
+  if (parsed == null) return 'not a valid number !';
+  if (trimmed.length > 5) return 'amount is too high!';
   return null;
 }

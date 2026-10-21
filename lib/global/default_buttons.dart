@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:cableTvBook/global/box_decoration.dart';
 
-Widget defaultbutton(
-    {@required BuildContext context,
-    @required Function function,
-    @required String title,
-    IconData icon,
-    double width = 45,
-    double height = 16}) {
+Widget defaultbutton({
+  required BuildContext context,
+  required VoidCallback function,
+  required String title,
+  IconData? icon,
+  double width = 45,
+  double height = 16,
+}) {
   return FloatingActionButton.extended(
     heroTag: title,
     onPressed: function,
@@ -17,12 +18,13 @@ Widget defaultbutton(
       padding: EdgeInsets.symmetric(horizontal: width, vertical: height),
       decoration: defaultBoxDecoration(context, true),
       child: Row(
+        mainAxisSize: MainAxisSize.min,
         children: <Widget>[
-          if (icon != null) Icon(icon,color: Colors.white),
-          if (icon != null) SizedBox(width: 5),
+          if (icon != null) Icon(icon, color: Colors.white),
+          if (icon != null) const SizedBox(width: 5),
           Text(
             title,
-            style: TextStyle(
+            style: const TextStyle(
               color: Colors.white,
               fontWeight: FontWeight.bold,
               fontSize: 18,

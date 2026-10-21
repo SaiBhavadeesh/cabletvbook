@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 
 BoxDecoration defaultBoxDecoration(BuildContext context, bool shadow) {
+  final primary = Theme.of(context).primaryColor;
   return BoxDecoration(
     boxShadow: shadow
         ? [
-            BoxShadow(
+            const BoxShadow(
               color: Colors.black26,
               offset: Offset(0, 4),
               blurRadius: 3,
@@ -14,23 +15,24 @@ BoxDecoration defaultBoxDecoration(BuildContext context, bool shadow) {
     borderRadius: BorderRadius.circular(30),
     gradient: LinearGradient(
       colors: [
-        Theme.of(context).primaryColor.withRed(200),
-        Theme.of(context).primaryColor.withRed(400),
-        Theme.of(context).primaryColor.withRed(600),
+        primary.withAlpha(200),
+        primary.withAlpha(230),
+        primary,
       ],
     ),
   );
 }
 
 BoxDecoration pageDecoration(BuildContext context) {
+  final primary = Theme.of(context).primaryColor;
   return BoxDecoration(
     gradient: LinearGradient(
       colors: [
-        Theme.of(context).primaryColor.withBlue(150).withOpacity(0.75),
-        Theme.of(context).primaryColor.withOpacity(0.75),
-        Theme.of(context).primaryColor.withBlue(255).withOpacity(0.75),
-        Theme.of(context).primaryColor.withOpacity(0.75),
-        Theme.of(context).primaryColor.withBlue(150).withOpacity(0.75),
+        primary.withAlpha(190),
+        primary.withAlpha(220),
+        primary,
+        primary.withAlpha(220),
+        primary.withAlpha(190),
       ],
       begin: Alignment.topLeft,
       end: Alignment.bottomRight,
@@ -39,28 +41,30 @@ BoxDecoration pageDecoration(BuildContext context) {
 }
 
 BoxDecoration sweepGradientDecoration(BuildContext context) {
+  final primary = Theme.of(context).primaryColor;
   return BoxDecoration(
     borderRadius: BorderRadius.circular(20),
     gradient: SweepGradient(colors: [
-      Theme.of(context).primaryColor,
-      Theme.of(context).primaryColor.withOpacity(0.5),
-      Theme.of(context).primaryColor.withOpacity(0.7),
+      primary,
+      primary.withAlpha(128),
+      primary.withAlpha(178),
     ]),
   );
 }
 
-InputDecoration inputDecoration(
-    {String label,
-    String prefixText,
-    IconData icon,
-    Color filledColor,
-    bool filled = false,
-    String hint,
-    Color iconColor,
-    Color hintColor = Colors.black,
-    double radius = 15}) {
+InputDecoration inputDecoration({
+  String? label,
+  String? prefixText,
+  IconData? icon,
+  Color? filledColor,
+  bool filled = false,
+  String? hint,
+  Color? iconColor,
+  Color hintColor = Colors.black,
+  double radius = 15,
+}) {
   return InputDecoration(
-    counter: SizedBox(),
+    counter: const SizedBox.shrink(),
     fillColor: filledColor,
     filled: filled,
     hintText: hint,

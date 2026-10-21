@@ -1,42 +1,46 @@
-import 'package:flutter/foundation.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class Recharge {
   String id;
-  DateTime date;
+  DateTime? date;
   DateTime ymRec;
-  String plan;
-  bool billPay;
+  String? plan;
+  bool? billPay;
   bool status;
-  String addInfo;
+  String? addInfo;
+
   Recharge({
-    @required this.id,
-    @required this.ymRec,
-    @required this.date,
-    @required this.plan,
-    @required this.status,
-    @required this.billPay,
-    @required this.addInfo,
+    required this.id,
+    required this.ymRec,
+    this.date,
+    this.plan,
+    required this.status,
+    this.billPay,
+    this.addInfo,
   });
 
-  Recharge.fromMap(doc) {
-    this.id = doc['id'];
-    this.ymRec = doc['ymRec']?.toDate();
-    this.date = doc['date']?.toDate();
-    this.plan = doc['plan'];
-    this.status = doc['status'];
-    this.billPay = doc['billPay'];
-    this.addInfo = doc['addInfo'];
+  factory Recharge.fromMap(Map<String, dynamic> doc) {
+    return Recharge(
+      id: doc['id'] ?? '',
+      ymRec: doc['ymRec'] != null
+          ? (doc['ymRec'] as Timestamp).toDate()
+          : DateTime.now(),
+      date: doc['date'] != null ? (doc['date'] as Timestamp).toDate() : null,
+      plan: doc['plan']?.toString(),
+      status: doc['status'] ?? false,
+      billPay: doc['billPay'],
+      addInfo: doc['addInfo'],
+    );
   }
 
   Map<String, dynamic> toJson() => {
-        'id': this.id,
-        'date': this.date,
-        'ymRec': this.ymRec,
-        'plan': this.plan,
-        'status': this.status,
-        'billPay': this.billPay,
-        'addInfo': this.addInfo,
+        'id': id,
+        'date': date,
+        'ymRec': ymRec,
+        'plan': plan,
+        'status': status,
+        'billPay': billPay,
+        'addInfo': addInfo,
       };
 }
 
@@ -46,7 +50,7 @@ class Customer {
   String macId;
   String areaId;
   String address;
-  String tempInfo;
+  String? tempInfo;
   double currentPlan;
   DateTime startDate;
   int runningYear;
@@ -55,64 +59,70 @@ class Customer {
   String phoneNumber;
   String accountNumber;
   String currentStatus;
-  String profileImageUrl;
+  String? profileImageUrl;
   String networkProviderId;
 
   Customer({
-    @required this.id,
-    @required this.name,
-    @required this.macId,
-    @required this.areaId,
-    @required this.address,
+    required this.id,
+    required this.name,
+    required this.macId,
+    required this.areaId,
+    required this.address,
     this.tempInfo,
-    this.startDate,
-    this.runningYear,
-    this.expiryMonth,
+    DateTime? startDate,
+    int? runningYear,
+    int? expiryMonth,
     this.profileImageUrl,
     this.noOfPendingBills = 0,
-    @required this.currentPlan,
-    @required this.phoneNumber,
-    @required this.accountNumber,
+    required this.currentPlan,
+    required this.phoneNumber,
+    required this.accountNumber,
     this.currentStatus = 'Inactive',
-    @required this.networkProviderId,
-  });
+    required this.networkProviderId,
+  })  : startDate = startDate ?? DateTime.now(),
+        runningYear = runningYear ?? DateTime.now().year,
+        expiryMonth = expiryMonth ?? 0;
 
-  Customer.fromMap(document) {
-    this.id = document['id'];
-    this.name = document['name'];
-    this.macId = document['macId'];
-    this.areaId = document['areaId'];
-    this.address = document['adrs'];
-    this.tempInfo = document['tempInfo'];
-    this.startDate = document['sd']?.toDate();
-    this.runningYear = document['runYear'];
-    this.expiryMonth = document['expMon'];
-    this.noOfPendingBills = document['noOfPenBil'];
-    this.profileImageUrl = document['piUrl'];
-    this.currentPlan = document['curPlan'];
-    this.phoneNumber = document['pn'];
-    this.accountNumber = document['accNo'];
-    this.currentStatus = document['curSts'];
-    this.networkProviderId = document['npId'];
+  factory Customer.fromMap(Map<String, dynamic> document) {
+    return Customer(
+      id: document['id'] ?? '',
+      name: document['name'] ?? '',
+      macId: document['macId'] ?? '',
+      areaId: document['areaId'] ?? '',
+      address: document['adrs'] ?? '',
+      tempInfo: document['tempInfo'],
+      startDate: document['sd'] != null
+          ? (document['sd'] as Timestamp).toDate()
+          : DateTime.now(),
+      runningYear: document['runYear'] ?? DateTime.now().year,
+      expiryMonth: document['expMon'] ?? 0,
+      noOfPendingBills: document['noOfPenBil'] ?? 0,
+      profileImageUrl: document['piUrl'],
+      currentPlan: (document['curPlan'] as num?)?.toDouble() ?? 0.0,
+      phoneNumber: document['pn'] ?? '',
+      accountNumber: document['accNo'] ?? '',
+      currentStatus: document['curSts'] ?? 'Inactive',
+      networkProviderId: document['npId'] ?? '',
+    );
   }
 
   Map<String, dynamic> toJson() => {
-        'id': this.id,
-        'name': this.name,
-        'macId': this.macId,
-        'areaId': this.areaId,
-        'adrs': this.address,
-        'tempInfo': this.tempInfo,
-        'curPlan': this.currentPlan,
-        'runYear': this.runningYear,
-        'expMon': this.expiryMonth,
-        'pn': this.phoneNumber,
-        'accNo': this.accountNumber,
-        'curSts': this.currentStatus,
-        'piUrl': this.profileImageUrl,
-        'noOfPenBil': this.noOfPendingBills,
+        'id': id,
+        'name': name,
+        'macId': macId,
+        'areaId': areaId,
+        'adrs': address,
+        'tempInfo': tempInfo,
+        'curPlan': currentPlan,
+        'runYear': runningYear,
+        'expMon': expiryMonth,
+        'pn': phoneNumber,
+        'accNo': accountNumber,
+        'curSts': currentStatus,
+        'piUrl': profileImageUrl,
+        'noOfPenBil': noOfPendingBills,
         'sd': FieldValue.serverTimestamp(),
-        'npId': this.networkProviderId,
+        'npId': networkProviderId,
       };
 }
 
@@ -124,14 +134,17 @@ List<Customer> getCustomersFromDoc(
   bool active = false,
   bool inactive = false,
 }) {
-  final cust = snapshot.docs.map((e) => Customer.fromMap(e.data())).toList();
+  final cust = snapshot.docs
+      .map((e) => Customer.fromMap(e.data() as Map<String, dynamic>))
+      .toList();
   return getSelectedCustomers(
-      active: active,
-      all: all,
-      credits: credits,
-      inactive: inactive,
-      pending: pending,
-      providedCustomers: cust);
+    active: active,
+    all: all,
+    credits: credits,
+    inactive: inactive,
+    pending: pending,
+    providedCustomers: cust,
+  );
 }
 
 List<Customer> getSelectedCustomers({
@@ -140,46 +153,48 @@ List<Customer> getSelectedCustomers({
   bool credits = false,
   bool active = false,
   bool inactive = false,
-  List<Customer> providedCustomers,
+  List<Customer> providedCustomers = const [],
 }) {
-  if (all)
+  if (all) {
     return providedCustomers;
-  else if (pending)
+  } else if (pending) {
+    final now = DateTime.now();
     return providedCustomers
         .where((element) =>
-            element.expiryMonth < DateTime.now().month &&
-            element.runningYear <= DateTime.now().year)
+            element.expiryMonth < now.month && element.runningYear <= now.year)
         .toList();
-  else if (credits)
+  } else if (credits) {
     return providedCustomers
         .where((element) => element.noOfPendingBills > 0)
         .toList();
-  else if (active)
+  } else if (active) {
     return providedCustomers
         .where((element) => element.currentStatus == 'Active')
         .toList();
-  else if (inactive)
+  } else if (inactive) {
     return providedCustomers
         .where((element) => element.currentStatus == 'Inactive')
         .toList();
-  else
+  } else {
     return [];
+  }
 }
 
 List<Recharge> getCustomerYearlyRecharge(
     List<DocumentSnapshot> docs, int year) {
   return docs
-      .where((element) => Recharge.fromMap(element.data()).ymRec.year == year)
-      .toList()
-      .map((e) => Recharge.fromMap(e.data()))
+      .map((e) => Recharge.fromMap(e.data() as Map<String, dynamic>))
+      .where((element) => element.ymRec.year == year)
       .toList();
 }
 
-Recharge getMonthlyRecharge(List<DocumentSnapshot> docs, int year, int month) {
-  return Recharge.fromMap(docs
-      .where((element) =>
-          Recharge.fromMap(element.data()).ymRec.year == year &&
-          Recharge.fromMap(element.data()).ymRec.month == month)
-      .first
-      .data());
+Recharge? getMonthlyRecharge(List<DocumentSnapshot> docs, int year, int month) {
+  try {
+    return docs
+        .map((e) => Recharge.fromMap(e.data() as Map<String, dynamic>))
+        .firstWhere((element) =>
+            element.ymRec.year == year && element.ymRec.month == month);
+  } catch (_) {
+    return null;
+  }
 }

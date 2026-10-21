@@ -1,39 +1,39 @@
 import 'dart:io';
 import 'dart:ui';
 
-import 'package:cableTvBook/services/database_services.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_icons/flutter_icons.dart';
-import 'package:validators/validators.dart' as validator;
 
 import 'package:cableTvBook/global/variables.dart';
 import 'package:cableTvBook/global/validators.dart';
 import 'package:cableTvBook/helpers/image_getter.dart';
 import 'package:cableTvBook/global/box_decoration.dart';
 import 'package:cableTvBook/global/default_buttons.dart';
+import 'package:cableTvBook/services/database_services.dart';
 
 class ProfileScreen extends StatefulWidget {
   static const routeName = '/profileScreen';
+
+  const ProfileScreen({super.key});
 
   @override
   _ProfileScreenState createState() => _ProfileScreenState();
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
-  File _selectedImageFile;
+  File? _selectedImageFile;
 
   Widget getTitle(BuildContext context, String title) {
     return Column(
       children: <Widget>[
         Container(
-          padding: EdgeInsets.all(8),
+          padding: const EdgeInsets.all(8),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(10),
             color: Theme.of(context).primaryColor,
           ),
           child: Text(
             title,
-            style: TextStyle(
+            style: const TextStyle(
               color: Colors.white,
               fontWeight: FontWeight.bold,
               fontSize: 16,
@@ -44,7 +44,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  Widget getTitleValueEdit(String title, String value, Function function) {
+  Widget getTitleValueEdit(String title, String value, VoidCallback? function) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: <Widget>[
@@ -55,7 +55,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               padding: const EdgeInsets.only(left: 8.0, bottom: 4.0),
               child: Text(
                 title,
-                style: TextStyle(
+                style: const TextStyle(
                   fontWeight: FontWeight.bold,
                   fontSize: 16,
                 ),
@@ -69,7 +69,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         ),
         if (function != null)
           IconButton(
-            icon: Icon(Icons.edit),
+            icon: const Icon(Icons.edit),
             onPressed: function,
           ),
       ],
@@ -78,9 +78,26 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final op = operatorDetails;
+    if (op == null) {
+      return Scaffold(
+        appBar: AppBar(title: const Text('Profile')),
+        body: const Center(child: Text('Operator profile not loaded')),
+      );
+    }
+
+    ImageProvider? avatarImage;
+    if (op.profileImageLink != null && op.profileImageLink!.isNotEmpty) {
+      avatarImage = NetworkImage(op.profileImageLink!);
+    } else if (_selectedImageFile != null) {
+      avatarImage = FileImage(_selectedImageFile!);
+    } else {
+      avatarImage = const AssetImage('assets/images/default_profile.jpg');
+    }
+
     return Scaffold(
       appBar: AppBar(
-        title: Text(
+        title: const Text(
           'Profile',
           style: TextStyle(
             fontWeight: FontWeight.bold,
@@ -90,7 +107,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        physics: BouncingScrollPhysics(),
+        physics: const BouncingScrollPhysics(),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
@@ -99,11 +116,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 children: <Widget>[
                   CircleAvatar(
                     radius: 60,
-                    backgroundImage: operatorDetails.profileImageLink == null
-                        ? _selectedImageFile == null
-                            ? AssetImage('assets/images/profile_icon.png')
-                            : FileImage(_selectedImageFile)
-                        : NetworkImage(operatorDetails.profileImageLink),
+                    backgroundImage: avatarImage,
                   ),
                   Positioned(
                     bottom: 5,
@@ -112,13 +125,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       backgroundColor: Colors.green,
                       child: IconButton(
                         color: Colors.white,
-                        icon: Icon(FlutterIcons.ios_camera_ion),
+                        icon: const Icon(Icons.camera_alt),
                         onPressed: () async {
-                          _selectedImageFile =
+                          final file =
                               await ImageGetter.getImageFromDevice(context);
-                          await DatabaseService.uploadProfilePicture(context,
-                              file: _selectedImageFile);
-                          setState(() {});
+                          if (file != null) {
+                            _selectedImageFile = file;
+                            await DatabaseService.uploadProfilePicture(context,
+                                file: file);
+                            if (mounted) setState(() {});
+                          }
                         },
                       ),
                     ),
@@ -126,69 +142,53 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ],
               ),
             ),
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
             getTitle(context, 'Primary Information'),
-            SizedBox(height: 10),
-            getTitleValueEdit('Email', operatorDetails.email, null),
-            SizedBox(height: 10),
-            getTitleValueEdit(
-                'Phone number', operatorDetails.phoneNumber, null),
-            SizedBox(height: 10),
+            const SizedBox(height: 10),
+            getTitleValueEdit('Email', op.email, null),
+            const SizedBox(height: 10),
+            getTitleValueEdit('Phone number', op.phoneNumber, null),
+            const SizedBox(height: 10),
             getTitleValueEdit(
               'Name',
-              operatorDetails.name,
+              op.name,
               () => showDialog(
                 context: context,
                 builder: (ctx) {
                   final formKey = GlobalKey<FormState>();
-                  String name;
+                  String name = op.name;
                   return BackdropFilter(
                     filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
                     child: AlertDialog(
                       content: Form(
                         key: formKey,
                         child: TextFormField(
-                          initialValue: operatorDetails.name,
-                          validator: (value) {
-                            if (value.isEmpty) {
-                              return 'Invalid input!';
-                            }
-                            String error;
-                            final sub = value.split(' ');
-                            sub.forEach((element) {
-                              if (!validator.isAlphanumeric(element)) {
-                                error =
-                                    'Must be a combination of alphabet & number';
-                              } else if (value.length > 25) {
-                                error = 'Name is too long!';
-                              }
-                            });
-                            return error;
-                          },
-                          decoration: InputDecoration(
+                          initialValue: op.name,
+                          validator: nameValidator,
+                          decoration: const InputDecoration(
                             labelText: 'Edit Name',
                           ),
                           onSaved: (value) {
-                            name = value;
+                            if (value != null) name = value.trim();
                           },
                         ),
                       ),
                       actions: <Widget>[
-                        FlatButton(
+                        TextButton(
                           onPressed: () => Navigator.of(ctx).pop(),
-                          child: Text('Cancel'),
+                          child: const Text('Cancel'),
                         ),
-                        FlatButton(
+                        TextButton(
                           onPressed: () async {
-                            if (formKey.currentState.validate()) {
-                              formKey.currentState.save();
+                            if (formKey.currentState?.validate() == true) {
+                              formKey.currentState?.save();
                               await DatabaseService.updateData(context,
                                   data: {'name': name});
-                              Navigator.of(context).pop();
-                              setState(() {});
+                              if (ctx.mounted) Navigator.of(ctx).pop();
+                              if (mounted) setState(() {});
                             }
                           },
-                          child: Text('Save'),
+                          child: const Text('Save'),
                         ),
                       ],
                     ),
@@ -196,61 +196,48 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 },
               ),
             ),
-            SizedBox(height: 10),
+            const SizedBox(height: 10),
             getTitleValueEdit(
               'Network name',
-              operatorDetails.networkName,
+              op.networkName,
               () => showDialog(
                 context: context,
                 builder: (ctx) {
                   final formKey = GlobalKey<FormState>();
-                  String networkName;
+                  String networkName = op.networkName;
                   return BackdropFilter(
                     filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
                     child: AlertDialog(
                       content: Form(
                         key: formKey,
                         child: TextFormField(
-                          initialValue: operatorDetails.networkName,
-                          validator: (value) {
-                            if (value.isEmpty) {
-                              return 'Invalid input!';
-                            }
-                            String error;
-                            final sub = value.split(' ');
-                            sub.forEach((element) {
-                              if (!validator.isAlpha(element)) {
-                                error = 'Must be an alphabet';
-                              } else if (value.length > 40) {
-                                error = 'Name is too long!';
-                              }
-                            });
-                            return error;
-                          },
-                          decoration: InputDecoration(
+                          initialValue: op.networkName,
+                          validator: (value) =>
+                              nameValidator(value, maxLength: 40),
+                          decoration: const InputDecoration(
                             labelText: 'Edit Network name',
                           ),
                           onSaved: (value) {
-                            networkName = value;
+                            if (value != null) networkName = value.trim();
                           },
                         ),
                       ),
                       actions: <Widget>[
-                        FlatButton(
+                        TextButton(
                           onPressed: () => Navigator.of(ctx).pop(),
-                          child: Text('Cancel'),
+                          child: const Text('Cancel'),
                         ),
-                        FlatButton(
+                        TextButton(
                           onPressed: () async {
-                            if (formKey.currentState.validate()) {
-                              formKey.currentState.save();
+                            if (formKey.currentState?.validate() == true) {
+                              formKey.currentState?.save();
                               await DatabaseService.updateData(context,
                                   data: {'nn': networkName});
-                              Navigator.of(context).pop();
-                              setState(() {});
+                              if (ctx.mounted) Navigator.of(ctx).pop();
+                              if (mounted) setState(() {});
                             }
                           },
-                          child: Text('Save'),
+                          child: const Text('Save'),
                         ),
                       ],
                     ),
@@ -258,11 +245,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 },
               ),
             ),
-            SizedBox(height: 30),
+            const SizedBox(height: 30),
             getTitle(context, 'Secondary Information'),
-            SizedBox(height: 10),
-            Padding(
-              padding: const EdgeInsets.only(left: 8.0, bottom: 4.0),
+            const SizedBox(height: 10),
+            const Padding(
+              padding: EdgeInsets.only(left: 8.0, bottom: 4.0),
               child: Text(
                 'Areas',
                 style: TextStyle(
@@ -272,21 +259,25 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ),
             ),
             areas.isEmpty
-                ? Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Text('No area to show',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                            color: Colors.red,
-                            fontSize: 20,
-                            fontStyle: FontStyle.italic,
-                            fontWeight: FontWeight.bold,
-                            letterSpacing: 1)),
+                ? const Padding(
+                    padding: EdgeInsets.all(8.0),
+                    child: Text(
+                      'No area to show',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        color: Colors.red,
+                        fontSize: 20,
+                        fontStyle: FontStyle.italic,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: 1,
+                      ),
+                    ),
                   )
                 : GridView.builder(
-                    physics: NeverScrollableScrollPhysics(),
+                    physics: const NeverScrollableScrollPhysics(),
                     shrinkWrap: true,
-                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                    gridDelegate:
+                        const SliverGridDelegateWithFixedCrossAxisCount(
                       crossAxisCount: 5,
                     ),
                     itemBuilder: (context, index) {
@@ -297,15 +288,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         decoration: sweepGradientDecoration(context),
                         child: Text(
                           areas[index].areaName,
-                          style: TextStyle(color: Colors.white),
+                          style: const TextStyle(color: Colors.white),
                         ),
                       );
                     },
                     itemCount: areas.length,
                   ),
-            SizedBox(height: 10),
-            Padding(
-              padding: const EdgeInsets.only(left: 8.0, bottom: 4.0),
+            const SizedBox(height: 10),
+            const Padding(
+              padding: EdgeInsets.only(left: 8.0, bottom: 4.0),
               child: Text(
                 'Plans',
                 style: TextStyle(
@@ -315,9 +306,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ),
             ),
             GridView.builder(
-              physics: NeverScrollableScrollPhysics(),
+              physics: const NeverScrollableScrollPhysics(),
               shrinkWrap: true,
-              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                 crossAxisCount: 5,
               ),
               itemBuilder: (context, index) {
@@ -328,16 +319,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     alignment: Alignment.center,
                     decoration: sweepGradientDecoration(context),
                     child: Text(
-                      operatorDetails.plans[index].toString(),
-                      style: TextStyle(color: Colors.white),
+                      op.plans[index].toString(),
+                      style: const TextStyle(color: Colors.white),
                     ),
                   ),
                 );
               },
-              itemCount: operatorDetails.plans.length,
+              itemCount: op.plans.length,
             ),
-            SizedBox(height: 10),
-            if (operatorDetails.plans.length < 16)
+            const SizedBox(height: 10),
+            if (op.plans.length < 16)
               Align(
                 alignment: Alignment.centerRight,
                 child: defaultbutton(
@@ -346,53 +337,67 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   width: 18,
                   height: 12,
                   function: () {
-                    final _formKey = GlobalKey<FormState>();
-                    final _planController = TextEditingController();
-                    return showDialog(
+                    final formKey = GlobalKey<FormState>();
+                    final planController = TextEditingController();
+                    showDialog(
                       context: context,
-                      builder: (context) => Form(
-                        key: _formKey,
+                      builder: (dialogCtx) => Form(
+                        key: formKey,
                         child: BackdropFilter(
                           filter: ImageFilter.blur(sigmaX: 2, sigmaY: 2),
                           child: AlertDialog(
-                            title: Text('Add Plan'),
+                            title: const Text('Add Plan'),
                             content: Column(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                Text(
-                                    'NOTE: Plan cannot be deleted. You can add maximum of 16 plans!\n',
-                                    style: TextStyle(color: Colors.red)),
+                                const Text(
+                                  'NOTE: Plan cannot be deleted. You can add maximum of 16 plans!\n',
+                                  style: TextStyle(color: Colors.red),
+                                ),
                                 TextFormField(
-                                  controller: _planController,
+                                  controller: planController,
                                   validator: planValidator,
                                   decoration: inputDecoration(
-                                      icon: FlutterIcons.currency_inr_mco),
+                                    icon: Icons.currency_rupee,
+                                  ),
                                 ),
                               ],
                             ),
                             actions: <Widget>[
-                              FlatButton(
-                                onPressed: () => Navigator.pop(context),
-                                child: Text('cancel'),
-                                textColor: Theme.of(context).errorColor,
+                              TextButton(
+                                onPressed: () => Navigator.pop(dialogCtx),
+                                style: TextButton.styleFrom(
+                                  foregroundColor:
+                                      Theme.of(dialogCtx).colorScheme.error,
+                                ),
+                                child: const Text('cancel'),
                               ),
-                              FlatButton(
+                              TextButton(
                                 onPressed: () async {
-                                  if (_formKey.currentState.validate()) {
-                                    _formKey.currentState.save();
-                                    final list = operatorDetails.plans
-                                      ..add(double.parse(_planController.text));
-                                    await DatabaseService.updateData(context,
-                                        data: {'plans': list});
-                                    Navigator.pop(context);
-                                    setState(() {});
+                                  if (formKey.currentState?.validate() ==
+                                      true) {
+                                    formKey.currentState?.save();
+                                    final list = List<double>.from(op.plans)
+                                      ..add(double.parse(
+                                          planController.text.trim()));
+                                    await DatabaseService.updateData(
+                                      context,
+                                      data: {'plans': list},
+                                    );
+                                    if (dialogCtx.mounted) {
+                                      Navigator.pop(dialogCtx);
+                                    }
+                                    if (mounted) setState(() {});
                                   }
                                 },
-                                child: Text(
+                                style: TextButton.styleFrom(
+                                  foregroundColor:
+                                      Theme.of(dialogCtx).primaryColor,
+                                ),
+                                child: const Text(
                                   'save',
                                   style: TextStyle(fontSize: 16),
                                 ),
-                                color: Theme.of(context).primaryColor,
                               ),
                             ],
                           ),

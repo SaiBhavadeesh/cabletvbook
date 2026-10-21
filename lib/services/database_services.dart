@@ -15,43 +15,58 @@ import 'package:cableTvBook/widgets/default_dialog_box.dart';
 
 class DatabaseService {
   static Future<void> getuserData() async {
-    final _firestoreInstance =
-        FirebaseFirestore.instance.collection('users').doc(firebaseUser.uid);
+    final user = firebaseUser;
+    if (user == null) return;
+    final firestoreInstance =
+        FirebaseFirestore.instance.collection('users').doc(user.uid);
     try {
-      DocumentSnapshot document = await _firestoreInstance.get();
-      operatorDetails = Operator.fromMap(document.data());
+      DocumentSnapshot document = await firestoreInstance.get();
+      if (document.exists && document.data() != null) {
+        operatorDetails =
+            Operator.fromMap(document.data() as Map<String, dynamic>);
+      }
     } on PlatformException catch (error) {
-      Fluttertoast.showToast(msg: error.message);
+      Fluttertoast.showToast(msg: error.message ?? 'Error getting user data');
     } catch (_) {
       Fluttertoast.showToast(msg: 'ERROR : something went wrong!');
     }
   }
 
-  static Future<void> addNewCustomer(BuildContext context,
-      {@required Customer customer, @required File file}) async {
-    DefaultDialogBox.loadingDialog(context,
-        loaderType: SelectLoader.ballRotateChase);
+  static Future<void> addNewCustomer(
+    BuildContext context, {
+    required Customer customer,
+    File? file,
+  }) async {
+    DefaultDialogBox.loadingDialog(context);
     try {
-      String url;
+      String? url;
       final area = areas.firstWhere((element) => element.id == customer.areaId);
-      final _firestoreInstance = FirebaseFirestore.instance
-          .collection('users/${operatorDetails.id}/customers')
+      final op = operatorDetails;
+      if (op == null) throw Exception('Operator details missing');
+
+      final firestoreInstance = FirebaseFirestore.instance
+          .collection('users/${op.id}/customers')
           .doc();
-      if (file != null)
+
+      if (file != null) {
         try {
-          final _ref = FirebaseStorage.instance.ref().child(
-              'customerPictures/${operatorDetails.id}/${_firestoreInstance.id}/profilePicture.png');
-          await _ref.putFile(file).onComplete;
-          url = await _ref.getDownloadURL();
+          final ref = FirebaseStorage.instance.ref().child(
+              'customerPictures/${op.id}/${firestoreInstance.id}/profilePicture.png');
+          final uploadTask = await ref.putFile(file);
+          url = await uploadTask.ref.getDownloadURL();
           Fluttertoast.showToast(msg: 'Profile picture uploaded!');
         } on PlatformException catch (error) {
-          Fluttertoast.showToast(msg: error.message);
+          Fluttertoast.showToast(
+              msg: error.message ?? 'Picture upload failed');
         } catch (_) {
           Fluttertoast.showToast(msg: 'ERROR : picture upload failed!');
         }
-      await _firestoreInstance.set(customer.toJson()
-        ..['id'] = _firestoreInstance.id
+      }
+
+      await firestoreInstance.set(customer.toJson()
+        ..['id'] = firestoreInstance.id
         ..['piUrl'] = url);
+
       final data = {
         'ta': area.totalAccounts + 1,
         'aa': customer.currentStatus == 'Active'
@@ -61,128 +76,149 @@ class DatabaseService {
             ? area.inActiveAccounts
             : area.inActiveAccounts + 1,
       };
-      await FirebaseFirestore.instance
-          .collection('users/${firebaseUser.uid}/areas')
-          .doc(customer.areaId)
-          .update(data);
+
+      final user = firebaseUser;
+      if (user != null) {
+        await FirebaseFirestore.instance
+            .collection('users/${user.uid}/areas')
+            .doc(customer.areaId)
+            .update(data);
+      }
+
       Navigator.of(context).pushNamedAndRemoveUntil(
           BottomTabsScreen.routeName, (route) => false);
       Fluttertoast.showToast(msg: 'Customer successfully added!');
     } on PlatformException catch (error) {
       Navigator.pop(context);
-      Fluttertoast.showToast(msg: error.message);
+      Fluttertoast.showToast(msg: error.message ?? 'Error adding customer');
     } catch (_) {
       Navigator.pop(context);
       Fluttertoast.showToast(msg: 'ERROR : something went wrong!');
     }
   }
 
-  static Future<void> updateCustomerData(BuildContext context,
-      {@required Map<String, dynamic> data,
-      @required String customerId}) async {
-    DefaultDialogBox.loadingDialog(context,
-        loaderType: SelectLoader.ballRotateChase);
+  static Future<void> updateCustomerData(
+    BuildContext context, {
+    required Map<String, dynamic> data,
+    required String customerId,
+  }) async {
+    DefaultDialogBox.loadingDialog(context);
     try {
+      final op = operatorDetails;
+      if (op == null) throw Exception('Operator details missing');
       await FirebaseFirestore.instance
-          .collection('users/${operatorDetails.id}/customers')
+          .collection('users/${op.id}/customers')
           .doc(customerId)
           .update(data);
       Navigator.pop(context);
       Fluttertoast.showToast(msg: 'Successfully updated!');
     } on PlatformException catch (error) {
       Navigator.pop(context);
-      Fluttertoast.showToast(msg: error.message);
+      Fluttertoast.showToast(msg: error.message ?? 'Update failed');
     } catch (_) {
       Navigator.pop(context);
       Fluttertoast.showToast(msg: 'ERROR : something went wrong!');
     }
   }
 
-  static Future<void> updateCustomerPicture(BuildContext context,
-      {@required File file, @required String customerId}) async {
-    DefaultDialogBox.loadingDialog(context,
-        loaderType: SelectLoader.ballRotateChase);
+  static Future<void> updateCustomerPicture(
+    BuildContext context, {
+    required File file,
+    required String customerId,
+  }) async {
+    DefaultDialogBox.loadingDialog(context);
     try {
-      final _ref = FirebaseStorage.instance.ref().child(
-          'customerPictures/${operatorDetails.id}/$customerId/profilePicture.png');
-      await _ref.putFile(file).onComplete;
-      final url = await _ref.getDownloadURL();
+      final op = operatorDetails;
+      if (op == null) throw Exception('Operator details missing');
+      final ref = FirebaseStorage.instance.ref().child(
+          'customerPictures/${op.id}/$customerId/profilePicture.png');
+      final task = await ref.putFile(file);
+      final url = await task.ref.getDownloadURL();
       await FirebaseFirestore.instance
-          .collection('users/${operatorDetails.id}/customers')
+          .collection('users/${op.id}/customers')
           .doc(customerId)
           .update({'piUrl': url});
       Navigator.pop(context);
       Fluttertoast.showToast(msg: 'Profile picture updated!');
     } on PlatformException catch (error) {
       Navigator.pop(context);
-      Fluttertoast.showToast(msg: error.message);
+      Fluttertoast.showToast(msg: error.message ?? 'Update picture failed');
     } catch (_) {
       Navigator.pop(context);
       Fluttertoast.showToast(msg: 'ERROR : picture upload failed!');
     }
   }
 
-  static Future<void> uploadProfilePicture(BuildContext context,
-      {@required File file}) async {
-    DefaultDialogBox.loadingDialog(context,
-        loaderType: SelectLoader.ballRotateChase);
+  static Future<void> uploadProfilePicture(
+    BuildContext context, {
+    required File file,
+  }) async {
+    DefaultDialogBox.loadingDialog(context);
     try {
-      final _ref = FirebaseStorage.instance
+      final op = operatorDetails;
+      if (op == null) throw Exception('Operator details missing');
+      final ref = FirebaseStorage.instance
           .ref()
-          .child('profilePictures/${operatorDetails.id}/profilePicture.png');
-      await _ref.putFile(file).onComplete;
-      final url = await _ref.getDownloadURL();
+          .child('profilePictures/${op.id}/profilePicture.png');
+      final task = await ref.putFile(file);
+      final url = await task.ref.getDownloadURL();
       await FirebaseFirestore.instance
           .collection('users')
-          .doc(operatorDetails.id)
+          .doc(op.id)
           .update({'pil': url});
       await getuserData();
       Navigator.pop(context);
       Fluttertoast.showToast(msg: 'Profile picture updated!');
     } on PlatformException catch (error) {
       Navigator.pop(context);
-      Fluttertoast.showToast(msg: error.message);
+      Fluttertoast.showToast(msg: error.message ?? 'Picture upload failed');
     } catch (_) {
       Navigator.pop(context);
       Fluttertoast.showToast(msg: 'ERROR : picture upload failed!');
     }
   }
 
-  static Future<void> updateData(BuildContext context,
-      {@required Map<String, dynamic> data}) async {
-    DefaultDialogBox.loadingDialog(context,
-        loaderType: SelectLoader.ballRotateChase);
+  static Future<void> updateData(
+    BuildContext context, {
+    required Map<String, dynamic> data,
+  }) async {
+    DefaultDialogBox.loadingDialog(context);
     try {
+      final op = operatorDetails;
+      if (op == null) throw Exception('Operator details missing');
       await FirebaseFirestore.instance
           .collection('users')
-          .doc(operatorDetails.id)
+          .doc(op.id)
           .update(data);
       await getuserData();
       Navigator.pop(context);
       Fluttertoast.showToast(msg: 'Successfully updated!');
     } on PlatformException catch (error) {
       Navigator.pop(context);
-      Fluttertoast.showToast(msg: error.message);
+      Fluttertoast.showToast(msg: error.message ?? 'Update failed');
     } catch (_) {
       Navigator.pop(context);
       Fluttertoast.showToast(msg: 'ERROR : something went wrong!');
     }
   }
 
-  static Future<void> addArea(BuildContext context,
-      {@required Map<String, dynamic> data}) async {
-    DefaultDialogBox.loadingDialog(context,
-        loaderType: SelectLoader.ballRotateChase);
+  static Future<void> addArea(
+    BuildContext context, {
+    required Map<String, dynamic> data,
+  }) async {
+    DefaultDialogBox.loadingDialog(context);
     try {
-      final _firestoreInstance = FirebaseFirestore.instance
-          .collection('users/${firebaseUser.uid}/areas')
+      final user = firebaseUser;
+      if (user == null) throw Exception('User not logged in');
+      final firestoreInstance = FirebaseFirestore.instance
+          .collection('users/${user.uid}/areas')
           .doc();
-      await _firestoreInstance.set(data..['id'] = _firestoreInstance.id);
+      await firestoreInstance.set(data..['id'] = firestoreInstance.id);
       Navigator.pop(context);
       Fluttertoast.showToast(msg: 'New area created successfully!');
     } on PlatformException catch (error) {
       Navigator.pop(context);
-      Fluttertoast.showToast(msg: error.message);
+      Fluttertoast.showToast(msg: error.message ?? 'Add area failed');
     } catch (_) {
       Navigator.pop(context);
       Fluttertoast.showToast(msg: 'ERROR : something went wrong!');
@@ -190,96 +226,105 @@ class DatabaseService {
   }
 
   static Future<void> deleteArea(BuildContext context, String areaId) async {
-    DefaultDialogBox.loadingDialog(context,
-        loaderType: SelectLoader.ballRotateChase);
+    DefaultDialogBox.loadingDialog(context);
     try {
-      final _instance = FirebaseFirestore.instance
-          .collection('users/${operatorDetails.id}/areas')
+      final op = operatorDetails;
+      if (op == null) throw Exception('Operator details missing');
+      final instance = FirebaseFirestore.instance
+          .collection('users/${op.id}/areas')
           .doc(areaId);
-      await _instance.delete();
-      final _customerInstance = FirebaseFirestore.instance
-          .collection('users/${operatorDetails.id}/customers');
+      await instance.delete();
+      final customerInstance = FirebaseFirestore.instance
+          .collection('users/${op.id}/customers');
       final doc =
-          await _customerInstance.where('areaId', isEqualTo: areaId).get();
+          await customerInstance.where('areaId', isEqualTo: areaId).get();
       for (int i = 0; i < doc.docs.length; i++) {
-        await _customerInstance.doc(doc.docs[i].id).delete();
+        await customerInstance.doc(doc.docs[i].id).delete();
       }
       Navigator.pop(context);
       Fluttertoast.showToast(msg: 'Area successfully deleted!');
     } on PlatformException catch (error) {
       Navigator.pop(context);
-      Fluttertoast.showToast(msg: error.message);
+      Fluttertoast.showToast(msg: error.message ?? 'Delete area failed');
     } catch (_) {
       Navigator.pop(context);
       Fluttertoast.showToast(msg: 'ERROR : something went wrong!');
     }
   }
 
-  static Future<void> updateArea(BuildContext context,
-      {@required Map<String, dynamic> data}) async {
-    DefaultDialogBox.loadingDialog(context,
-        loaderType: SelectLoader.ballRotateChase);
+  static Future<void> updateArea(
+    BuildContext context, {
+    required Map<String, dynamic> data,
+  }) async {
+    DefaultDialogBox.loadingDialog(context);
     try {
+      final user = firebaseUser;
+      if (user == null) throw Exception('User not logged in');
       await FirebaseFirestore.instance
-          .collection('users/${firebaseUser.uid}/areas')
+          .collection('users/${user.uid}/areas')
           .doc(data['id'])
           .update(data);
       Navigator.pop(context);
     } on PlatformException catch (error) {
       Navigator.pop(context);
-      Fluttertoast.showToast(msg: error.message);
+      Fluttertoast.showToast(msg: error.message ?? 'Update area failed');
     } catch (_) {
       Navigator.pop(context);
       Fluttertoast.showToast(msg: 'ERROR : something went wrong!');
     }
   }
 
-  static Future<void> rechargeCustomer(BuildContext context,
-      {@required String customerId,
-      @required String areaId,
-      @required double plan,
-      @required String status,
-      @required int term,
-      @required bool billPay,
-      @required int unPaidNo}) async {
-    DefaultDialogBox.loadingDialog(context,
-        loaderType: SelectLoader.ballRotateChase);
+  static Future<void> rechargeCustomer(
+    BuildContext context, {
+    required String customerId,
+    required String areaId,
+    required double plan,
+    required String status,
+    required int term,
+    required bool billPay,
+    required int unPaidNo,
+  }) async {
+    DefaultDialogBox.loadingDialog(context);
     try {
-      final _ref = FirebaseFirestore.instance
-          .collection('users/${operatorDetails.id}/customers')
+      final op = operatorDetails;
+      if (op == null) throw Exception('Operator details missing');
+      final ref = FirebaseFirestore.instance
+          .collection('users/${op.id}/customers')
           .doc(customerId);
-      final docs = await _ref.collection('recharges').orderBy('ymRec').get();
-      Recharge recent;
+      final docs = await ref.collection('recharges').orderBy('ymRec').get();
+      Recharge? recent;
       int monthCode = DateTime.now().month;
       int rechargeYear = DateTime.now().year;
       if (docs.docs.isNotEmpty) {
-        recent = Recharge.fromMap(docs.docs.last);
+        recent = Recharge.fromMap(docs.docs.last.data());
         if (recent.ymRec.year > rechargeYear) {
           rechargeYear = recent.ymRec.year;
           monthCode = recent.ymRec.month + 1;
         } else if (recent.ymRec.year == rechargeYear &&
-            recent.ymRec.month >= monthCode) monthCode = recent.ymRec.month + 1;
+            recent.ymRec.month >= monthCode) {
+          monthCode = recent.ymRec.month + 1;
+        }
       }
       for (int i = 0; i < term; i++) {
-        if (monthCode % 13 == 0) {
+        if (monthCode > 12) {
           monthCode = 1;
           rechargeYear += 1;
         }
-        final _rechargeRef = _ref.collection('recharges').doc();
+        final rechargeRef = ref.collection('recharges').doc();
         final activeRecharge = Recharge(
-                id: _rechargeRef.id,
-                status: true,
-                addInfo: null,
-                date: null,
-                ymRec: DateTime(rechargeYear, monthCode),
-                billPay: billPay,
-                plan: plan.toString())
-            .toJson()
-              ..['date'] = FieldValue.serverTimestamp();
-        await _rechargeRef.set(activeRecharge);
+          id: rechargeRef.id,
+          status: true,
+          addInfo: null,
+          date: null,
+          ymRec: DateTime(rechargeYear, monthCode),
+          billPay: billPay,
+          plan: plan.toString(),
+        ).toJson()
+          ..['date'] = FieldValue.serverTimestamp();
+        await rechargeRef.set(activeRecharge);
         monthCode += 1;
       }
-      await _ref.update({
+      await ref.update({
         'curSts': 'Active',
         'runYear': rechargeYear,
         'expMon': monthCode - 1,
@@ -290,44 +335,51 @@ class DatabaseService {
         await updateArea(context, data: {
           'id': areaId,
           'aa': area.activeAccounts + 1,
-          'iaa': area.inActiveAccounts - 1
+          'iaa': area.inActiveAccounts - 1,
         });
       }
       Navigator.pop(context);
       Fluttertoast.showToast(msg: 'Activation successful!');
     } on PlatformException catch (error) {
       Navigator.pop(context);
-      Fluttertoast.showToast(msg: error.message);
+      Fluttertoast.showToast(msg: error.message ?? 'Activation failed');
     } catch (_) {
       Navigator.pop(context);
       Fluttertoast.showToast(msg: 'ERROR : something went wrong!');
     }
   }
 
-  static Future<void> deactivateCustomer(BuildContext context,
-      {@required String customerId,
-      @required String areaId,
-      @required String year}) async {
-    DefaultDialogBox.loadingDialog(context,
-        loaderType: SelectLoader.ballRotateChase);
+  static Future<void> deactivateCustomer(
+    BuildContext context, {
+    required String customerId,
+    required String areaId,
+    required String year,
+  }) async {
+    DefaultDialogBox.loadingDialog(context);
     try {
-      final _ref = FirebaseFirestore.instance
-          .collection('users/${operatorDetails.id}/customers')
+      final op = operatorDetails;
+      if (op == null) throw Exception('Operator details missing');
+      final ref = FirebaseFirestore.instance
+          .collection('users/${op.id}/customers')
           .doc(customerId);
-      final docs = await _ref.collection('recharges').orderBy('ymRec').get();
-      final recent = Recharge.fromMap(docs.docs.last);
-      if (recent.ymRec.year == DateTime.now().year &&
-          recent.ymRec.month <= DateTime.now().month) {
-        await _ref.collection('recharges').doc(recent.id).update({
-          'addInfo':
-              'DC: ${DateFormat('dd, MMMM / yyyy').format(DateTime.now())}'
+      final docs = await ref.collection('recharges').orderBy('ymRec').get();
+      if (docs.docs.isEmpty) {
+        Navigator.pop(context);
+        Fluttertoast.showToast(msg: 'No recharges found');
+        return;
+      }
+      final recent = Recharge.fromMap(docs.docs.last.data());
+      final now = DateTime.now();
+      if (recent.ymRec.year == now.year && recent.ymRec.month <= now.month) {
+        await ref.collection('recharges').doc(recent.id).update({
+          'addInfo': 'DC: ${DateFormat('dd, MMMM / yyyy').format(DateTime.now())}'
         });
-        await _ref.update({'curSts': 'Inactive'});
+        await ref.update({'curSts': 'Inactive'});
         final area = areas.firstWhere((element) => element.id == areaId);
         await updateArea(context, data: {
           'id': areaId,
           'aa': area.activeAccounts - 1,
-          'iaa': area.inActiveAccounts + 1
+          'iaa': area.inActiveAccounts + 1,
         });
         Navigator.pop(context);
         Fluttertoast.showToast(msg: 'Deactivation successful!');
@@ -339,7 +391,7 @@ class DatabaseService {
       }
     } on PlatformException catch (error) {
       Navigator.pop(context);
-      Fluttertoast.showToast(msg: error.message);
+      Fluttertoast.showToast(msg: error.message ?? 'Deactivation failed');
     } catch (_) {
       Navigator.pop(context);
       Fluttertoast.showToast(msg: 'ERROR : something went wrong!');
@@ -348,18 +400,19 @@ class DatabaseService {
 
   static Future<void> billPaid(
     BuildContext context, {
-    @required String customerId,
-    @required String year,
-    @required String rechargeId,
-    @required int unpaidBillno,
+    required String customerId,
+    required String year,
+    required String rechargeId,
+    required int unpaidBillno,
   }) async {
-    DefaultDialogBox.loadingDialog(context,
-        loaderType: SelectLoader.ballRotateChase);
+    DefaultDialogBox.loadingDialog(context);
     try {
-      final _ref = FirebaseFirestore.instance
-          .collection('users/${operatorDetails.id}/customers');
-      await _ref.doc(customerId).update({'noOfPenBil': unpaidBillno - 1});
-      await _ref
+      final op = operatorDetails;
+      if (op == null) throw Exception('Operator details missing');
+      final ref = FirebaseFirestore.instance
+          .collection('users/${op.id}/customers');
+      await ref.doc(customerId).update({'noOfPenBil': unpaidBillno - 1});
+      await ref
           .doc(customerId)
           .collection('recharges')
           .doc(rechargeId)
@@ -367,86 +420,94 @@ class DatabaseService {
       Navigator.pop(context);
     } on PlatformException catch (error) {
       Navigator.pop(context);
-      Fluttertoast.showToast(msg: error.message);
+      Fluttertoast.showToast(msg: error.message ?? 'Bill payment failed');
     } catch (_) {
       Navigator.pop(context);
       Fluttertoast.showToast(msg: 'ERROR : something went wrong!');
     }
   }
 
-  static Future<bool> deleteRecharge(BuildContext context,
-      {@required String customerId,
-      @required String areaId,
-      @required Recharge recharge,
-      @required int unPaidNo}) async {
-    DefaultDialogBox.loadingDialog(context,
-        loaderType: SelectLoader.ballRotateChase);
+  static Future<bool> deleteRecharge(
+    BuildContext context, {
+    required String customerId,
+    required String areaId,
+    required Recharge recharge,
+    required int unPaidNo,
+  }) async {
+    DefaultDialogBox.loadingDialog(context);
     int updateYear = DateTime.now().year;
     try {
+      final op = operatorDetails;
+      if (op == null) throw Exception('Operator details missing');
       String status = 'Inactive';
       int month = 0;
-      final _ref = FirebaseFirestore.instance
-          .collection('users/${operatorDetails.id}/customers');
-      await _ref
+      final ref = FirebaseFirestore.instance
+          .collection('users/${op.id}/customers');
+      await ref
           .doc(customerId)
           .collection('recharges')
           .doc(recharge.id)
           .delete();
-      if (recharge.billPay != null && !recharge.billPay)
-        await _ref.doc(customerId).update({'noOfPenBil': unPaidNo - 1});
-      final docs = await _ref
+      if (recharge.billPay != null && !recharge.billPay!) {
+        await ref.doc(customerId).update({'noOfPenBil': unPaidNo - 1});
+      }
+      final docs = await ref
           .doc(customerId)
           .collection('recharges')
           .orderBy('ymRec')
           .get();
       if (docs.docs.isNotEmpty) {
-        final recent = Recharge.fromMap(docs.docs.last);
+        final recent = Recharge.fromMap(docs.docs.last.data());
         updateYear = recent.ymRec.year;
         status = recent.status ? 'Active' : 'Inactive';
         month = recent.ymRec.month;
       }
       await FirebaseFirestore.instance
-          .collection('users/${operatorDetails.id}/customers')
+          .collection('users/${op.id}/customers')
           .doc(customerId)
           .update({'runYear': updateYear, 'curSts': status, 'expMon': month});
       if (status == 'Inactive') {
         final area = areas.firstWhere((element) => element.id == areaId);
-        if (area.activeAccounts > 0)
+        if (area.activeAccounts > 0) {
           await updateArea(context, data: {
             'id': areaId,
             'aa': area.activeAccounts - 1,
-            'iaa': area.inActiveAccounts + 1
+            'iaa': area.inActiveAccounts + 1,
           });
+        }
       }
       Navigator.pop(context);
     } on PlatformException catch (error) {
       Navigator.pop(context);
-      Fluttertoast.showToast(msg: error.message);
+      Fluttertoast.showToast(msg: error.message ?? 'Delete recharge failed');
     } catch (_) {
       Navigator.pop(context);
       Fluttertoast.showToast(msg: 'ERROR : something went wrong!');
     }
-    return recharge.ymRec.year != updateYear ? true : false;
+    return recharge.ymRec.year != updateYear;
   }
 
-  static Future<void> deleteCustomer(BuildContext context,
-      {@required String areaId,
-      @required String customerId,
-      @required bool isActive,
-      @required int totalCount,
-      @required int otherCount}) async {
-    DefaultDialogBox.loadingDialog(context,
-        loaderType: SelectLoader.ballRotateChase);
+  static Future<void> deleteCustomer(
+    BuildContext context, {
+    required String areaId,
+    required String customerId,
+    required bool isActive,
+    required int totalCount,
+    required int otherCount,
+  }) async {
+    DefaultDialogBox.loadingDialog(context);
     try {
-      final _custInst = FirebaseFirestore.instance
-          .collection('users/${operatorDetails.id}/customers')
+      final op = operatorDetails;
+      if (op == null) throw Exception('Operator details missing');
+      final custInst = FirebaseFirestore.instance
+          .collection('users/${op.id}/customers')
           .doc(customerId);
-      final _areaInst = FirebaseFirestore.instance
-          .collection('users/${operatorDetails.id}/areas')
+      final areaInst = FirebaseFirestore.instance
+          .collection('users/${op.id}/areas')
           .doc(areaId);
       final key = isActive ? 'aa' : 'iaa';
-      await _custInst.delete();
-      await _areaInst.update({
+      await custInst.delete();
+      await areaInst.update({
         'ta': totalCount - 1,
         key: otherCount - 1,
       });
@@ -454,7 +515,7 @@ class DatabaseService {
       Fluttertoast.showToast(msg: 'Customer successfully deleted!');
     } on PlatformException catch (error) {
       Navigator.pop(context);
-      Fluttertoast.showToast(msg: error.message);
+      Fluttertoast.showToast(msg: error.message ?? 'Delete customer failed');
     } catch (_) {
       Navigator.pop(context);
       Fluttertoast.showToast(msg: 'ERROR : something went wrong!');

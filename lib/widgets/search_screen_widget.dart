@@ -1,7 +1,6 @@
 import 'package:cableTvBook/global/variables.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_icons/flutter_icons.dart';
 import 'package:loading_indicator/loading_indicator.dart';
 
 import 'package:cableTvBook/models/customer.dart';
@@ -16,14 +15,17 @@ class SearchScreenWidget extends StatefulWidget {
   final bool active;
   final bool credits;
   final bool inactive;
-  final String areaId;
-  SearchScreenWidget(
-      {this.all = false,
-      this.pending = false,
-      this.credits = false,
-      this.active = false,
-      this.inactive = false,
-      this.areaId});
+  final String? areaId;
+
+  const SearchScreenWidget({
+    super.key,
+    this.all = false,
+    this.pending = false,
+    this.credits = false,
+    this.active = false,
+    this.inactive = false,
+    this.areaId,
+  });
 
   @override
   _SearchScreenWidgetState createState() => _SearchScreenWidgetState();
@@ -33,79 +35,99 @@ class _SearchScreenWidgetState extends State<SearchScreenWidget> {
   @override
   void initState() {
     super.initState();
-    try {
-      if (!_showed) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!_showed && mounted) {
         _showed = true;
-        Future.delayed(
-            Duration(seconds: 0),
-            () => Scaffold.of(context).showSnackBar(SnackBar(
-                content: SizedBox(
-                    height: 16,
-                    child: Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text('pull down to refresh'),
-                          SizedBox(width: 20),
-                          Icon(Icons.arrow_downward, size: 18)
-                        ])),
-                duration: Duration(seconds: 1),
-                behavior: SnackBarBehavior.floating,
-                backgroundColor: Colors.blueGrey,
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(30)))));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const SizedBox(
+              height: 16,
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text('pull down to refresh'),
+                  SizedBox(width: 20),
+                  Icon(Icons.arrow_downward, size: 18, color: Colors.white),
+                ],
+              ),
+            ),
+            duration: const Duration(seconds: 1),
+            behavior: SnackBarBehavior.floating,
+            backgroundColor: Colors.blueGrey,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(30),
+            ),
+          ),
+        );
       }
-    } catch (_) {}
+    });
   }
 
   @override
   Widget build(BuildContext context) {
-    return StreamBuilder(
-        stream: FirebaseFirestore.instance
-            .collection('users/${operatorDetails.id}/customers')
-            .where(widget.areaId != null ? 'areaId' : '',
-                isEqualTo: widget.areaId)
-            .snapshots(),
-        builder: (context, snapshot) {
-          if (snapshot.hasData) {
-            final customers = getCustomersFromDoc(snapshot.data,
-                active: widget.active,
-                all: widget.all,
-                credits: widget.credits,
-                inactive: widget.inactive,
-                pending: widget.pending);
-            if (customers.isEmpty) {
-              return Center(
-                child: Text('No customer to show',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                        fontSize: 20,
-                        fontStyle: FontStyle.italic,
-                        fontWeight: FontWeight.bold,
-                        letterSpacing: 1)),
-              );
-            }
-            return CustomerListView(customers: customers);
-          } else if (snapshot.connectionState == ConnectionState.waiting)
-            return Container(
-              padding: EdgeInsets.symmetric(
-                  horizontal: MediaQuery.of(context).size.width * 0.3),
-              child: Center(
-                child: LoadingIndicator(
-                    indicatorType: Indicator.ballClipRotateMultiple),
+    final op = operatorDetails;
+    if (op == null) {
+      return const Center(child: Text('Operator information unavailable'));
+    }
+
+    Query collection = FirebaseFirestore.instance
+        .collection('users/${op.id}/customers');
+    if (widget.areaId != null && widget.areaId!.isNotEmpty) {
+      collection = collection.where('areaId', isEqualTo: widget.areaId);
+    }
+
+    return StreamBuilder<QuerySnapshot>(
+      stream: collection.snapshots(),
+      builder: (context, snapshot) {
+        if (snapshot.hasData && snapshot.data != null) {
+          final customers = getCustomersFromDoc(
+            snapshot.data!,
+            active: widget.active,
+            all: widget.all,
+            credits: widget.credits,
+            inactive: widget.inactive,
+            pending: widget.pending,
+          );
+          if (customers.isEmpty) {
+            return const Center(
+              child: Text(
+                'No customer to show',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 20,
+                  fontStyle: FontStyle.italic,
+                  fontWeight: FontWeight.bold,
+                  letterSpacing: 1,
+                ),
               ),
             );
-          else
-            return Center(child: Text('Something went wrong!'));
-        });
+          }
+          return CustomerListView(customers: customers);
+        } else if (snapshot.connectionState == ConnectionState.waiting) {
+          return Center(
+            child: SizedBox(
+              width: 50,
+              height: 50,
+              child: LoadingIndicator(
+                indicatorType: Indicator.ballClipRotateMultiple,
+                colors: [Theme.of(context).primaryColor],
+              ),
+            ),
+          );
+        } else {
+          return const Center(child: Text('Something went wrong!'));
+        }
+      },
+    );
   }
 }
 
 class CustomerListView extends StatefulWidget {
   const CustomerListView({
-    Key key,
-    @required this.customers,
-  }) : super(key: key);
+    super.key,
+    required this.customers,
+  });
 
   final List<Customer> customers;
 
@@ -116,16 +138,20 @@ class CustomerListView extends StatefulWidget {
 class _CustomerListViewState extends State<CustomerListView> {
   final searchController = TextEditingController();
   List<Customer> filteredCustomers = [];
+
   void onTextChange(String value) {
     setState(() {
-      if (value.isNotEmpty)
+      final query = value.toLowerCase().trim();
+      if (query.isNotEmpty) {
         filteredCustomers = widget.customers
-            .where((customer) => (customer.name.contains(value) ||
-                customer.accountNumber.contains(value) ||
-                customer.macId.contains(value)))
+            .where((customer) =>
+                customer.name.toLowerCase().contains(query) ||
+                customer.accountNumber.toLowerCase().contains(query) ||
+                customer.macId.toLowerCase().contains(query))
             .toList();
-      else
+      } else {
         filteredCustomers = widget.customers;
+      }
     });
   }
 
@@ -136,27 +162,43 @@ class _CustomerListViewState extends State<CustomerListView> {
   }
 
   @override
+  void didUpdateWidget(CustomerListView oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.customers != widget.customers) {
+      onTextChange(searchController.text);
+    }
+  }
+
+  @override
+  void dispose() {
+    searchController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Stack(
       children: <Widget>[
         Scrollbar(
           child: ListView.builder(
             itemCount: filteredCustomers.length,
-            physics: AlwaysScrollableScrollPhysics(),
+            physics: const AlwaysScrollableScrollPhysics(),
             itemBuilder: (context, index) {
               if (index == 0) {
                 return Column(
                   children: <Widget>[
-                    SizedBox(
-                      height: 55,
-                    ),
+                    const SizedBox(height: 55),
                     CustomerTile(
-                        customer: filteredCustomers[index], index: index),
+                      customer: filteredCustomers[index],
+                      index: index,
+                    ),
                   ],
                 );
               }
               return CustomerTile(
-                  customer: filteredCustomers[index], index: index);
+                customer: filteredCustomers[index],
+                index: index,
+              );
             },
           ),
         ),
@@ -167,11 +209,12 @@ class _CustomerListViewState extends State<CustomerListView> {
             textInputAction: TextInputAction.search,
             onChanged: onTextChange,
             decoration: inputDecoration(
-                filled: true,
-                filledColor: Colors.white,
-                hint: 'Search by Name / mac no / acc no.',
-                icon: FlutterIcons.ios_search_ion,
-                radius: 30),
+              filled: true,
+              filledColor: Colors.white,
+              hint: 'Search by Name / mac no / acc no.',
+              icon: Icons.search,
+              radius: 30,
+            ),
           ),
         ),
       ],

@@ -8,6 +8,7 @@ import 'package:cableTvBook/global/variables.dart';
 import 'package:cableTvBook/widgets/home_drawer.dart';
 import 'package:cableTvBook/screens/home_screen.dart';
 import 'package:cableTvBook/helpers/image_getter.dart';
+import 'package:cableTvBook/helpers/avatar_image_provider.dart';
 import 'package:cableTvBook/screens/search_screen.dart';
 import 'package:cableTvBook/services/database_services.dart';
 import 'package:cableTvBook/screens/add_customer_screen.dart';
@@ -38,13 +39,11 @@ class _BottomTabsScreenState extends State<BottomTabsScreen> {
     final op = operatorDetails;
     final user = firebaseUser;
 
-    ImageProvider? avatarImage;
-    if (op?.profileImageLink != null && op!.profileImageLink!.isNotEmpty) {
-      avatarImage = NetworkImage(op.profileImageLink!);
-    } else if (_profilePic != null) {
+    ImageProvider avatarImage;
+    if (_profilePic != null) {
       avatarImage = FileImage(_profilePic!);
     } else {
-      avatarImage = const AssetImage('assets/images/default_profile.jpg');
+      avatarImage = getAvatarImageProvider(op?.profileImageLink);
     }
 
     return PopScope(

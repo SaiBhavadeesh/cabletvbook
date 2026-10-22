@@ -12,8 +12,14 @@ import 'package:cableTvBook/services/authentication.dart';
 class VerifyPhonePopup extends StatelessWidget {
   final bool isUpdate;
   final String? phoneNumber;
+  final String? password;
 
-  const VerifyPhonePopup({super.key, this.isUpdate = false, this.phoneNumber});
+  const VerifyPhonePopup({
+    super.key,
+    this.isUpdate = false,
+    this.phoneNumber,
+    this.password,
+  });
   static String otp = '';
 
   @override
@@ -91,7 +97,7 @@ class VerifyPhonePopup extends StatelessWidget {
                                   context: context,
                                   otp: otp,
                                   email: operatorDetails?.email ?? '',
-                                  password: operatorDetails?.password),
+                                  password: password),
                           title: 'Done',
                         ),
                       ),

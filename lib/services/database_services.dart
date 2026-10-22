@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_storage/firebase_storage.dart';
+import 'package:cableTvBook/helpers/image_getter.dart';
 
 import 'package:cableTvBook/models/customer.dart';
 import 'package:cableTvBook/models/operator.dart';
@@ -25,10 +25,16 @@ class DatabaseService {
         operatorDetails =
             Operator.fromMap(document.data() as Map<String, dynamic>);
       }
+      // Also refresh areas
+      final areaSnap =
+          await firestoreInstance.collection('areas').get();
+      areas = areaSnap.docs
+          .map((d) => AreaData.fromMap(d.data()))
+          .toList();
     } on PlatformException catch (error) {
       Fluttertoast.showToast(msg: error.message ?? 'Error getting user data');
     } catch (_) {
-      Fluttertoast.showToast(msg: 'ERROR : something went wrong!');
+      Fluttertoast.showToast(msg: 'ERROR: something went wrong!');
     }
   }
 
@@ -40,7 +46,6 @@ class DatabaseService {
     DefaultDialogBox.loadingDialog(context);
     try {
       String? url;
-      final area = areas.firstWhere((element) => element.id == customer.areaId);
       final op = operatorDetails;
       if (op == null) throw Exception('Operator details missing');
 
@@ -49,51 +54,41 @@ class DatabaseService {
           .doc();
 
       if (file != null) {
-        try {
-          final ref = FirebaseStorage.instance.ref().child(
-              'customerPictures/${op.id}/${firestoreInstance.id}/profilePicture.png');
-          final uploadTask = await ref.putFile(file);
-          url = await uploadTask.ref.getDownloadURL();
-          Fluttertoast.showToast(msg: 'Profile picture uploaded!');
-        } on PlatformException catch (error) {
-          Fluttertoast.showToast(
-              msg: error.message ?? 'Picture upload failed');
-        } catch (_) {
-          Fluttertoast.showToast(msg: 'ERROR : picture upload failed!');
-        }
+        url = await ImageGetter.convertFileToBase64(file);
       }
 
-      await firestoreInstance.set(customer.toJson()
-        ..['id'] = firestoreInstance.id
-        ..['piUrl'] = url);
+      final isCustomerActive = customer.currentStatus == 'Active';
+      final areaRef = FirebaseFirestore.instance
+          .collection('users/${op.id}/areas')
+          .doc(customer.areaId);
 
-      final data = {
-        'ta': area.totalAccounts + 1,
-        'aa': customer.currentStatus == 'Active'
-            ? area.activeAccounts + 1
-            : area.activeAccounts,
-        'iaa': customer.currentStatus == 'Active'
-            ? area.inActiveAccounts
-            : area.inActiveAccounts + 1,
-      };
+      final batch = FirebaseFirestore.instance.batch();
+      batch.set(
+        firestoreInstance,
+        customer.toJson()
+          ..['id'] = firestoreInstance.id
+          ..['piUrl'] = url,
+      );
 
-      final user = firebaseUser;
-      if (user != null) {
-        await FirebaseFirestore.instance
-            .collection('users/${user.uid}/areas')
-            .doc(customer.areaId)
-            .update(data);
+      batch.update(areaRef, {
+        'ta': FieldValue.increment(1),
+        if (isCustomerActive) 'aa': FieldValue.increment(1) else 'iaa': FieldValue.increment(1),
+      });
+
+      await batch.commit();
+      await getuserData();
+
+      if (context.mounted) {
+        Navigator.of(context).pushNamedAndRemoveUntil(
+            BottomTabsScreen.routeName, (route) => false);
+        Fluttertoast.showToast(msg: 'Customer successfully added!');
       }
-
-      Navigator.of(context).pushNamedAndRemoveUntil(
-          BottomTabsScreen.routeName, (route) => false);
-      Fluttertoast.showToast(msg: 'Customer successfully added!');
     } on PlatformException catch (error) {
-      Navigator.pop(context);
+      if (context.mounted) Navigator.pop(context);
       Fluttertoast.showToast(msg: error.message ?? 'Error adding customer');
     } catch (_) {
-      Navigator.pop(context);
-      Fluttertoast.showToast(msg: 'ERROR : something went wrong!');
+      if (context.mounted) Navigator.pop(context);
+      Fluttertoast.showToast(msg: 'ERROR: something went wrong!');
     }
   }
 
@@ -110,14 +105,14 @@ class DatabaseService {
           .collection('users/${op.id}/customers')
           .doc(customerId)
           .update(data);
-      Navigator.pop(context);
+      if (context.mounted) Navigator.pop(context);
       Fluttertoast.showToast(msg: 'Successfully updated!');
     } on PlatformException catch (error) {
-      Navigator.pop(context);
+      if (context.mounted) Navigator.pop(context);
       Fluttertoast.showToast(msg: error.message ?? 'Update failed');
     } catch (_) {
-      Navigator.pop(context);
-      Fluttertoast.showToast(msg: 'ERROR : something went wrong!');
+      if (context.mounted) Navigator.pop(context);
+      Fluttertoast.showToast(msg: 'ERROR: something went wrong!');
     }
   }
 
@@ -130,22 +125,19 @@ class DatabaseService {
     try {
       final op = operatorDetails;
       if (op == null) throw Exception('Operator details missing');
-      final ref = FirebaseStorage.instance.ref().child(
-          'customerPictures/${op.id}/$customerId/profilePicture.png');
-      final task = await ref.putFile(file);
-      final url = await task.ref.getDownloadURL();
+      final base64Image = await ImageGetter.convertFileToBase64(file);
       await FirebaseFirestore.instance
           .collection('users/${op.id}/customers')
           .doc(customerId)
-          .update({'piUrl': url});
-      Navigator.pop(context);
+          .update({'piUrl': base64Image});
+      if (context.mounted) Navigator.pop(context);
       Fluttertoast.showToast(msg: 'Profile picture updated!');
     } on PlatformException catch (error) {
-      Navigator.pop(context);
+      if (context.mounted) Navigator.pop(context);
       Fluttertoast.showToast(msg: error.message ?? 'Update picture failed');
     } catch (_) {
-      Navigator.pop(context);
-      Fluttertoast.showToast(msg: 'ERROR : picture upload failed!');
+      if (context.mounted) Navigator.pop(context);
+      Fluttertoast.showToast(msg: 'ERROR: picture upload failed!');
     }
   }
 
@@ -157,24 +149,20 @@ class DatabaseService {
     try {
       final op = operatorDetails;
       if (op == null) throw Exception('Operator details missing');
-      final ref = FirebaseStorage.instance
-          .ref()
-          .child('profilePictures/${op.id}/profilePicture.png');
-      final task = await ref.putFile(file);
-      final url = await task.ref.getDownloadURL();
+      final base64Image = await ImageGetter.convertFileToBase64(file);
       await FirebaseFirestore.instance
           .collection('users')
           .doc(op.id)
-          .update({'pil': url});
+          .update({'pil': base64Image});
       await getuserData();
-      Navigator.pop(context);
+      if (context.mounted) Navigator.pop(context);
       Fluttertoast.showToast(msg: 'Profile picture updated!');
     } on PlatformException catch (error) {
-      Navigator.pop(context);
+      if (context.mounted) Navigator.pop(context);
       Fluttertoast.showToast(msg: error.message ?? 'Picture upload failed');
     } catch (_) {
-      Navigator.pop(context);
-      Fluttertoast.showToast(msg: 'ERROR : picture upload failed!');
+      if (context.mounted) Navigator.pop(context);
+      Fluttertoast.showToast(msg: 'ERROR: picture upload failed!');
     }
   }
 
@@ -191,14 +179,14 @@ class DatabaseService {
           .doc(op.id)
           .update(data);
       await getuserData();
-      Navigator.pop(context);
+      if (context.mounted) Navigator.pop(context);
       Fluttertoast.showToast(msg: 'Successfully updated!');
     } on PlatformException catch (error) {
-      Navigator.pop(context);
+      if (context.mounted) Navigator.pop(context);
       Fluttertoast.showToast(msg: error.message ?? 'Update failed');
     } catch (_) {
-      Navigator.pop(context);
-      Fluttertoast.showToast(msg: 'ERROR : something went wrong!');
+      if (context.mounted) Navigator.pop(context);
+      Fluttertoast.showToast(msg: 'ERROR: something went wrong!');
     }
   }
 
@@ -214,14 +202,15 @@ class DatabaseService {
           .collection('users/${user.uid}/areas')
           .doc();
       await firestoreInstance.set(data..['id'] = firestoreInstance.id);
-      Navigator.pop(context);
+      await getuserData();
+      if (context.mounted) Navigator.pop(context);
       Fluttertoast.showToast(msg: 'New area created successfully!');
     } on PlatformException catch (error) {
-      Navigator.pop(context);
+      if (context.mounted) Navigator.pop(context);
       Fluttertoast.showToast(msg: error.message ?? 'Add area failed');
     } catch (_) {
-      Navigator.pop(context);
-      Fluttertoast.showToast(msg: 'ERROR : something went wrong!');
+      if (context.mounted) Navigator.pop(context);
+      Fluttertoast.showToast(msg: 'ERROR: something went wrong!');
     }
   }
 
@@ -230,25 +219,32 @@ class DatabaseService {
     try {
       final op = operatorDetails;
       if (op == null) throw Exception('Operator details missing');
-      final instance = FirebaseFirestore.instance
+
+      final areaRef = FirebaseFirestore.instance
           .collection('users/${op.id}/areas')
           .doc(areaId);
-      await instance.delete();
-      final customerInstance = FirebaseFirestore.instance
-          .collection('users/${op.id}/customers');
-      final doc =
-          await customerInstance.where('areaId', isEqualTo: areaId).get();
-      for (int i = 0; i < doc.docs.length; i++) {
-        await customerInstance.doc(doc.docs[i].id).delete();
+
+      final customerQuery = await FirebaseFirestore.instance
+          .collection('users/${op.id}/customers')
+          .where('areaId', isEqualTo: areaId)
+          .get();
+
+      final batch = FirebaseFirestore.instance.batch();
+      batch.delete(areaRef);
+      for (final doc in customerQuery.docs) {
+        batch.delete(doc.reference);
       }
-      Navigator.pop(context);
+      await batch.commit();
+      await getuserData();
+
+      if (context.mounted) Navigator.pop(context);
       Fluttertoast.showToast(msg: 'Area successfully deleted!');
     } on PlatformException catch (error) {
-      Navigator.pop(context);
+      if (context.mounted) Navigator.pop(context);
       Fluttertoast.showToast(msg: error.message ?? 'Delete area failed');
     } catch (_) {
-      Navigator.pop(context);
-      Fluttertoast.showToast(msg: 'ERROR : something went wrong!');
+      if (context.mounted) Navigator.pop(context);
+      Fluttertoast.showToast(msg: 'ERROR: something went wrong!');
     }
   }
 
@@ -264,13 +260,14 @@ class DatabaseService {
           .collection('users/${user.uid}/areas')
           .doc(data['id'])
           .update(data);
-      Navigator.pop(context);
+      await getuserData();
+      if (context.mounted) Navigator.pop(context);
     } on PlatformException catch (error) {
-      Navigator.pop(context);
+      if (context.mounted) Navigator.pop(context);
       Fluttertoast.showToast(msg: error.message ?? 'Update area failed');
     } catch (_) {
-      Navigator.pop(context);
-      Fluttertoast.showToast(msg: 'ERROR : something went wrong!');
+      if (context.mounted) Navigator.pop(context);
+      Fluttertoast.showToast(msg: 'ERROR: something went wrong!');
     }
   }
 
@@ -305,6 +302,9 @@ class DatabaseService {
           monthCode = recent.ymRec.month + 1;
         }
       }
+
+      final batch = FirebaseFirestore.instance.batch();
+
       for (int i = 0; i < term; i++) {
         if (monthCode > 12) {
           monthCode = 1;
@@ -321,31 +321,59 @@ class DatabaseService {
           plan: plan.toString(),
         ).toJson()
           ..['date'] = FieldValue.serverTimestamp();
-        await rechargeRef.set(activeRecharge);
+
+        batch.set(rechargeRef, activeRecharge);
+
+        // Update monthly aggregated collection report atomically
+        final planVal = plan.toDouble();
+        final reportRef = FirebaseFirestore.instance
+            .collection('users/${op.id}/reports')
+            .doc('${rechargeYear}_$monthCode');
+        batch.set(
+          reportRef,
+          {
+            'year': rechargeYear,
+            'month': monthCode,
+            'totalBilled': FieldValue.increment(planVal),
+            'billedCount': FieldValue.increment(1),
+            if (billPay) 'totalPaid': FieldValue.increment(planVal),
+            if (billPay) 'paidCount': FieldValue.increment(1),
+            'updatedAt': FieldValue.serverTimestamp(),
+          },
+          SetOptions(merge: true),
+        );
+
         monthCode += 1;
       }
-      await ref.update({
+
+      batch.update(ref, {
         'curSts': 'Active',
         'runYear': rechargeYear,
         'expMon': monthCode - 1,
         'noOfPenBil': billPay ? unPaidNo : unPaidNo + term,
       });
+
       if (status != 'Active') {
-        final area = areas.firstWhere((element) => element.id == areaId);
-        await updateArea(context, data: {
-          'id': areaId,
-          'aa': area.activeAccounts + 1,
-          'iaa': area.inActiveAccounts - 1,
+        final areaRef = FirebaseFirestore.instance
+            .collection('users/${op.id}/areas')
+            .doc(areaId);
+        batch.update(areaRef, {
+          'aa': FieldValue.increment(1),
+          'iaa': FieldValue.increment(-1),
         });
       }
-      Navigator.pop(context);
+
+      await batch.commit();
+      await getuserData();
+
+      if (context.mounted) Navigator.pop(context);
       Fluttertoast.showToast(msg: 'Activation successful!');
     } on PlatformException catch (error) {
-      Navigator.pop(context);
+      if (context.mounted) Navigator.pop(context);
       Fluttertoast.showToast(msg: error.message ?? 'Activation failed');
     } catch (_) {
-      Navigator.pop(context);
-      Fluttertoast.showToast(msg: 'ERROR : something went wrong!');
+      if (context.mounted) Navigator.pop(context);
+      Fluttertoast.showToast(msg: 'ERROR: something went wrong!');
     }
   }
 
@@ -364,37 +392,44 @@ class DatabaseService {
           .doc(customerId);
       final docs = await ref.collection('recharges').orderBy('ymRec').get();
       if (docs.docs.isEmpty) {
-        Navigator.pop(context);
+        if (context.mounted) Navigator.pop(context);
         Fluttertoast.showToast(msg: 'No recharges found');
         return;
       }
       final recent = Recharge.fromMap(docs.docs.last.data());
       final now = DateTime.now();
       if (recent.ymRec.year == now.year && recent.ymRec.month <= now.month) {
-        await ref.collection('recharges').doc(recent.id).update({
+        final areaRef = FirebaseFirestore.instance
+            .collection('users/${op.id}/areas')
+            .doc(areaId);
+
+        final batch = FirebaseFirestore.instance.batch();
+        batch.update(ref.collection('recharges').doc(recent.id), {
           'addInfo': 'DC: ${DateFormat('dd, MMMM / yyyy').format(DateTime.now())}'
         });
-        await ref.update({'curSts': 'Inactive'});
-        final area = areas.firstWhere((element) => element.id == areaId);
-        await updateArea(context, data: {
-          'id': areaId,
-          'aa': area.activeAccounts - 1,
-          'iaa': area.inActiveAccounts + 1,
+        batch.update(ref, {'curSts': 'Inactive'});
+        batch.update(areaRef, {
+          'aa': FieldValue.increment(-1),
+          'iaa': FieldValue.increment(1),
         });
-        Navigator.pop(context);
+
+        await batch.commit();
+        await getuserData();
+
+        if (context.mounted) Navigator.pop(context);
         Fluttertoast.showToast(msg: 'Deactivation successful!');
       } else {
-        Navigator.pop(context);
+        if (context.mounted) Navigator.pop(context);
         Fluttertoast.showToast(
             msg:
                 'Deactivation not possible!\nPlease delete the future recharges');
       }
     } on PlatformException catch (error) {
-      Navigator.pop(context);
+      if (context.mounted) Navigator.pop(context);
       Fluttertoast.showToast(msg: error.message ?? 'Deactivation failed');
     } catch (_) {
-      Navigator.pop(context);
-      Fluttertoast.showToast(msg: 'ERROR : something went wrong!');
+      if (context.mounted) Navigator.pop(context);
+      Fluttertoast.showToast(msg: 'ERROR: something went wrong!');
     }
   }
 
@@ -411,19 +446,45 @@ class DatabaseService {
       if (op == null) throw Exception('Operator details missing');
       final ref = FirebaseFirestore.instance
           .collection('users/${op.id}/customers');
-      await ref.doc(customerId).update({'noOfPenBil': unpaidBillno - 1});
-      await ref
-          .doc(customerId)
-          .collection('recharges')
-          .doc(rechargeId)
-          .update({'billPay': true});
-      Navigator.pop(context);
+
+      final recRef =
+          ref.doc(customerId).collection('recharges').doc(rechargeId);
+      final recSnap = await recRef.get();
+
+      final batch = FirebaseFirestore.instance.batch();
+      batch.update(ref.doc(customerId), {'noOfPenBil': FieldValue.increment(-1)});
+      batch.update(recRef, {'billPay': true});
+
+      if (recSnap.exists && recSnap.data() != null) {
+        final recData = recSnap.data()!;
+        final planVal =
+            double.tryParse(recData['plan']?.toString() ?? '0') ?? 0.0;
+        final recDate =
+            (recData['ymRec'] as Timestamp?)?.toDate() ?? DateTime.now();
+        final reportRef = FirebaseFirestore.instance
+            .collection('users/${op.id}/reports')
+            .doc('${recDate.year}_${recDate.month}');
+        batch.set(
+          reportRef,
+          {
+            'year': recDate.year,
+            'month': recDate.month,
+            'totalPaid': FieldValue.increment(planVal),
+            'paidCount': FieldValue.increment(1),
+            'updatedAt': FieldValue.serverTimestamp(),
+          },
+          SetOptions(merge: true),
+        );
+      }
+
+      await batch.commit();
+      if (context.mounted) Navigator.pop(context);
     } on PlatformException catch (error) {
-      Navigator.pop(context);
+      if (context.mounted) Navigator.pop(context);
       Fluttertoast.showToast(msg: error.message ?? 'Bill payment failed');
     } catch (_) {
-      Navigator.pop(context);
-      Fluttertoast.showToast(msg: 'ERROR : something went wrong!');
+      if (context.mounted) Navigator.pop(context);
+      Fluttertoast.showToast(msg: 'ERROR: something went wrong!');
     }
   }
 
@@ -443,13 +504,31 @@ class DatabaseService {
       int month = 0;
       final ref = FirebaseFirestore.instance
           .collection('users/${op.id}/customers');
+
       await ref
           .doc(customerId)
           .collection('recharges')
           .doc(recharge.id)
           .delete();
+
+      // Decrement monthly report rollup
+      final planVal = double.tryParse(recharge.plan ?? '0') ?? 0.0;
+      final reportRef = FirebaseFirestore.instance
+          .collection('users/${op.id}/reports')
+          .doc('${recharge.ymRec.year}_${recharge.ymRec.month}');
+      await reportRef.set(
+        {
+          'totalBilled': FieldValue.increment(-planVal),
+          'billedCount': FieldValue.increment(-1),
+          if (recharge.billPay == true) 'totalPaid': FieldValue.increment(-planVal),
+          if (recharge.billPay == true) 'paidCount': FieldValue.increment(-1),
+          'updatedAt': FieldValue.serverTimestamp(),
+        },
+        SetOptions(merge: true),
+      );
+
       if (recharge.billPay != null && !recharge.billPay!) {
-        await ref.doc(customerId).update({'noOfPenBil': unPaidNo - 1});
+        await ref.doc(customerId).update({'noOfPenBil': FieldValue.increment(-1)});
       }
       final docs = await ref
           .doc(customerId)
@@ -466,23 +545,24 @@ class DatabaseService {
           .collection('users/${op.id}/customers')
           .doc(customerId)
           .update({'runYear': updateYear, 'curSts': status, 'expMon': month});
+
       if (status == 'Inactive') {
-        final area = areas.firstWhere((element) => element.id == areaId);
-        if (area.activeAccounts > 0) {
-          await updateArea(context, data: {
-            'id': areaId,
-            'aa': area.activeAccounts - 1,
-            'iaa': area.inActiveAccounts + 1,
-          });
-        }
+        final areaRef = FirebaseFirestore.instance
+            .collection('users/${op.id}/areas')
+            .doc(areaId);
+        await areaRef.update({
+          'aa': FieldValue.increment(-1),
+          'iaa': FieldValue.increment(1),
+        });
+        await getuserData();
       }
-      Navigator.pop(context);
+      if (context.mounted) Navigator.pop(context);
     } on PlatformException catch (error) {
-      Navigator.pop(context);
+      if (context.mounted) Navigator.pop(context);
       Fluttertoast.showToast(msg: error.message ?? 'Delete recharge failed');
     } catch (_) {
-      Navigator.pop(context);
-      Fluttertoast.showToast(msg: 'ERROR : something went wrong!');
+      if (context.mounted) Navigator.pop(context);
+      Fluttertoast.showToast(msg: 'ERROR: something went wrong!');
     }
     return recharge.ymRec.year != updateYear;
   }
@@ -506,19 +586,25 @@ class DatabaseService {
           .collection('users/${op.id}/areas')
           .doc(areaId);
       final key = isActive ? 'aa' : 'iaa';
-      await custInst.delete();
-      await areaInst.update({
-        'ta': totalCount - 1,
-        key: otherCount - 1,
+
+      final batch = FirebaseFirestore.instance.batch();
+      batch.delete(custInst);
+      batch.update(areaInst, {
+        'ta': FieldValue.increment(-1),
+        key: FieldValue.increment(-1),
       });
-      Navigator.pop(context);
+
+      await batch.commit();
+      await getuserData();
+
+      if (context.mounted) Navigator.pop(context);
       Fluttertoast.showToast(msg: 'Customer successfully deleted!');
     } on PlatformException catch (error) {
-      Navigator.pop(context);
+      if (context.mounted) Navigator.pop(context);
       Fluttertoast.showToast(msg: error.message ?? 'Delete customer failed');
     } catch (_) {
-      Navigator.pop(context);
-      Fluttertoast.showToast(msg: 'ERROR : something went wrong!');
+      if (context.mounted) Navigator.pop(context);
+      Fluttertoast.showToast(msg: 'ERROR: something went wrong!');
     }
   }
 }

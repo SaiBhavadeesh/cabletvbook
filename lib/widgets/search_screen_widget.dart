@@ -76,6 +76,11 @@ class _SearchScreenWidgetState extends State<SearchScreenWidget> {
     if (widget.areaId != null && widget.areaId!.isNotEmpty) {
       collection = collection.where('areaId', isEqualTo: widget.areaId);
     }
+    if (widget.active) {
+      collection = collection.where('curSts', isEqualTo: 'Active');
+    } else if (widget.inactive) {
+      collection = collection.where('curSts', isEqualTo: 'Inactive');
+    }
 
     return StreamBuilder<QuerySnapshot>(
       stream: collection.snapshots(),

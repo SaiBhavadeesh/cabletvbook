@@ -7,12 +7,24 @@ import 'package:cableTvBook/global/variables.dart';
 import 'package:cableTvBook/screens/signin_screen.dart';
 import 'package:cableTvBook/services/database_services.dart';
 import 'package:cableTvBook/screens/bottom_tabs_screen.dart';
-import 'package:cableTvBook/payment_gateway/razor_pay_screen.dart';
 
-class InitialScreen extends StatelessWidget {
+class InitialScreen extends StatefulWidget {
   const InitialScreen({super.key});
 
-  Future<void> initialData(BuildContext context) async {
+  @override
+  State<InitialScreen> createState() => _InitialScreenState();
+}
+
+class _InitialScreenState extends State<InitialScreen> {
+  late Future<void> _initialDataFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    _initialDataFuture = _loadInitialData();
+  }
+
+  Future<void> _loadInitialData() async {
     try {
       firebaseUser = FirebaseAuth.instance.currentUser;
       final user = firebaseUser;
@@ -20,16 +32,20 @@ class InitialScreen extends StatelessWidget {
         await user.reload();
         await DatabaseService.getuserData();
       }
-    } catch (e) {
-      Fluttertoast.showToast(msg: 'Failed getting data !');
-      await FirebaseAuth.instance.signOut();
+    } catch (_) {
+      Fluttertoast.showToast(msg: 'Failed getting user data');
+      try {
+        await FirebaseAuth.instance.signOut();
+      } catch (_) {}
       firebaseUser = null;
+      operatorDetails = null;
     }
     if (firebaseUser != null && firebaseUser!.phoneNumber == null) {
       try {
         await FirebaseAuth.instance.signOut();
-        firebaseUser = null;
       } catch (_) {}
+      firebaseUser = null;
+      operatorDetails = null;
     }
   }
 
@@ -38,7 +54,7 @@ class InitialScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: Colors.white,
       body: FutureBuilder(
-        future: initialData(context),
+        future: _initialDataFuture,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             final width = MediaQuery.of(context).size.width;
@@ -66,8 +82,6 @@ class InitialScreen extends StatelessWidget {
             final op = operatorDetails;
             if (user == null || user.phoneNumber == null || op == null) {
               return const SigninScreen();
-            } else if (!op.isSubscribed) {
-              return const RazorPayScreen();
             } else {
               return const BottomTabsScreen();
             }

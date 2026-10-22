@@ -1,43 +1,41 @@
 {
   "project_info": {
-    "project_number": "355805999771",
-    "firebase_url": "https://cable-tv-book.firebaseio.com",
-    "project_id": "cable-tv-book",
-    "storage_bucket": "cable-tv-book.appspot.com"
+    "project_number": "994209181413",
+    "project_id": "cable-tv-book-c832a",
+    "storage_bucket": "cable-tv-book-c832a.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:355805999771:android:5222b6208d6c8cabfd4c3e",
+        "mobilesdk_app_id": "1:994209181413:android:3cb99123609e2e229fae0c",
         "android_client_info": {
-          "package_name": "com.srinivasasoftwares.cableTvBook"
+          "package_name": "com.nivid.cabletvbook"
         }
       },
       "oauth_client": [
         {
-          "client_id": "355805999771-9vsld3ciept15m4jdhad6eoeug90sba5.apps.googleusercontent.com",
-          "client_type": 1,
-          "android_info": {
-            "package_name": "com.srinivasasoftwares.cableTvBook",
-            "certificate_hash": "5de0db083b1f10f32337eaaef2f6da3c11832e7e"
-          }
-        },
-        {
-          "client_id": "355805999771-jmpdhufngfekkhgtkofhfpveg5driv0r.apps.googleusercontent.com",
+          "client_id": "994209181413-20881coq1ahrh988vrbd53qim1s2n94f.apps.googleusercontent.com",
           "client_type": 3
         }
       ],
       "api_key": [
         {
-          "current_key": "AIzaSyDQob2FwyuEG9coNg4TdWISqH1CmMBMnYI"
+          "current_key": "AIzaSyDpGYvSneUWP5Y4z8KnNhiRnFqBAE6XnjU"
         }
       ],
       "services": {
         "appinvite_service": {
           "other_platform_oauth_client": [
             {
-              "client_id": "355805999771-jmpdhufngfekkhgtkofhfpveg5driv0r.apps.googleusercontent.com",
+              "client_id": "994209181413-20881coq1ahrh988vrbd53qim1s2n94f.apps.googleusercontent.com",
               "client_type": 3
+            },
+            {
+              "client_id": "994209181413-3vsaqdskfs5l4ulin4e4ia6v3ke57l50.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.nivid.cabletvbook"
+              }
             }
           ]
         }

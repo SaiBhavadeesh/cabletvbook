@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 import 'package:cableTvBook/global/variables.dart';
 import 'package:cableTvBook/screens/home_screen.dart';
@@ -17,7 +18,7 @@ import 'package:cableTvBook/screens/bottom_tabs_screen.dart';
 import 'package:cableTvBook/screens/add_customer_screen.dart';
 import 'package:cableTvBook/screens/area_customers_screen.dart';
 import 'package:cableTvBook/screens/customer_detail_screen.dart';
-import 'package:cableTvBook/payment_gateway/razor_pay_screen.dart';
+import 'package:cableTvBook/firebase_options.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -33,7 +34,13 @@ void main() async {
     DeviceOrientation.portraitUp,
     DeviceOrientation.portraitDown,
   ]);
-  app = await Firebase.initializeApp();
+  app = await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
+  FirebaseFirestore.instance.settings = const Settings(
+    persistenceEnabled: true,
+    cacheSizeBytes: Settings.CACHE_SIZE_UNLIMITED,
+  );
   runApp(const MyApp());
 }
 
@@ -89,7 +96,6 @@ class MyApp extends StatelessWidget {
         SignupScreen.routeName: (ctx) => const SignupScreen(),
         SearchScreen.routeName: (ctx) => const SearchScreen(),
         ProfileScreen.routeName: (ctx) => const ProfileScreen(),
-        RazorPayScreen.routeName: (ctx) => const RazorPayScreen(),
         RegisterScreen.routeName: (ctx) => const RegisterScreen(),
         SettingsScreen.routeName: (ctx) => const SettingsScreen(),
         CollectionScreen.routeName: (ctx) => const CollectionScreen(),

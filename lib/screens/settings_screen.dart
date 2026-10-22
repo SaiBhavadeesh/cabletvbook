@@ -6,22 +6,27 @@ import 'package:cableTvBook/global/box_decoration.dart';
 import 'package:cableTvBook/services/authentication.dart';
 import 'package:cableTvBook/widgets/verify_phone_popup.dart';
 
-class SettingsScreen extends StatelessWidget {
+class SettingsScreen extends StatefulWidget {
   static const routeName = '/settingsScreen';
 
   const SettingsScreen({super.key});
 
-  Future<dynamic> getChangeDialog(
-    BuildContext context, {
+  @override
+  State<SettingsScreen> createState() => _SettingsScreenState();
+}
+
+class _SettingsScreenState extends State<SettingsScreen> {
+  Future<dynamic> _showChangeDialog({
     required String title,
     required FormFieldValidator<String> validator,
     required IconData icon,
     TextInputType? textInputType,
     String? prefix,
-    required VoidCallback onSaved,
-    required TextEditingController textController,
-    required GlobalKey<FormState> formKey,
+    required Future<void> Function(String value) onSaved,
   }) {
+    final textController = TextEditingController();
+    final formKey = GlobalKey<FormState>();
+
     return showDialog(
       context: context,
       builder: (ctx) => Form(
@@ -47,7 +52,12 @@ class SettingsScreen extends StatelessWidget {
                 backgroundColor: Theme.of(ctx).primaryColor,
                 foregroundColor: Colors.white,
               ),
-              onPressed: onSaved,
+              onPressed: () async {
+                if (formKey.currentState?.validate() == true) {
+                  formKey.currentState?.save();
+                  await onSaved(textController.text.trim());
+                }
+              },
               child: const Text(
                 'save',
                 style: TextStyle(fontSize: 18),
@@ -56,41 +66,38 @@ class SettingsScreen extends StatelessWidget {
           ],
         ),
       ),
-    );
+    ).then((_) {
+      textController.dispose();
+    });
   }
 
-  Widget getTitle(BuildContext context, String title) {
-    return Column(
-      children: <Widget>[
-        Container(
-          margin: const EdgeInsets.all(16),
-          padding: const EdgeInsets.all(8),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(10),
-            color: Theme.of(context).primaryColor,
-          ),
-          child: Text(
-            title,
-            style: const TextStyle(
-              color: Colors.white,
-              fontWeight: FontWeight.bold,
-              fontSize: 16,
-            ),
-          ),
+  Widget _buildSectionHeader(String title) {
+    return Container(
+      margin: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(8),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(10),
+        color: Theme.of(context).primaryColor,
+      ),
+      child: Text(
+        title,
+        style: const TextStyle(
+          color: Colors.white,
+          fontWeight: FontWeight.bold,
+          fontSize: 16,
         ),
-      ],
+      ),
     );
   }
 
-  Widget getdetailText(BuildContext context, String text,
-      {VoidCallback? function}) {
+  Widget _buildActionItem(String text, {VoidCallback? onTap}) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 4),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
           GestureDetector(
-            onTap: function,
+            onTap: onTap,
             child: Text(
               text,
               style: const TextStyle(
@@ -108,68 +115,57 @@ class SettingsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final user = firebaseUser;
-    final op = operatorDetails;
-    final textController = TextEditingController();
-    final formKey = GlobalKey<FormState>();
+    final hasPasswordAuth = user?.providerData
+            .any((element) => element.providerId == 'password') ??
+        false;
 
     return Scaffold(
       appBar: AppBar(
         title: const Text('General Settings'),
       ),
-      body: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      body: ListView(
         children: <Widget>[
-          getTitle(context, 'Account Settings'),
+          _buildSectionHeader('Account Settings'),
           if (user != null && !user.emailVerified)
-            getdetailText(
-              context,
+            _buildActionItem(
               'Verify your email',
-              function: () async =>
+              onTap: () async =>
                   await Authentication.sendEmailVerificationMail(context),
             ),
-          if (op?.password != null)
-            getdetailText(
-              context,
+          if (hasPasswordAuth)
+            _buildActionItem(
               'Change Email',
-              function: () => getChangeDialog(
-                context,
+              onTap: () => _showChangeDialog(
                 title: 'Change Email !',
                 validator: emailValidator,
                 icon: Icons.email,
                 textInputType: TextInputType.emailAddress,
-                textController: textController,
-                formKey: formKey,
-                onSaved: () async {
-                  if (formKey.currentState?.validate() == true) {
-                    formKey.currentState?.save();
-                    await Authentication.changeEmailAddress(context,
-                        email: textController.text.trim());
-                  }
+                onSaved: (value) async {
+                  await Authentication.changeEmailAddress(context,
+                      email: value);
                 },
               ),
             ),
-          getdetailText(
-            context,
+          _buildActionItem(
             'Change Phone number',
-            function: () => getChangeDialog(
-              context,
+            onTap: () => _showChangeDialog(
               title: 'Change Phone number !',
               validator: phoneValidator,
               icon: Icons.phone,
               textInputType: TextInputType.phone,
               prefix: '+91 ',
-              textController: textController,
-              formKey: formKey,
-              onSaved: () {
-                if (formKey.currentState?.validate() == true) {
-                  formKey.currentState?.save();
-                  Authentication.changePhoneNumber(context,
-                      phoneNumber: '+ 91 ${textController.text.trim()}');
+              onSaved: (value) async {
+                final formattedPhone = '+91$value';
+                await Authentication.changePhoneNumber(
+                  context,
+                  phoneNumber: formattedPhone,
+                );
+                if (mounted) {
                   Navigator.of(context).pushReplacement(
                     PageRouteBuilder(
                       pageBuilder: (context, _, __) => VerifyPhonePopup(
                         isUpdate: true,
-                        phoneNumber: '+ 91 ${textController.text.trim()}',
+                        phoneNumber: formattedPhone,
                       ),
                       opaque: false,
                     ),
@@ -178,28 +174,20 @@ class SettingsScreen extends StatelessWidget {
               },
             ),
           ),
-          if (op?.password != null)
-            getTitle(context, 'Privacy Settings'),
-          if (op?.password != null)
-            getdetailText(
-              context,
+          if (hasPasswordAuth) ...[
+            _buildSectionHeader('Privacy Settings'),
+            _buildActionItem(
               'Change Password',
-              function: () => getChangeDialog(
-                context,
+              onTap: () => _showChangeDialog(
                 title: 'Change password !',
                 validator: (value) => passwordValidator(value, false),
                 icon: Icons.vpn_key,
-                textController: textController,
-                formKey: formKey,
-                onSaved: () async {
-                  if (formKey.currentState?.validate() == true) {
-                    formKey.currentState?.save();
-                    await Authentication.changePassword(context,
-                        password: textController.text);
-                  }
+                onSaved: (value) async {
+                  await Authentication.changePassword(context, password: value);
                 },
               ),
             ),
+          ],
         ],
       ),
     );

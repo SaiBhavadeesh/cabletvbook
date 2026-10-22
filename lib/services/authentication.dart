@@ -10,7 +10,6 @@ import 'package:cableTvBook/screens/register_screen.dart';
 import 'package:cableTvBook/services/database_services.dart';
 import 'package:cableTvBook/screens/bottom_tabs_screen.dart';
 import 'package:cableTvBook/widgets/default_dialog_box.dart';
-import 'package:cableTvBook/payment_gateway/razor_pay_screen.dart';
 
 AuthCredential? _phoneCredential;
 UserCredential? _authResult;
@@ -30,17 +29,15 @@ class Authentication {
       await DatabaseService.getuserData();
       final op = operatorDetails;
       final user = firebaseUser;
-      if (op != null && op.isSubscribed) {
-        await DatabaseService.getuserData();
-        Navigator.of(context).pushNamedAndRemoveUntil(
-            BottomTabsScreen.routeName, (route) => false);
-      } else if (user != null && user.phoneNumber == null) {
+      if (user != null && user.phoneNumber == null) {
         Navigator.of(context).pushNamedAndRemoveUntil(
             RegisterScreen.routeName, (route) => false);
-      } else {
-        await DatabaseService.getuserData();
+      } else if (op != null) {
         Navigator.of(context).pushNamedAndRemoveUntil(
-            RazorPayScreen.routeName, (route) => false);
+            BottomTabsScreen.routeName, (route) => false);
+      } else {
+        Navigator.of(context).pushNamedAndRemoveUntil(
+            RegisterScreen.routeName, (route) => false);
       }
     } on FirebaseAuthException catch (error) {
       Navigator.pop(context);
@@ -84,13 +81,8 @@ class Authentication {
         );
       } else {
         await DatabaseService.getuserData();
-        if (operatorDetails != null && operatorDetails!.isSubscribed) {
-          Navigator.of(context).pushNamedAndRemoveUntil(
-              BottomTabsScreen.routeName, (route) => false);
-        } else {
-          Navigator.of(context).pushNamedAndRemoveUntil(
-              RazorPayScreen.routeName, (route) => false);
-        }
+        Navigator.of(context).pushNamedAndRemoveUntil(
+            BottomTabsScreen.routeName, (route) => false);
       }
     } on FirebaseAuthException catch (error) {
       Navigator.pop(context);
@@ -149,7 +141,7 @@ class Authentication {
               await DatabaseService.getuserData();
             }
             Navigator.of(context).pushNamedAndRemoveUntil(
-                RazorPayScreen.routeName, (route) => false);
+                BottomTabsScreen.routeName, (route) => false);
           } on PlatformException catch (error) {
             Navigator.pop(context);
             DefaultDialogBox.errorDialog(context, content: error.message ?? '');
@@ -238,7 +230,7 @@ class Authentication {
         await DatabaseService.getuserData();
       }
       Navigator.of(context)
-          .pushNamedAndRemoveUntil(RazorPayScreen.routeName, (route) => false);
+          .pushNamedAndRemoveUntil(BottomTabsScreen.routeName, (route) => false);
     } on FirebaseAuthException catch (error) {
       Navigator.pop(context);
       if (error.code != 'invalid-verification-code') {
@@ -296,10 +288,6 @@ class Authentication {
       final user = FirebaseAuth.instance.currentUser;
       if (user != null) {
         await user.updatePassword(password);
-        await FirebaseFirestore.instance
-            .collection('users')
-            .doc(user.uid)
-            .update({'password': password});
       }
       Navigator.pop(context);
     } on FirebaseAuthException catch (error) {

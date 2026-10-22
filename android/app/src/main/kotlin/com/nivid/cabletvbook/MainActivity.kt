@@ -1,4 +1,4 @@
-package com.srinivasasoftwares.cableTvBook
+package com.nivid.cabletvbook
 
 import io.flutter.embedding.android.FlutterActivity
 

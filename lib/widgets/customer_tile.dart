@@ -3,6 +3,7 @@ import 'package:cableTvBook/models/customer.dart';
 import 'package:cableTvBook/screens/bottom_tabs_screen.dart';
 import 'package:cableTvBook/screens/customer_detail_screen.dart';
 import 'package:cableTvBook/services/database_services.dart';
+import 'package:cableTvBook/helpers/avatar_image_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -107,10 +108,7 @@ class _CustomerTileState extends State<CustomerTile> {
         contentPadding: const EdgeInsets.symmetric(horizontal: 5),
         leading: CircleAvatar(
           radius: 30,
-          backgroundImage: widget.customer.profileImageUrl == null
-              ? const AssetImage('assets/images/default_profile.jpg')
-                  as ImageProvider
-              : NetworkImage(widget.customer.profileImageUrl!),
+          backgroundImage: getAvatarImageProvider(widget.customer.profileImageUrl),
         ),
         title: SizedBox(
           height: size.height * 0.0455,

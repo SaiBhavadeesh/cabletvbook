@@ -19,9 +19,9 @@ class AreaData {
     return AreaData(
       id: doc['id'] ?? '',
       areaName: doc['an'] ?? '',
-      totalAccounts: doc['ta'] ?? 0,
-      activeAccounts: doc['aa'] ?? 0,
-      inActiveAccounts: doc['iaa'] ?? 0,
+      totalAccounts: (doc['ta'] as num?)?.toInt() ?? 0,
+      activeAccounts: (doc['aa'] as num?)?.toInt() ?? 0,
+      inActiveAccounts: (doc['iaa'] as num?)?.toInt() ?? 0,
     );
   }
 
@@ -38,13 +38,8 @@ class Operator {
   String id;
   String name;
   String email;
-  String? password;
   String networkName;
   String phoneNumber;
-  String? transactionId;
-  DateTime? transactionTime;
-  double? amountPaid;
-  bool isSubscribed;
   DateTime? startDate;
   List<double> plans;
   String? profileImageLink;
@@ -53,16 +48,11 @@ class Operator {
     required this.id,
     required this.name,
     required this.email,
-    this.password,
     required this.networkName,
     required this.phoneNumber,
     required this.plans,
     this.startDate,
     this.profileImageLink,
-    this.transactionId,
-    this.transactionTime,
-    this.isSubscribed = false,
-    this.amountPaid,
   });
 
   factory Operator.fromMap(Map<String, dynamic> document) {
@@ -70,7 +60,6 @@ class Operator {
       id: document['id'] ?? '',
       name: document['name'] ?? '',
       email: document['email'] ?? '',
-      password: document['pswd'],
       networkName: document['nn'] ?? '',
       phoneNumber: document['pn'] ?? '',
       profileImageLink: document['pil'],
@@ -81,12 +70,6 @@ class Operator {
           ? List<double>.from(
               (document['plans'] as List).map((e) => (e as num).toDouble()))
           : [],
-      transactionId: document['tId'],
-      transactionTime: document['tt'] != null
-          ? (document['tt'] as Timestamp).toDate()
-          : null,
-      amountPaid: (document['mnyPd'] as num?)?.toDouble(),
-      isSubscribed: document['isSub'] ?? false,
     );
   }
 
@@ -94,15 +77,10 @@ class Operator {
         'id': id,
         'name': name,
         'email': email,
-        'pswd': password,
         'nn': networkName,
         'pil': profileImageLink,
         'pn': phoneNumber,
         'sd': FieldValue.serverTimestamp(),
         'plans': plans,
-        'tId': transactionId,
-        'tt': transactionTime,
-        'mnyPd': amountPaid,
-        'isSub': isSubscribed,
       };
 }

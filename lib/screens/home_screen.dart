@@ -89,9 +89,9 @@ class _HomeScreenState extends State<HomeScreen> {
                   color: Theme.of(context).primaryColor,
                   onPressed: delete
                       ? () async {
+                          if (ctx.mounted) Navigator.pop(ctx);
                           await DatabaseService.deleteArea(
                               context, areas[index].id);
-                          if (ctx.mounted) Navigator.pop(ctx);
                         }
                       : () async {
                           if (_formKey.currentState?.validate() == true) {

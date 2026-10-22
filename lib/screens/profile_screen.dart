@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:cableTvBook/global/variables.dart';
 import 'package:cableTvBook/global/validators.dart';
 import 'package:cableTvBook/helpers/image_getter.dart';
+import 'package:cableTvBook/helpers/avatar_image_provider.dart';
 import 'package:cableTvBook/global/box_decoration.dart';
 import 'package:cableTvBook/global/default_buttons.dart';
 import 'package:cableTvBook/services/database_services.dart';
@@ -86,13 +87,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
       );
     }
 
-    ImageProvider? avatarImage;
-    if (op.profileImageLink != null && op.profileImageLink!.isNotEmpty) {
-      avatarImage = NetworkImage(op.profileImageLink!);
-    } else if (_selectedImageFile != null) {
+    ImageProvider avatarImage;
+    if (_selectedImageFile != null) {
       avatarImage = FileImage(_selectedImageFile!);
     } else {
-      avatarImage = const AssetImage('assets/images/default_profile.jpg');
+      avatarImage = getAvatarImageProvider(op.profileImageLink);
     }
 
     return Scaffold(

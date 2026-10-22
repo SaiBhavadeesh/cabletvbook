@@ -231,9 +231,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     id: '',
                     name: _nameController.text.trim(),
                     email: email,
-                    password: password,
                     networkName: _networkController.text.trim(),
-                    phoneNumber: '+ 91 ${_phoneController.text.trim()}',
+                    phoneNumber: '+91${_phoneController.text.trim()}',
                     plans: [double.parse(_planController.text.trim())],
                   );
                   areas = [AreaData(areaName: _areaController.text.trim())];
@@ -241,11 +240,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     context: context,
                     phoneNumber: operatorDetails!.phoneNumber,
                     email: operatorDetails!.email,
-                    password: operatorDetails!.password,
+                    password: password,
                   );
                   Navigator.of(context).push(
                     PageRouteBuilder(
-                      pageBuilder: (context, _, __) => const VerifyPhonePopup(),
+                      pageBuilder: (context, _, __) => VerifyPhonePopup(
+                        password: password,
+                      ),
                       opaque: false,
                     ),
                   );

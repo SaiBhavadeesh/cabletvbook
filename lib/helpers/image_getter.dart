@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'dart:ui';
+import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
@@ -8,6 +9,7 @@ class ImageGetter {
   static Future<File?> getImageFromDevice(BuildContext ctx) async {
     final imagePicker = ImagePicker();
     File? selectedImageFile;
+
     await showDialog(
       context: ctx,
       builder: (c) => BackdropFilter(
@@ -20,9 +22,9 @@ class ImageGetter {
                 onPressed: () async {
                   final pickedImage = await imagePicker.pickImage(
                     source: ImageSource.camera,
-                    maxWidth: 1024,
-                    maxHeight: 1024,
-                    imageQuality: 85,
+                    maxWidth: 200,
+                    maxHeight: 200,
+                    imageQuality: 65,
                   );
                   if (pickedImage != null) {
                     selectedImageFile = File(pickedImage.path);
@@ -45,9 +47,9 @@ class ImageGetter {
                 onPressed: () async {
                   final pickedImage = await imagePicker.pickImage(
                     source: ImageSource.gallery,
-                    maxWidth: 1024,
-                    maxHeight: 1024,
-                    imageQuality: 85,
+                    maxWidth: 200,
+                    maxHeight: 200,
+                    imageQuality: 65,
                   );
                   if (pickedImage != null) {
                     selectedImageFile = File(pickedImage.path);
@@ -72,5 +74,14 @@ class ImageGetter {
       ),
     );
     return selectedImageFile;
+  }
+
+  static Future<String?> convertFileToBase64(File file) async {
+    try {
+      final bytes = await file.readAsBytes();
+      return base64Encode(bytes);
+    } catch (_) {
+      return null;
+    }
   }
 }

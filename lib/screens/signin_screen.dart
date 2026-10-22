@@ -1,5 +1,3 @@
-import 'dart:ui';
-
 import 'package:flutter/material.dart';
 import 'package:flutter/gestures.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -7,8 +5,10 @@ import 'package:fluttertoast/fluttertoast.dart';
 
 import 'package:cableTvBook/global/validators.dart';
 import 'package:cableTvBook/screens/signup_screen.dart';
-import 'package:cableTvBook/global/box_decoration.dart';
 import 'package:cableTvBook/services/authentication.dart';
+import 'package:cableTvBook/theme/app_colors.dart';
+import 'package:cableTvBook/theme/responsive.dart';
+import 'package:cableTvBook/widgets/app_logo.dart';
 
 class SigninScreen extends StatefulWidget {
   static const routeName = 'loginRegisterScreen';
@@ -23,42 +23,32 @@ class _SigninScreenState extends State<SigninScreen> {
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
+  bool _obscurePassword = true;
+  bool _isLoading = false;
   late TapGestureRecognizer _privacyPolicy;
   late TapGestureRecognizer _termsAndConditions;
 
-  Widget getTextWidget(String data, double size, Color color, bool isBold) {
-    return Text(
-      data,
-      style: TextStyle(
-        color: color,
-        fontSize: size,
-        fontWeight: isBold ? FontWeight.bold : FontWeight.normal,
-        letterSpacing: 0.5,
-      ),
-    );
-  }
-
   void _handlePrivacyPolicy() async {
-    final uri = Uri.parse("https://sites.google.com/view/srinivasasoftwares-privacy");
+    final uri = Uri.parse(
+        "https://sites.google.com/view/srinivasasoftwares-privacy");
     if (await canLaunchUrl(uri)) {
       try {
         await launchUrl(uri, mode: LaunchMode.externalApplication);
       } catch (_) {}
     } else {
-      Fluttertoast.showToast(
-          msg: 'Could not process your request, Please try again');
+      Fluttertoast.showToast(msg: 'Could not open privacy policy');
     }
   }
 
   void _handleTermsAndConditions() async {
-    final uri = Uri.parse("https://sites.google.com/view/srinivasasoftwares-terms");
+    final uri = Uri.parse(
+        "https://sites.google.com/view/srinivasasoftwares-terms");
     if (await canLaunchUrl(uri)) {
       try {
         await launchUrl(uri, mode: LaunchMode.externalApplication);
       } catch (_) {}
     } else {
-      Fluttertoast.showToast(
-          msg: 'Could not process your request, Please try again');
+      Fluttertoast.showToast(msg: 'Could not open terms & conditions');
     }
   }
 
@@ -79,181 +69,263 @@ class _SigninScreenState extends State<SigninScreen> {
     super.dispose();
   }
 
+  void _submit() async {
+    if (_formKey.currentState?.validate() == true) {
+      _formKey.currentState?.save();
+      setState(() => _isLoading = true);
+      try {
+        await Authentication.signinWithEmailAndPassword(
+          context,
+          email: _emailController.text.trim(),
+          password: _passwordController.text,
+        );
+      } finally {
+        if (mounted) setState(() => _isLoading = false);
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    final size = MediaQuery.of(context).size;
-    final top = MediaQuery.of(context).padding.top;
-    final primaryColor = Theme.of(context).primaryColor;
-    final errorColor = Theme.of(context).colorScheme.error;
-
     return Scaffold(
-      body: Stack(
-        alignment: Alignment.center,
-        children: <Widget>[
-          SizedBox(
-            height: size.height,
-            width: size.width,
-            child: Image.asset('assets/images/splash.png', fit: BoxFit.cover),
-          ),
-          BackdropFilter(
-            filter: ImageFilter.blur(sigmaX: 2, sigmaY: 2),
-            child: Container(
-              width: size.width,
-              height: size.height,
-              decoration: pageDecoration(context),
+      backgroundColor: AppColors.background,
+      body: SafeArea(
+        child: Center(
+          child: ResponsiveContainer(
+            maxWidth: 460,
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+            child: SingleChildScrollView(
+              physics: const BouncingScrollPhysics(),
               child: Form(
                 key: _formKey,
-                child: ListView(
-                  physics: const BouncingScrollPhysics(),
-                  padding: const EdgeInsets.symmetric(horizontal: 32),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: <Widget>[
-                    SizedBox(height: top * 1.5),
-                    getTextWidget('Sign In', 28, Colors.white, true),
-                    Divider(
-                      thickness: 2,
-                      color: Colors.black,
-                      indent: 0,
-                      endIndent: size.width * 0.625,
-                    ),
-                    SizedBox(height: top),
-                    getTextWidget('E-Mail', 16, Colors.white, false),
-                    SizedBox(height: top * 0.25),
-                    TextFormField(
-                      validator: emailValidator,
-                      controller: _emailController,
-                      cursorColor: Colors.black,
-                      keyboardType: TextInputType.emailAddress,
-                      style: const TextStyle(color: Colors.white),
-                      decoration: inputDecoration(
-                        filled: true,
-                        hintColor: Colors.white,
-                        filledColor: primaryColor.withAlpha(200),
-                        hint: 'email',
-                        icon: Icons.email,
-                        iconColor: Colors.white,
+                    const SizedBox(height: 16),
+
+                    // Brand Logo & Heading
+                    Center(
+                      child: Column(
+                        children: [
+                          const AppLogo(size: 72, borderRadius: 18),
+                          const SizedBox(height: 16),
+                          const Text(
+                            'Cable TV Book',
+                            style: TextStyle(
+                              fontSize: 24,
+                              fontWeight: FontWeight.bold,
+                              letterSpacing: -0.5,
+                              color: AppColors.textPrimary,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          const Text(
+                            'Cable Operator & Subscriber Management',
+                            style: TextStyle(
+                              fontSize: 13,
+                              color: AppColors.textSecondary,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
-                    SizedBox(height: top * 0.5),
-                    getTextWidget('Password', 16, Colors.white, false),
-                    SizedBox(height: top * 0.25),
-                    TextFormField(
-                      validator: (value) => passwordValidator(value, true),
-                      controller: _passwordController,
-                      obscureText: true,
-                      cursorColor: Colors.black,
-                      style: const TextStyle(color: Colors.white),
-                      decoration: inputDecoration(
-                        filled: true,
-                        hintColor: Colors.white,
-                        filledColor: primaryColor.withAlpha(200),
-                        hint: 'password',
-                        icon: Icons.lock,
-                        iconColor: Colors.white,
+
+                    const SizedBox(height: 32),
+
+                    // Sign-in Card
+                    Container(
+                      padding: const EdgeInsets.all(22),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(20),
+                        border:
+                            Border.all(color: AppColors.cardBorder, width: 1),
+                        boxShadow: AppColors.cardShadow,
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          const Text(
+                            'Sign In',
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              color: AppColors.textPrimary,
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+
+                          // Email
+                          TextFormField(
+                            validator: emailValidator,
+                            controller: _emailController,
+                            keyboardType: TextInputType.emailAddress,
+                            decoration: const InputDecoration(
+                              labelText: 'Email Address',
+                              hintText: 'operator@example.com',
+                              prefixIcon:
+                                  Icon(Icons.email_outlined, size: 20),
+                            ),
+                          ),
+                          const SizedBox(height: 14),
+
+                          // Password
+                          TextFormField(
+                            validator: (value) =>
+                                passwordValidator(value, true),
+                            controller: _passwordController,
+                            obscureText: _obscurePassword,
+                            decoration: InputDecoration(
+                              labelText: 'Password',
+                              prefixIcon: const Icon(Icons.lock_outline_rounded,
+                                  size: 20),
+                              suffixIcon: IconButton(
+                                icon: Icon(
+                                  _obscurePassword
+                                      ? Icons.visibility_off_outlined
+                                      : Icons.visibility_outlined,
+                                  size: 20,
+                                ),
+                                onPressed: () {
+                                  setState(() {
+                                    _obscurePassword = !_obscurePassword;
+                                  });
+                                },
+                              ),
+                            ),
+                          ),
+
+                          const SizedBox(height: 20),
+
+                          // Sign In Button
+                          FilledButton(
+                            style: FilledButton.styleFrom(
+                              minimumSize: const Size(double.infinity, 50),
+                              backgroundColor: AppColors.primary,
+                            ),
+                            onPressed: _isLoading ? null : _submit,
+                            child: _isLoading
+                                ? const SizedBox(
+                                    width: 20,
+                                    height: 20,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                      color: Colors.white,
+                                    ),
+                                  )
+                                : const Text(
+                                    'Sign In',
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                          ),
+
+                          const SizedBox(height: 18),
+
+                          // OR Divider
+                          const Row(
+                            children: [
+                              Expanded(child: Divider()),
+                              Padding(
+                                padding: EdgeInsets.symmetric(horizontal: 10),
+                                child: Text(
+                                  'OR',
+                                  style: TextStyle(
+                                    color: AppColors.textMuted,
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ),
+                              Expanded(child: Divider()),
+                            ],
+                          ),
+
+                          const SizedBox(height: 18),
+
+                          // Google Sign-In Button
+                          OutlinedButton.icon(
+                            style: OutlinedButton.styleFrom(
+                              minimumSize: const Size(double.infinity, 50),
+                              side: const BorderSide(
+                                  color: AppColors.cardBorder),
+                            ),
+                            onPressed: () async =>
+                                await Authentication.signinWithGoogle(context),
+                            icon: Image.asset(
+                              'assets/images/google.png',
+                              width: 20,
+                              height: 20,
+                            ),
+                            label: const Text(
+                              'Continue with Google',
+                              style: TextStyle(
+                                color: AppColors.textPrimary,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                     ),
-                    SizedBox(height: top * 0.5),
-                    Align(
-                      alignment: Alignment.centerLeft,
-                      child: getTextWidget(
-                          'Forgot password?', 14, Colors.black, false),
-                    ),
-                    SizedBox(height: top),
-                    Align(
-                      child: FloatingActionButton.extended(
-                        heroTag: 'login',
-                        onPressed: () async {
-                          if (_formKey.currentState?.validate() == true) {
-                            _formKey.currentState?.save();
-                            await Authentication.signinWithEmailAndPassword(
-                              context,
-                              email: _emailController.text.trim(),
-                              password: _passwordController.text,
-                            );
-                          }
-                        },
-                        label: getTextWidget(
-                          '       Sign In       ',
-                          20,
-                          primaryColor,
-                          true,
-                        ),
-                      ),
-                    ),
-                    SizedBox(height: top),
-                    Row(
-                      children: <Widget>[
-                        const Expanded(
-                            child: Divider(color: Colors.white, indent: 32)),
-                        getTextWidget('OR', 16, Colors.white, true),
-                        const Expanded(
-                            child: Divider(color: Colors.white, endIndent: 32)),
-                      ],
-                    ),
-                    SizedBox(height: top * 0.5),
-                    Align(
-                      child: getTextWidget(
-                          'Sign In with', 18, Colors.white, true),
-                    ),
-                    SizedBox(height: top * 0.5),
-                    Align(
-                      child: FloatingActionButton.extended(
-                        heroTag: 'google',
-                        onPressed: () async =>
-                            await Authentication.signinWithGoogle(context),
-                        icon: SizedBox(
-                          height: 25,
-                          child: Image.asset('assets/images/google.png'),
-                        ),
-                        label: getTextWidget(
-                          '    GOOGLE          ',
-                          16,
-                          Colors.blue,
-                          true,
-                        ),
-                      ),
-                    ),
-                    SizedBox(height: top * 2),
+
+                    const SizedBox(height: 24),
+
+                    // Don't have an account? Register link
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: <Widget>[
-                        getTextWidget("Don't have an account?  ", 18,
-                            Colors.black, false),
+                        const Text(
+                          "Don't have an account? ",
+                          style: TextStyle(
+                            color: AppColors.textSecondary,
+                            fontSize: 14,
+                          ),
+                        ),
                         GestureDetector(
                           onTap: () => Navigator.of(context)
                               .pushReplacementNamed(SignupScreen.routeName),
-                          child: getTextWidget(
-                              'Register', 18, errorColor, true),
+                          child: const Text(
+                            'Register Now',
+                            style: TextStyle(
+                              color: AppColors.primary,
+                              fontSize: 14,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
                         ),
                       ],
                     ),
-                    SizedBox(height: top * 2),
-                    Container(
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      padding: const EdgeInsets.symmetric(
-                          vertical: 8, horizontal: 12),
+
+                    const SizedBox(height: 20),
+
+                    // Privacy and Terms footer
+                    Center(
                       child: RichText(
                         textAlign: TextAlign.center,
                         text: TextSpan(
+                          style: const TextStyle(
+                            fontSize: 12,
+                            color: AppColors.textMuted,
+                          ),
                           children: [
+                            const TextSpan(text: 'By continuing, you agree to our '),
                             TextSpan(
                               text: 'Privacy Policy',
                               style: const TextStyle(
-                                color: Colors.blue,
+                                color: AppColors.primary,
                                 fontWeight: FontWeight.w600,
                               ),
                               recognizer: _privacyPolicy,
                             ),
-                            const TextSpan(
-                              text: '  and  ',
-                              style: TextStyle(color: Colors.black),
-                            ),
+                            const TextSpan(text: ' and '),
                             TextSpan(
                               text: 'Terms & Conditions',
                               style: const TextStyle(
-                                color: Colors.blue,
+                                color: AppColors.primary,
                                 fontWeight: FontWeight.w600,
                               ),
                               recognizer: _termsAndConditions,
@@ -262,13 +334,14 @@ class _SigninScreenState extends State<SigninScreen> {
                         ),
                       ),
                     ),
-                    SizedBox(height: top),
+
+                    const SizedBox(height: 24),
                   ],
                 ),
               ),
             ),
           ),
-        ],
+        ),
       ),
     );
   }

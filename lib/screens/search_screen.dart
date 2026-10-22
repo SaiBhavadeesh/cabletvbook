@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cableTvBook/widgets/search_screen_widget.dart';
+import 'package:cableTvBook/theme/app_colors.dart';
+import 'package:cableTvBook/theme/responsive.dart';
 
 class SearchScreen extends StatelessWidget {
   static const routeName = '/searchScreen';
@@ -8,60 +10,59 @@ class SearchScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final size = MediaQuery.of(context).size;
     return DefaultTabController(
       length: 5,
       initialIndex: 0,
       child: Scaffold(
-        appBar: AppBar(
-          leading: const SizedBox.shrink(),
-          backgroundColor: Colors.amber[700],
-          bottom: PreferredSize(
-            preferredSize: Size(
-              size.width,
-              size.height * 0.05,
-            ),
-            child: TabBar(
-              isScrollable: true,
-              tabAlignment: TabAlignment.start,
-              labelColor: Theme.of(context).primaryColor,
-              labelStyle: TextStyle(
-                fontSize: size.height * 0.025,
-                fontWeight: FontWeight.bold,
+        backgroundColor: AppColors.background,
+        body: ResponsiveContainer(
+          maxWidth: 1000,
+          child: Column(
+            children: [
+              // Modern Tab Bar Container
+              Container(
+                color: Colors.white,
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                child: TabBar(
+                  isScrollable: true,
+                  tabAlignment: TabAlignment.start,
+                  indicatorColor: AppColors.primary,
+                  indicatorWeight: 3,
+                  labelColor: AppColors.primary,
+                  unselectedLabelColor: AppColors.textSecondary,
+                  labelStyle: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
+                  ),
+                  unselectedLabelStyle: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                  ),
+                  tabs: const [
+                    Tab(text: 'All Subscribers'),
+                    Tab(text: 'Pending Bills'),
+                    Tab(text: 'Advance Credits'),
+                    Tab(text: 'Active Only'),
+                    Tab(text: 'Inactive Only'),
+                  ],
+                ),
               ),
-              unselectedLabelColor: Colors.white,
-              unselectedLabelStyle: TextStyle(
-                fontSize: size.height * 0.02,
-                fontWeight: FontWeight.bold,
+              const Divider(height: 1, color: AppColors.cardBorder),
+
+              // Tab Views
+              const Expanded(
+                child: TabBarView(
+                  children: <Widget>[
+                    SearchScreenWidget(all: true),
+                    SearchScreenWidget(pending: true),
+                    SearchScreenWidget(credits: true),
+                    SearchScreenWidget(active: true),
+                    SearchScreenWidget(inactive: true),
+                  ],
+                ),
               ),
-              tabs: [
-                SizedBox(
-                    width: size.width * 0.2,
-                    child: const Align(child: Text('All'))),
-                SizedBox(
-                    width: size.width * 0.2,
-                    child: const Align(child: Text('Pending'))),
-                SizedBox(
-                    width: size.width * 0.2,
-                    child: const Align(child: Text('Credits'))),
-                SizedBox(
-                    width: size.width * 0.2,
-                    child: const Align(child: Text('Active'))),
-                SizedBox(
-                    width: size.width * 0.2,
-                    child: const Align(child: Text('Inactive'))),
-              ],
-            ),
+            ],
           ),
-        ),
-        body: const TabBarView(
-          children: <Widget>[
-            SearchScreenWidget(all: true),
-            SearchScreenWidget(pending: true),
-            SearchScreenWidget(credits: true),
-            SearchScreenWidget(active: true),
-            SearchScreenWidget(inactive: true),
-          ],
         ),
       ),
     );

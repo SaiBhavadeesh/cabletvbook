@@ -6,7 +6,8 @@ import 'package:fluttertoast/fluttertoast.dart';
 
 import 'package:cableTvBook/models/customer.dart';
 import 'package:cableTvBook/global/variables.dart';
-import 'package:cableTvBook/global/box_decoration.dart';
+import 'package:cableTvBook/theme/app_colors.dart';
+import 'package:cableTvBook/theme/responsive.dart';
 
 class CollectionMetrics {
   final double monthlyTotal;
@@ -49,67 +50,200 @@ class CollectionScreen extends StatefulWidget {
 class _CollectionScreenState extends State<CollectionScreen> {
   bool _isSyncing = false;
 
-  Widget _buildTitleText(BuildContext context, String title) {
-    return Container(
-      alignment: Alignment.center,
-      padding: const EdgeInsets.all(8),
-      margin: const EdgeInsets.only(bottom: 4),
-      decoration: defaultBoxDecoration(context, true),
-      child: Text(
-        title,
-        style: const TextStyle(
-          fontSize: 20,
-          fontWeight: FontWeight.bold,
-          color: Colors.white,
-        ),
-      ),
-    );
-  }
-
-  Widget _buildValueRow(String title, String value, Color color) {
+  Widget _buildSectionHeader(String title, String subtitle) {
     return Padding(
-      padding: const EdgeInsets.all(8.0),
-      child: RichText(
-        text: TextSpan(
-          text: title,
-          style: const TextStyle(fontSize: 16, color: Colors.black),
-          children: [
-            TextSpan(
-              text: value,
-              style: TextStyle(
-                color: color,
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
-            )
-          ],
-        ),
-        textAlign: TextAlign.start,
+      padding: const EdgeInsets.only(bottom: 12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            title,
+            style: const TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: AppColors.textPrimary,
+              letterSpacing: -0.3,
+            ),
+          ),
+          const SizedBox(height: 2),
+          Text(
+            subtitle,
+            style: const TextStyle(
+              fontSize: 13,
+              color: AppColors.textSecondary,
+            ),
+          ),
+        ],
       ),
     );
   }
 
-  Widget _buildMetricsCard({
-    required double subtotal,
-    required double paid,
-    double? total,
-    int? inactive,
+  Widget _buildKpiCard({
+    required String title,
+    required String value,
+    required IconData icon,
+    required Color color,
+    required Color bgColor,
+    String? subtitle,
   }) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        if (total != null)
-          _buildValueRow('Total amount : \t', '\u20B9 $total', Colors.deepOrange),
-        _buildValueRow('Total bill amount : \t', '\u20B9 $subtotal', Colors.blue),
-        _buildValueRow('Amount collected : \t', '\u20B9 $paid', Colors.green),
-        _buildValueRow(
-          'Bill amount pending : \t',
-          '\u20B9 ${subtotal - paid}',
-          Colors.red,
-        ),
-        if (inactive != null)
-          _buildValueRow('Inactive customers : \t', '$inactive', Colors.deepPurple),
-      ],
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFFF1F5F9), width: 1.2),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFFB45309).withValues(alpha: 0.05),
+            blurRadius: 10,
+            offset: const Offset(2, 4),
+          ),
+          BoxShadow(
+            color: const Color(0xFF0F172A).withValues(alpha: 0.03),
+            blurRadius: 4,
+            offset: const Offset(0, 1),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(7),
+                decoration: BoxDecoration(
+                  color: bgColor,
+                  borderRadius: BorderRadius.circular(9),
+                ),
+                child: Icon(icon, color: color, size: 18),
+              ),
+              if (subtitle != null)
+                Flexible(
+                  child: Text(
+                    subtitle,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w700,
+                      color: color,
+                    ),
+                  ),
+                ),
+            ],
+          ),
+          const Spacer(),
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            alignment: Alignment.centerLeft,
+            child: Text(
+              value,
+              style: const TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+                color: AppColors.textPrimary,
+                letterSpacing: -0.4,
+              ),
+            ),
+          ),
+          const SizedBox(height: 2),
+          Text(
+            title,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w500,
+              color: AppColors.textSecondary,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildEfficiencyCard(double billed, double collected) {
+    final rate = billed > 0 ? (collected / billed) : 0.0;
+    final percent = (rate * 100).clamp(0, 100).round();
+
+    return Container(
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        gradient: AppColors.heroGradient,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: AppColors.cardShadow,
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text(
+                'Collection Efficiency',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16,
+                ),
+              ),
+              Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                decoration: BoxDecoration(
+                  color: AppColors.success.withValues(alpha: 0.2),
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(
+                      color: AppColors.success.withValues(alpha: 0.4)),
+                ),
+                child: Text(
+                  '$percent% Collected',
+                  style: const TextStyle(
+                    color: AppColors.success,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 13,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 14),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(6),
+            child: LinearProgressIndicator(
+              value: rate.clamp(0.0, 1.0),
+              backgroundColor: Colors.white.withValues(alpha: 0.15),
+              valueColor:
+                  const AlwaysStoppedAnimation<Color>(AppColors.success),
+              minHeight: 8,
+            ),
+          ),
+          const SizedBox(height: 12),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'Collected: \u20B9 ${collected.toStringAsFixed(0)}',
+                style: TextStyle(
+                  color: Colors.white.withValues(alpha: 0.8),
+                  fontSize: 13,
+                ),
+              ),
+              Text(
+                'Pending: \u20B9 ${(billed - collected).clamp(0, double.infinity).toStringAsFixed(0)}',
+                style: const TextStyle(
+                  color: AppColors.warningLight,
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
     );
   }
 
@@ -198,47 +332,57 @@ class _CollectionScreenState extends State<CollectionScreen> {
             final planAmount = double.tryParse(recharge.plan ?? '0') ?? 0.0;
             final m = recharge.ymRec.month;
             final agg = monthlyAggs.putIfAbsent(m, () => {
-              'year': currentYear,
-              'month': m,
-              'totalBilled': 0.0,
-              'billedCount': 0,
-              'totalPaid': 0.0,
-              'paidCount': 0,
-            });
+                  'totalBilled': 0.0,
+                  'totalPaid': 0.0,
+                  'activeRecharges': 0,
+                });
 
-            if (recharge.billPay != null) {
-              yearlySubtotal += planAmount;
-              agg['totalBilled'] = (agg['totalBilled'] as double) + planAmount;
-              agg['billedCount'] = (agg['billedCount'] as int) + 1;
-              if (recharge.billPay == true) {
-                yearlyPaid += planAmount;
-                agg['totalPaid'] = (agg['totalPaid'] as double) + planAmount;
-                agg['paidCount'] = (agg['paidCount'] as int) + 1;
-              }
+            agg['totalBilled'] =
+                (agg['totalBilled'] as double) + planAmount;
+            yearlySubtotal += planAmount;
+
+            if (recharge.billPay == true) {
+              agg['totalPaid'] =
+                  (agg['totalPaid'] as double) + planAmount;
+              yearlyPaid += planAmount;
+            }
+            if (recharge.status) {
+              agg['activeRecharges'] =
+                  (agg['activeRecharges'] as int) + 1;
             }
 
-            if (recharge.ymRec.month == currentMonth && recharge.billPay != null) {
-              monthlySubtotal += planAmount;
-              if (recharge.billPay == true) {
-                monthlyPaid += planAmount;
-              }
+            if (m == currentMonth) {
+              monthlySubtotal = agg['totalBilled'] as double;
+              monthlyPaid = agg['totalPaid'] as double;
             }
           }
         }
       }
     }
 
-    // Persist monthly aggregates to Firestore
+    final batch = FirebaseFirestore.instance.batch();
+    for (int m = 1; m <= 12; m++) {
+      final agg = monthlyAggs[m];
+      final docRef = FirebaseFirestore.instance
+          .collection('users/$opId/reports')
+          .doc('${currentYear}_$m');
+
+      final billed = (agg?['totalBilled'] as double?) ?? 0.0;
+      final paid = (agg?['totalPaid'] as double?) ?? 0.0;
+      final actives = (agg?['activeRecharges'] as int?) ?? 0;
+
+      batch.set(docRef, {
+        'year': currentYear,
+        'month': m,
+        'totalBilled': billed,
+        'totalPaid': paid,
+        'totalExpected': monthlyTotal,
+        'activeCount': actives,
+        'updatedAt': FieldValue.serverTimestamp(),
+      }, SetOptions(merge: true));
+    }
+
     try {
-      final batch = FirebaseFirestore.instance.batch();
-      for (final entry in monthlyAggs.entries) {
-        entry.value['totalExpected'] = monthlyTotal;
-        entry.value['updatedAt'] = FieldValue.serverTimestamp();
-        final repRef = FirebaseFirestore.instance
-            .collection('users/$opId/reports')
-            .doc('${currentYear}_${entry.key}');
-        batch.set(repRef, entry.value, SetOptions(merge: true));
-      }
       await batch.commit();
     } catch (_) {}
 
@@ -259,12 +403,11 @@ class _CollectionScreenState extends State<CollectionScreen> {
 
   Future<void> _handleManualSync(String opId) async {
     setState(() => _isSyncing = true);
-    Fluttertoast.showToast(msg: 'Syncing collections report...');
     try {
       await _backfillAndCalculate(opId);
-      Fluttertoast.showToast(msg: 'Collections report up to date!');
+      Fluttertoast.showToast(msg: 'Collections synchronized successfully');
     } catch (e) {
-      Fluttertoast.showToast(msg: 'Sync failed: $e');
+      Fluttertoast.showToast(msg: 'Sync error: $e');
     } finally {
       if (mounted) setState(() => _isSyncing = false);
     }
@@ -275,7 +418,7 @@ class _CollectionScreenState extends State<CollectionScreen> {
     final op = operatorDetails;
     if (op == null) {
       return Scaffold(
-        appBar: AppBar(title: const Text('Collection Information')),
+        appBar: AppBar(title: const Text('Collections & Revenue')),
         body: const Center(child: Text('Operator information missing')),
       );
     }
@@ -283,8 +426,12 @@ class _CollectionScreenState extends State<CollectionScreen> {
     final currentYear = DateTime.now().year;
 
     return Scaffold(
+      backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: const Text('Collection Information'),
+        title: const Text(
+          'Collections & Revenue',
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
         actions: [
           IconButton(
             icon: _isSyncing
@@ -293,79 +440,163 @@ class _CollectionScreenState extends State<CollectionScreen> {
                     height: 20,
                     child: CircularProgressIndicator(
                       strokeWidth: 2,
-                      color: Colors.white,
+                      color: AppColors.primary,
                     ),
                   )
-                : const Icon(Icons.sync),
+                : const Icon(Icons.sync_rounded),
             tooltip: 'Sync Collections',
             onPressed: _isSyncing ? null : () => _handleManualSync(op.id),
           ),
+          const SizedBox(width: 8),
         ],
       ),
-      body: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
-        stream: FirebaseFirestore.instance
-            .collection('users/${op.id}/reports')
-            .where('year', isEqualTo: currentYear)
-            .snapshots(),
-        builder: (context, snapshot) {
-          if (!snapshot.hasData || snapshot.data == null) {
-            return Center(child: FadingText('Loading collections...'));
-          }
+      body: ResponsiveContainer(
+        maxWidth: 900,
+        child: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
+          stream: FirebaseFirestore.instance
+              .collection('users/${op.id}/reports')
+              .where('year', isEqualTo: currentYear)
+              .snapshots(),
+          builder: (context, snapshot) {
+            if (!snapshot.hasData || snapshot.data == null) {
+              return Center(child: FadingText('Loading collections...'));
+            }
 
-          final reportDocs = snapshot.data!.docs;
+            final reportDocs = snapshot.data!.docs;
 
-          // If no pre-aggregated reports exist yet, run one-time backfill
-          if (reportDocs.isEmpty) {
-            return FutureBuilder<CollectionMetrics>(
-              future: _backfillAndCalculate(op.id),
-              builder: (context, metricSnapshot) {
-                if (!metricSnapshot.hasData) {
-                  return Center(
-                    child: Container(
-                      alignment: Alignment.center,
-                      height: 250,
-                      child: FadingText('Calculating collections...'),
-                    ),
-                  );
-                }
-                return _buildMetricsView(metricSnapshot.data!);
-              },
-            );
-          }
+            if (reportDocs.isEmpty) {
+              return FutureBuilder<CollectionMetrics>(
+                future: _backfillAndCalculate(op.id),
+                builder: (context, metricSnapshot) {
+                  if (!metricSnapshot.hasData) {
+                    return Center(
+                      child: Container(
+                        alignment: Alignment.center,
+                        height: 250,
+                        child: FadingText('Calculating collections...'),
+                      ),
+                    );
+                  }
+                  return _buildMetricsView(metricSnapshot.data!);
+                },
+              );
+            }
 
-          // Instant rendering from aggregated report documents
-          final metrics = _metricsFromReports(reportDocs);
-          return _buildMetricsView(metrics);
-        },
+            final metrics = _metricsFromReports(reportDocs);
+            return _buildMetricsView(metrics);
+          },
+        ),
       ),
     );
   }
 
   Widget _buildMetricsView(CollectionMetrics metrics) {
     final now = DateTime.now();
+    final monthName = DateFormat('MMMM yyyy').format(now);
+    final isWide = Responsive.isWide(context);
+    final pendingMonth = (metrics.monthlySubtotal - metrics.monthlyPaid)
+        .clamp(0, double.infinity)
+        .toDouble();
+    final pendingYear = (metrics.yearlySubtotal - metrics.yearlyPaid)
+        .clamp(0, double.infinity)
+        .toDouble();
+
     return ListView(
-      padding: const EdgeInsets.all(24),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
       physics: const BouncingScrollPhysics(),
       children: [
-        _buildTitleText(
-          context,
-          'This Month (${DateFormat('MMMM yyyy').format(now)})',
+        // Monthly Section Header
+        _buildSectionHeader('Current Month Overview', monthName),
+
+        // Efficiency Card
+        _buildEfficiencyCard(metrics.monthlySubtotal, metrics.monthlyPaid),
+        const SizedBox(height: 16),
+
+        // 2x2 or 4x1 KPI Grid for Monthly
+        GridView.count(
+          crossAxisCount: isWide ? 4 : 2,
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          crossAxisSpacing: 12,
+          mainAxisSpacing: 12,
+          childAspectRatio: isWide ? 1.4 : 1.05,
+          children: [
+            _buildKpiCard(
+              title: 'Total Billed',
+              value: '\u20B9 ${metrics.monthlySubtotal.toStringAsFixed(0)}',
+              icon: Icons.receipt_long_rounded,
+              color: AppColors.primary,
+              bgColor: AppColors.primaryContainer,
+              subtitle: 'Active Plans',
+            ),
+            _buildKpiCard(
+              title: 'Collected',
+              value: '\u20B9 ${metrics.monthlyPaid.toStringAsFixed(0)}',
+              icon: Icons.check_circle_rounded,
+              color: AppColors.success,
+              bgColor: AppColors.successLight,
+              subtitle: 'Paid',
+            ),
+            _buildKpiCard(
+              title: 'Pending Due',
+              value: '\u20B9 ${pendingMonth.toStringAsFixed(0)}',
+              icon: Icons.pending_actions_rounded,
+              color: AppColors.warningDark,
+              bgColor: AppColors.warningLight,
+              subtitle: 'To Collect',
+            ),
+            _buildKpiCard(
+              title: 'Inactive Accounts',
+              value: '${metrics.inactiveCustomers}',
+              icon: Icons.person_off_outlined,
+              color: AppColors.error,
+              bgColor: AppColors.errorLight,
+              subtitle: 'Subscribers',
+            ),
+          ],
         ),
-        _buildMetricsCard(
-          subtotal: metrics.monthlySubtotal,
-          paid: metrics.monthlyPaid,
-          total: metrics.monthlyTotal > 0 ? metrics.monthlyTotal : null,
-          inactive: metrics.inactiveCustomers,
+
+        const SizedBox(height: 28),
+
+        // Yearly Section
+        _buildSectionHeader(
+          'Year-to-Date Collections',
+          'Cumulative totals for year ${now.year}',
         ),
-        const SizedBox(height: 24),
-        _buildTitleText(
-          context,
-          'Year-to-Date Collections (${now.year})',
+
+        GridView.count(
+          crossAxisCount: isWide ? 3 : 2,
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          crossAxisSpacing: 12,
+          mainAxisSpacing: 12,
+          childAspectRatio: isWide ? 1.4 : 1.05,
+          children: [
+            _buildKpiCard(
+              title: 'Total Billed (${now.year})',
+              value: '\u20B9 ${metrics.yearlySubtotal.toStringAsFixed(0)}',
+              icon: Icons.calendar_today_rounded,
+              color: AppColors.primary,
+              bgColor: AppColors.primaryContainer,
+            ),
+            _buildKpiCard(
+              title: 'Total Collected',
+              value: '\u20B9 ${metrics.yearlyPaid.toStringAsFixed(0)}',
+              icon: Icons.account_balance_wallet_rounded,
+              color: AppColors.success,
+              bgColor: AppColors.successLight,
+            ),
+            _buildKpiCard(
+              title: 'Total Outstanding',
+              value: '\u20B9 ${pendingYear.toStringAsFixed(0)}',
+              icon: Icons.error_outline_rounded,
+              color: AppColors.error,
+              bgColor: AppColors.errorLight,
+            ),
+          ],
         ),
-        _buildMetricsCard(
-          subtotal: metrics.yearlySubtotal,
-          paid: metrics.yearlyPaid,
-        ),
+
+        const SizedBox(height: 32),
       ],
     );
   }

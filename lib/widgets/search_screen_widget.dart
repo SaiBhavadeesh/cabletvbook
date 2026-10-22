@@ -1,13 +1,11 @@
-import 'package:cableTvBook/global/variables.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:loading_indicator/loading_indicator.dart';
 
+import 'package:cableTvBook/global/variables.dart';
 import 'package:cableTvBook/models/customer.dart';
 import 'package:cableTvBook/widgets/customer_tile.dart';
-import 'package:cableTvBook/global/box_decoration.dart';
-
-bool _showed = false;
+import 'package:cableTvBook/theme/app_colors.dart';
 
 class SearchScreenWidget extends StatefulWidget {
   final bool all;
@@ -31,48 +29,46 @@ class SearchScreenWidget extends StatefulWidget {
   _SearchScreenWidgetState createState() => _SearchScreenWidgetState();
 }
 
-class _SearchScreenWidgetState extends State<SearchScreenWidget> {
+class _SearchScreenWidgetState extends State<SearchScreenWidget>
+    with AutomaticKeepAliveClientMixin {
+  static const int _pageSize = 25;
+
+  final ScrollController _scrollController = ScrollController();
+  final TextEditingController _searchController = TextEditingController();
+
+  List<DocumentSnapshot> _rawDocs = [];
+  List<Customer> _allLoadedCustomers = [];
+  List<Customer> _filteredCustomers = [];
+
+  bool _isInitialLoading = true;
+  bool _isLoadingMore = false;
+  bool _hasMore = true;
+  String? _errorMessage;
+
+  @override
+  bool get wantKeepAlive => true;
+
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!_showed && mounted) {
-        _showed = true;
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: const SizedBox(
-              height: 16,
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text('pull down to refresh'),
-                  SizedBox(width: 20),
-                  Icon(Icons.arrow_downward, size: 18, color: Colors.white),
-                ],
-              ),
-            ),
-            duration: const Duration(seconds: 1),
-            behavior: SnackBarBehavior.floating,
-            backgroundColor: Colors.blueGrey,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(30),
-            ),
-          ),
-        );
-      }
-    });
+    _fetchFirstPage();
+    _scrollController.addListener(_onScroll);
   }
 
   @override
-  Widget build(BuildContext context) {
+  void dispose() {
+    _scrollController.dispose();
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  Query _buildBaseQuery() {
     final op = operatorDetails;
-    if (op == null) {
-      return const Center(child: Text('Operator information unavailable'));
-    }
+    if (op == null) throw Exception('Operator information unavailable');
 
     Query collection = FirebaseFirestore.instance
         .collection('users/${op.id}/customers');
+
     if (widget.areaId != null && widget.areaId!.isNotEmpty) {
       collection = collection.where('areaId', isEqualTo: widget.areaId);
     }
@@ -81,145 +77,323 @@ class _SearchScreenWidgetState extends State<SearchScreenWidget> {
     } else if (widget.inactive) {
       collection = collection.where('curSts', isEqualTo: 'Inactive');
     }
+    return collection;
+  }
 
-    return StreamBuilder<QuerySnapshot>(
-      stream: collection.snapshots(),
-      builder: (context, snapshot) {
-        if (snapshot.hasData && snapshot.data != null) {
-          final customers = getCustomersFromDoc(
-            snapshot.data!,
-            active: widget.active,
-            all: widget.all,
-            credits: widget.credits,
-            inactive: widget.inactive,
-            pending: widget.pending,
-          );
-          if (customers.isEmpty) {
-            return const Center(
-              child: Text(
-                'No customer to show',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 20,
-                  fontStyle: FontStyle.italic,
-                  fontWeight: FontWeight.bold,
-                  letterSpacing: 1,
-                ),
-              ),
-            );
-          }
-          return CustomerListView(customers: customers);
-        } else if (snapshot.connectionState == ConnectionState.waiting) {
-          return Center(
-            child: SizedBox(
-              width: 50,
-              height: 50,
-              child: LoadingIndicator(
-                indicatorType: Indicator.ballClipRotateMultiple,
-                colors: [Theme.of(context).primaryColor],
-              ),
-            ),
-          );
-        } else {
-          return const Center(child: Text('Something went wrong!'));
-        }
-      },
+  List<Customer> _parseCustomers(List<DocumentSnapshot> docs) {
+    final parsed = docs
+        .where((d) => d.data() != null)
+        .map((d) => Customer.fromMap(d.data() as Map<String, dynamic>))
+        .toList();
+
+    return getSelectedCustomers(
+      all: widget.all,
+      pending: widget.pending,
+      credits: widget.credits,
+      active: widget.active,
+      inactive: widget.inactive,
+      providedCustomers: parsed,
     );
   }
-}
 
-class CustomerListView extends StatefulWidget {
-  const CustomerListView({
-    super.key,
-    required this.customers,
-  });
+  void _applySearchFilter(String query) {
+    final trimmed = query.toLowerCase().trim();
+    if (trimmed.isEmpty) {
+      _filteredCustomers = List.from(_allLoadedCustomers);
+    } else {
+      _filteredCustomers = _allLoadedCustomers
+          .where((customer) =>
+              customer.name.toLowerCase().contains(trimmed) ||
+              customer.accountNumber.toLowerCase().contains(trimmed) ||
+              customer.macId.toLowerCase().contains(trimmed) ||
+              customer.phoneNumber.contains(trimmed))
+          .toList();
+    }
+  }
 
-  final List<Customer> customers;
-
-  @override
-  _CustomerListViewState createState() => _CustomerListViewState();
-}
-
-class _CustomerListViewState extends State<CustomerListView> {
-  final searchController = TextEditingController();
-  List<Customer> filteredCustomers = [];
-
-  void onTextChange(String value) {
+  Future<void> _fetchFirstPage() async {
+    if (!mounted) return;
     setState(() {
-      final query = value.toLowerCase().trim();
-      if (query.isNotEmpty) {
-        filteredCustomers = widget.customers
-            .where((customer) =>
-                customer.name.toLowerCase().contains(query) ||
-                customer.accountNumber.toLowerCase().contains(query) ||
-                customer.macId.toLowerCase().contains(query))
-            .toList();
-      } else {
-        filteredCustomers = widget.customers;
+      _isInitialLoading = true;
+      _errorMessage = null;
+      _hasMore = true;
+      _rawDocs.clear();
+      _allLoadedCustomers.clear();
+      _filteredCustomers.clear();
+    });
+
+    try {
+      final query = _buildBaseQuery().limit(_pageSize);
+      final snapshot = await query.get();
+
+      final newCustomers = _parseCustomers(snapshot.docs);
+
+      if (mounted) {
+        setState(() {
+          _rawDocs = snapshot.docs;
+          _allLoadedCustomers = newCustomers;
+          _applySearchFilter(_searchController.text);
+          _hasMore = snapshot.docs.length >= _pageSize;
+          _isInitialLoading = false;
+        });
       }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _errorMessage = e.toString();
+          _isInitialLoading = false;
+        });
+      }
+    }
+  }
+
+  Future<void> _fetchNextPage() async {
+    if (_isLoadingMore || !_hasMore || _rawDocs.isEmpty) return;
+
+    setState(() => _isLoadingMore = true);
+
+    try {
+      final query = _buildBaseQuery()
+          .startAfterDocument(_rawDocs.last)
+          .limit(_pageSize);
+      final snapshot = await query.get();
+
+      if (snapshot.docs.isNotEmpty) {
+        final newCustomers = _parseCustomers(snapshot.docs);
+
+        if (mounted) {
+          setState(() {
+            _rawDocs.addAll(snapshot.docs);
+            _allLoadedCustomers.addAll(newCustomers);
+            _applySearchFilter(_searchController.text);
+            _hasMore = snapshot.docs.length >= _pageSize;
+          });
+        }
+      } else {
+        if (mounted) setState(() => _hasMore = false);
+      }
+    } catch (_) {
+      // Keep existing data on error
+    } finally {
+      if (mounted) setState(() => _isLoadingMore = false);
+    }
+  }
+
+  void _onScroll() {
+    if (!_scrollController.hasClients) return;
+    final maxScroll = _scrollController.position.maxScrollExtent;
+    final currentScroll = _scrollController.position.pixels;
+    if (currentScroll >= maxScroll - 200 && !_isLoadingMore && _hasMore) {
+      _fetchNextPage();
+    }
+  }
+
+  void _onTextChange(String value) {
+    setState(() {
+      _applySearchFilter(value);
     });
   }
 
   @override
-  void initState() {
-    super.initState();
-    filteredCustomers = widget.customers;
-  }
-
-  @override
-  void didUpdateWidget(CustomerListView oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (oldWidget.customers != widget.customers) {
-      onTextChange(searchController.text);
-    }
-  }
-
-  @override
-  void dispose() {
-    searchController.dispose();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
-    return Stack(
-      children: <Widget>[
-        Scrollbar(
-          child: ListView.builder(
-            itemCount: filteredCustomers.length,
-            physics: const AlwaysScrollableScrollPhysics(),
-            itemBuilder: (context, index) {
-              if (index == 0) {
-                return Column(
-                  children: <Widget>[
-                    const SizedBox(height: 55),
-                    CustomerTile(
-                      customer: filteredCustomers[index],
-                      index: index,
-                    ),
-                  ],
-                );
-              }
-              return CustomerTile(
-                customer: filteredCustomers[index],
-                index: index,
-              );
-            },
+    super.build(context);
+
+    final op = operatorDetails;
+    if (op == null) {
+      return const Center(child: Text('Operator information unavailable'));
+    }
+
+    if (_isInitialLoading) {
+      return Center(
+        child: SizedBox(
+          width: 44,
+          height: 44,
+          child: LoadingIndicator(
+            indicatorType: Indicator.ballClipRotateMultiple,
+            colors: const [AppColors.primary],
           ),
         ),
-        Padding(
-          padding: const EdgeInsets.all(4.0),
+      );
+    }
+
+    if (_errorMessage != null && _allLoadedCustomers.isEmpty) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(Icons.error_outline_rounded,
+                  color: AppColors.error, size: 48),
+              const SizedBox(height: 12),
+              Text(
+                'Failed to load subscribers: $_errorMessage',
+                textAlign: TextAlign.center,
+                style: const TextStyle(color: AppColors.textSecondary),
+              ),
+              const SizedBox(height: 16),
+              FilledButton.icon(
+                onPressed: _fetchFirstPage,
+                icon: const Icon(Icons.refresh_rounded),
+                label: const Text('Retry'),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    return Column(
+      children: [
+        // Modern Search Input Bar
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+          color: Colors.white,
           child: TextField(
-            controller: searchController,
+            controller: _searchController,
             textInputAction: TextInputAction.search,
-            onChanged: onTextChange,
-            decoration: inputDecoration(
+            onChanged: _onTextChange,
+            decoration: InputDecoration(
+              isDense: true,
+              hintText: 'Search by name, phone, account #, or MAC...',
+              prefixIcon: const Icon(Icons.search_rounded, size: 20),
+              suffixIcon: _searchController.text.isNotEmpty
+                  ? IconButton(
+                      icon: const Icon(Icons.clear_rounded, size: 18),
+                      onPressed: () {
+                        _searchController.clear();
+                        _onTextChange('');
+                      },
+                    )
+                  : null,
               filled: true,
-              filledColor: Colors.white,
-              hint: 'Search by Name / mac no / acc no.',
-              icon: Icons.search,
-              radius: 30,
+              fillColor: AppColors.surfaceVariant,
+              contentPadding:
+                  const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide.none,
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide.none,
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: const BorderSide(color: AppColors.primary, width: 1.5),
+              ),
             ),
+          ),
+        ),
+
+        // Subheader count & refresh cue
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 6),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                '${_filteredCustomers.length} ${_filteredCustomers.length == 1 ? 'subscriber' : 'subscribers'} found',
+                style: const TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.textMuted,
+                ),
+              ),
+              if (_searchController.text.isNotEmpty)
+                Text(
+                  'Filtered by "${_searchController.text.trim()}"',
+                  style: const TextStyle(
+                    fontSize: 11,
+                    fontStyle: FontStyle.italic,
+                    color: AppColors.primary,
+                  ),
+                ),
+            ],
+          ),
+        ),
+
+        // Customer List
+        Expanded(
+          child: RefreshIndicator(
+            onRefresh: _fetchFirstPage,
+            child: _filteredCustomers.isEmpty
+                ? ListView(
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    children: [
+                      const SizedBox(height: 80),
+                      Center(
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(18),
+                              decoration: const BoxDecoration(
+                                color: AppColors.surfaceVariant,
+                                shape: BoxShape.circle,
+                              ),
+                              child: const Icon(
+                                Icons.person_search_rounded,
+                                size: 40,
+                                color: AppColors.textMuted,
+                              ),
+                            ),
+                            const SizedBox(height: 16),
+                            const Text(
+                              'No Subscribers Found',
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                                color: AppColors.textPrimary,
+                              ),
+                            ),
+                            const SizedBox(height: 6),
+                            Text(
+                              _searchController.text.isNotEmpty
+                                  ? 'No matches for "${_searchController.text}". Try another query.'
+                                  : 'No subscriber records in this category.',
+                              textAlign: TextAlign.center,
+                              style: const TextStyle(
+                                fontSize: 13,
+                                color: AppColors.textSecondary,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  )
+                : Scrollbar(
+                    controller: _scrollController,
+                    child: ListView.builder(
+                      controller: _scrollController,
+                      padding: const EdgeInsets.only(bottom: 24, top: 4),
+                      itemCount: _filteredCustomers.length +
+                          (_isLoadingMore ? 1 : 0),
+                      physics: const AlwaysScrollableScrollPhysics(),
+                      itemBuilder: (context, index) {
+                        if (index >= _filteredCustomers.length) {
+                          return const Padding(
+                            padding: EdgeInsets.symmetric(vertical: 16),
+                            child: Center(
+                              child: SizedBox(
+                                width: 22,
+                                height: 22,
+                                child:
+                                    CircularProgressIndicator(strokeWidth: 2),
+                              ),
+                            ),
+                          );
+                        }
+
+                        return CustomerTile(
+                          customer: _filteredCustomers[index],
+                          index: index,
+                          onCustomerDeleted: _fetchFirstPage,
+                        );
+                      },
+                    ),
+                  ),
           ),
         ),
       ],

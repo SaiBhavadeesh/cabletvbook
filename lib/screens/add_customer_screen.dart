@@ -1,16 +1,16 @@
 import 'dart:io';
 
-import 'package:cableTvBook/helpers/upload_customers_from_file.dart';
-import 'package:cableTvBook/services/database_services.dart';
 import 'package:flutter/material.dart';
 
+import 'package:cableTvBook/helpers/upload_customers_from_file.dart';
+import 'package:cableTvBook/services/database_services.dart';
 import 'package:cableTvBook/models/customer.dart';
 import 'package:cableTvBook/global/variables.dart';
 import 'package:cableTvBook/global/validators.dart';
 import 'package:cableTvBook/helpers/image_getter.dart';
-import 'package:cableTvBook/global/box_decoration.dart';
-import 'package:cableTvBook/global/default_buttons.dart';
 import 'package:cableTvBook/widgets/default_dialog_box.dart';
+import 'package:cableTvBook/theme/app_colors.dart';
+import 'package:cableTvBook/theme/responsive.dart';
 
 class AddCustomerScreen extends StatefulWidget {
   static const routeName = '/addCustomerScreen';
@@ -31,22 +31,7 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
   String? _selectedAreaId;
   double? _selectedPlan;
   File? _selectedImageFile;
-
-  void _selectAreaField(String? value) {
-    if (value != null) {
-      setState(() {
-        _selectedAreaId = value;
-      });
-    }
-  }
-
-  void _selectPlanField(double? value) {
-    if (value != null) {
-      setState(() {
-        _selectedPlan = value;
-      });
-    }
-  }
+  bool _isSaving = false;
 
   @override
   void dispose() {
@@ -65,284 +50,411 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
         _selectedPlan != null &&
         op != null) {
       _formKey.currentState?.save();
-      final newCustomer = Customer(
-        id: '',
-        name: _nameController.text.trim(),
-        phoneNumber: '+ 91 ${_phoneController.text.trim()}',
-        address: _addressController.text.trim(),
-        accountNumber: _accountController.text.trim(),
-        macId: _macController.text.trim(),
-        networkProviderId: op.id,
-        areaId: _selectedAreaId!,
-        expiryMonth: 0,
-        currentPlan: _selectedPlan!,
-        runningYear: DateTime.now().year,
-        currentStatus: 'Inactive',
-      );
-      await DatabaseService.addNewCustomer(
-        context,
-        customer: newCustomer,
-        file: _selectedImageFile,
-      );
+      setState(() => _isSaving = true);
+      try {
+        final newCustomer = Customer(
+          id: '',
+          name: _nameController.text.trim(),
+          phoneNumber: '+ 91 ${_phoneController.text.trim()}',
+          address: _addressController.text.trim(),
+          accountNumber: _accountController.text.trim(),
+          macId: _macController.text.trim(),
+          networkProviderId: op.id,
+          areaId: _selectedAreaId!,
+          expiryMonth: 0,
+          currentPlan: _selectedPlan!,
+          runningYear: DateTime.now().year,
+          currentStatus: 'Inactive',
+        );
+        await DatabaseService.addNewCustomer(
+          context,
+          customer: newCustomer,
+          file: _selectedImageFile,
+        );
+      } finally {
+        if (mounted) setState(() => _isSaving = false);
+      }
     } else if (_selectedPlan == null || _selectedAreaId == null) {
       String msg;
       if (_selectedAreaId == null && _selectedPlan == null) {
-        msg = 'area and plan';
+        msg = 'both Area and Plan';
       } else if (_selectedAreaId == null) {
-        msg = 'area';
+        msg = 'an Area';
       } else {
-        msg = 'plan';
+        msg = 'a Subscription Plan';
       }
-      DefaultDialogBox.errorDialog(context,
-          title: 'Alert', content: 'Please select $msg');
+      DefaultDialogBox.errorDialog(
+        context,
+        title: 'Missing Selection',
+        content: 'Please select $msg to continue.',
+      );
     }
+  }
+
+  Widget _buildSectionCard({
+    required String title,
+    required IconData icon,
+    required List<Widget> children,
+  }) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 16),
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppColors.cardBorder, width: 1),
+        boxShadow: AppColors.cardShadow,
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(icon, size: 20, color: AppColors.primary),
+              const SizedBox(width: 8),
+              Text(
+                title,
+                style: const TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.textPrimary,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          ...children,
+        ],
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     final op = operatorDetails;
     if (areas.isEmpty) {
-      return const Center(
-        child: Text(
-          'No area to add a customer!\n\nPlease add an Area.',
-          textAlign: TextAlign.center,
-          style: TextStyle(
-            fontSize: 20,
-            fontStyle: FontStyle.italic,
-            fontWeight: FontWeight.bold,
-            letterSpacing: 1,
+      return Scaffold(
+        backgroundColor: AppColors.background,
+        body: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(32),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(20),
+                  decoration: const BoxDecoration(
+                    color: AppColors.warningLight,
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
+                    Icons.location_off_rounded,
+                    size: 48,
+                    color: AppColors.warningDark,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                const Text(
+                  'No Areas Available',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.textPrimary,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                const Text(
+                  'Please create an Area on the Areas dashboard before registering subscribers.',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: AppColors.textSecondary,
+                    fontSize: 14,
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       );
     }
 
-    return Form(
-      key: _formKey,
-      child: Stack(
-        children: <Widget>[
-          ListView(
+    final availablePlans = op?.plans ?? [];
+
+    return Scaffold(
+      backgroundColor: AppColors.background,
+      body: ResponsiveContainer(
+        maxWidth: 800,
+        child: Form(
+          key: _formKey,
+          child: ListView(
             physics: const BouncingScrollPhysics(),
-            padding: const EdgeInsets.symmetric(horizontal: 8.0),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
             children: <Widget>[
-              const SizedBox(height: 45),
-              Align(
-                alignment: Alignment.center,
-                child: Stack(
-                  children: <Widget>[
-                    CircleAvatar(
-                      radius: 60,
-                      backgroundImage: _selectedImageFile != null
-                          ? FileImage(_selectedImageFile!)
-                          : const AssetImage('assets/images/default_profile.jpg')
-                              as ImageProvider,
-                    ),
-                    Positioned(
-                      bottom: 5,
-                      left: 0,
-                      child: CircleAvatar(
-                        backgroundColor: Colors.green,
-                        child: IconButton(
-                          color: Colors.white,
-                          icon: const Icon(Icons.camera_alt),
-                          onPressed: () async {
-                            final file =
-                                await ImageGetter.getImageFromDevice(context);
-                            if (file != null) {
-                              setState(() {
-                                _selectedImageFile = file;
-                              });
-                            }
-                          },
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 5),
-              TextFormField(
-                controller: _nameController,
-                validator: nameValidator,
-                decoration: inputDecoration(
-                  icon: Icons.person,
-                  label: 'Customer name',
-                ),
-              ),
-              const SizedBox(height: 5),
-              TextFormField(
-                controller: _addressController,
-                keyboardType: TextInputType.text,
-                validator: addressValidator,
-                decoration: inputDecoration(
-                  icon: Icons.location_on,
-                  label: 'Address',
-                ),
-              ),
-              const SizedBox(height: 5),
-              TextFormField(
-                controller: _phoneController,
-                keyboardType: TextInputType.phone,
-                validator: phoneValidator,
-                decoration: inputDecoration(
-                  icon: Icons.phone,
-                  label: 'Phone number',
-                  prefixText: '+91 ',
-                ),
-              ),
-              const SizedBox(height: 5),
-              TextFormField(
-                controller: _accountController,
-                keyboardType: TextInputType.number,
-                validator: defaultValidator,
-                decoration: inputDecoration(
-                  icon: Icons.badge,
-                  label: 'Account number',
-                ),
-              ),
-              const SizedBox(height: 5),
-              TextFormField(
-                controller: _macController,
-                validator: defaultValidator,
-                decoration: inputDecoration(
-                  icon: Icons.router,
-                  label: 'MAC Id',
-                ),
-              ),
-              const SizedBox(height: 10),
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
-                children: <Widget>[
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+              // Avatar Picker Card
+              Center(
+                child: Padding(
+                  padding: const EdgeInsets.only(bottom: 16),
+                  child: Stack(
                     children: <Widget>[
-                      Text(
-                        'Select Area : ',
-                        style: TextStyle(
-                          color: Theme.of(context).primaryColor,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 18,
-                          letterSpacing: 1,
-                        ),
+                      CircleAvatar(
+                        radius: 50,
+                        backgroundColor: Colors.transparent,
+                        backgroundImage: _selectedImageFile != null
+                            ? FileImage(_selectedImageFile!)
+                            : const AssetImage(
+                                    'assets/images/default_profile.png')
+                                as ImageProvider,
                       ),
-                      ...areas.map(
-                        (area) {
-                          return Row(
-                            children: <Widget>[
-                              Radio<String>(
-                                materialTapTargetSize:
-                                    MaterialTapTargetSize.shrinkWrap,
-                                activeColor: Theme.of(context).primaryColor,
-                                value: area.id,
-                                groupValue: _selectedAreaId,
-                                onChanged: _selectAreaField,
+                      Positioned(
+                        bottom: 0,
+                        right: 0,
+                        child: Material(
+                          color: AppColors.primary,
+                          shape: const CircleBorder(),
+                          child: InkWell(
+                            customBorder: const CircleBorder(),
+                            onTap: () async {
+                              final file =
+                                  await ImageGetter.getImageFromDevice(context);
+                              if (file != null) {
+                                setState(() {
+                                  _selectedImageFile = file;
+                                });
+                              }
+                            },
+                            child: const Padding(
+                              padding: EdgeInsets.all(8),
+                              child: Icon(
+                                Icons.camera_alt_rounded,
+                                color: Colors.white,
+                                size: 18,
                               ),
-                              Text(area.areaName),
-                            ],
-                          );
-                        },
+                            ),
+                          ),
+                        ),
                       ),
                     ],
                   ),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: <Widget>[
-                      Text(
-                        'Select Plan : ',
-                        style: TextStyle(
-                          color: Theme.of(context).primaryColor,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 18,
-                          letterSpacing: 1,
-                        ),
-                      ),
-                      ...?op?.plans.map(
-                        (plan) {
-                          return Row(
-                            children: <Widget>[
-                              Radio<double>(
-                                materialTapTargetSize:
-                                    MaterialTapTargetSize.shrinkWrap,
-                                activeColor: Theme.of(context).primaryColor,
-                                value: plan,
-                                groupValue: _selectedPlan,
-                                onChanged: _selectPlanField,
-                              ),
-                              Text('\u20B9 $plan'),
-                            ],
-                          );
-                        },
-                      ),
-                    ],
+                ),
+              ),
+
+              // Section 1: Subscriber Identity
+              _buildSectionCard(
+                title: 'Subscriber Information',
+                icon: Icons.person_outline_rounded,
+                children: [
+                  TextFormField(
+                    controller: _nameController,
+                    validator: nameValidator,
+                    textCapitalization: TextCapitalization.words,
+                    decoration: const InputDecoration(
+                      labelText: 'Full Name',
+                      hintText: 'e.g. Ramesh Kumar',
+                      prefixIcon: Icon(Icons.person_outline_rounded, size: 20),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  TextFormField(
+                    controller: _phoneController,
+                    keyboardType: TextInputType.phone,
+                    validator: phoneValidator,
+                    decoration: const InputDecoration(
+                      labelText: 'Phone Number',
+                      prefixText: '+91 ',
+                      hintText: '9876543210',
+                      prefixIcon: Icon(Icons.phone_outlined, size: 20),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  TextFormField(
+                    controller: _addressController,
+                    keyboardType: TextInputType.streetAddress,
+                    validator: addressValidator,
+                    maxLines: 2,
+                    decoration: const InputDecoration(
+                      labelText: 'Installation Address',
+                      hintText: 'House/Flat #, Street, Landmark',
+                      prefixIcon: Icon(Icons.home_outlined, size: 20),
+                    ),
                   ),
                 ],
               ),
-              const SizedBox(height: 20),
-              defaultbutton(
-                context: context,
-                function: saveDetails,
-                title: 'Add customer',
+
+              // Section 2: Technical Identifiers
+              _buildSectionCard(
+                title: 'Hardware & Account Identifiers',
+                icon: Icons.router_outlined,
+                children: [
+                  TextFormField(
+                    controller: _accountController,
+                    keyboardType: TextInputType.number,
+                    validator: defaultValidator,
+                    decoration: const InputDecoration(
+                      labelText: 'Account Number',
+                      hintText: 'e.g. 10042',
+                      prefixIcon: Icon(Icons.badge_outlined, size: 20),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  TextFormField(
+                    controller: _macController,
+                    validator: defaultValidator,
+                    decoration: const InputDecoration(
+                      labelText: 'MAC ID / Set-top Box #',
+                      hintText: 'e.g. AA:BB:CC:DD:EE:FF',
+                      prefixIcon: Icon(Icons.fingerprint_rounded, size: 20),
+                    ),
+                  ),
+                ],
               ),
-              const SizedBox(height: 20),
+
+              // Section 3: Subscription Assignment
+              _buildSectionCard(
+                title: 'Coverage Area & Plan',
+                icon: Icons.tune_rounded,
+                children: [
+                  const Text(
+                    'Select Area',
+                    style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.textSecondary,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  DropdownButtonFormField<String>(
+                    initialValue: _selectedAreaId,
+                    hint: const Text('Choose coverage area...'),
+                    isExpanded: true,
+                    icon: const Icon(Icons.keyboard_arrow_down_rounded,
+                        color: AppColors.primary, size: 22),
+                    dropdownColor: Colors.white,
+                    borderRadius: BorderRadius.circular(14),
+                    elevation: 4,
+                    style: const TextStyle(
+                      color: AppColors.textPrimary,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                    ),
+                    items: areas.map((area) {
+                      return DropdownMenuItem<String>(
+                        value: area.id,
+                        child: Text(area.areaName),
+                      );
+                    }).toList(),
+                    onChanged: (val) {
+                      setState(() => _selectedAreaId = val);
+                    },
+                    decoration: const InputDecoration(
+                      prefixIcon: Icon(Icons.location_on_outlined, size: 20),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  const Text(
+                    'Select Monthly Plan',
+                    style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.textSecondary,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  if (availablePlans.isEmpty)
+                    const Text(
+                      'No plans configured in Settings. Please add plans in operator settings.',
+                      style: TextStyle(color: AppColors.warningDark, fontSize: 13),
+                    )
+                  else
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: availablePlans.map((plan) {
+                        final isSelected = _selectedPlan == plan;
+                        return ChoiceChip(
+                          label: Text(
+                            '\u20B9 $plan/mo',
+                            style: TextStyle(
+                              fontWeight: isSelected
+                                  ? FontWeight.bold
+                                  : FontWeight.w500,
+                              color: isSelected
+                                  ? AppColors.primary
+                                  : AppColors.textPrimary,
+                            ),
+                          ),
+                          selected: isSelected,
+                          onSelected: (selected) {
+                            setState(() {
+                              _selectedPlan = selected ? plan : null;
+                            });
+                          },
+                        );
+                      }).toList(),
+                    ),
+                ],
+              ),
+
+              // Submit Button
+              FilledButton.icon(
+                style: FilledButton.styleFrom(
+                  minimumSize: const Size(double.infinity, 50),
+                  backgroundColor: AppColors.primary,
+                ),
+                onPressed: _isSaving ? null : saveDetails,
+                icon: _isSaving
+                    ? const SizedBox(
+                        width: 18,
+                        height: 18,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: Colors.white,
+                        ),
+                      )
+                    : const Icon(Icons.person_add_rounded),
+                label: Text(
+                  _isSaving ? 'Registering...' : 'Register Customer',
+                  style: const TextStyle(fontSize: 16),
+                ),
+              ),
+
+              const SizedBox(height: 24),
+
+              // Divider with OR
               const Row(
                 children: [
-                  Expanded(child: Divider(endIndent: 5)),
-                  Text('OR', style: TextStyle(fontSize: 16)),
-                  Expanded(child: Divider(indent: 5)),
+                  Expanded(child: Divider()),
+                  Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 12),
+                    child: Text(
+                      'OR',
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.textMuted,
+                      ),
+                    ),
+                  ),
+                  Expanded(child: Divider()),
                 ],
               ),
-              const Align(
-                alignment: Alignment.center,
-                child: Padding(
-                  padding: EdgeInsets.all(16),
-                  child: Text(
-                    'Add customers from file (Bulk upload)!',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(fontSize: 16),
-                  ),
+
+              const SizedBox(height: 16),
+
+              // Bulk Import Option
+              OutlinedButton.icon(
+                style: OutlinedButton.styleFrom(
+                  minimumSize: const Size(double.infinity, 50),
                 ),
-              ),
-              defaultbutton(
-                context: context,
-                function: () async =>
+                onPressed: () async =>
                     PickFile.pickFileAndAddCustomers(context),
-                title: 'Pick file',
+                icon: const Icon(Icons.upload_file_rounded),
+                label: const Text('Bulk Upload Subscribers (Excel / CSV)'),
               ),
-              const SizedBox(height: 20),
+
+              const SizedBox(height: 40),
             ],
           ),
-          Positioned(
-            top: 0,
-            left: 50,
-            right: 50,
-            child: Container(
-              padding: const EdgeInsets.all(10),
-              alignment: Alignment.center,
-              decoration: BoxDecoration(
-                borderRadius: const BorderRadius.only(
-                  bottomLeft: Radius.circular(15),
-                  bottomRight: Radius.circular(15),
-                ),
-                color: Theme.of(context).primaryColor,
-                boxShadow: const [
-                  BoxShadow(
-                    color: Colors.black26,
-                    offset: Offset(5, 5),
-                    blurRadius: 5,
-                  ),
-                ],
-              ),
-              child: const Text(
-                'ADD NEW CUSTOMER',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
-                  letterSpacing: 0.5,
-                ),
-              ),
-            ),
-          ),
-        ],
+        ),
       ),
     );
   }

@@ -1,14 +1,14 @@
-import 'dart:ui';
-
 import 'package:flutter/material.dart';
 import 'package:flutter/gestures.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import 'package:cableTvBook/global/validators.dart';
-import 'package:cableTvBook/global/box_decoration.dart';
 import 'package:cableTvBook/screens/signin_screen.dart';
 import 'package:cableTvBook/screens/register_screen.dart';
+import 'package:cableTvBook/theme/app_colors.dart';
+import 'package:cableTvBook/theme/responsive.dart';
+import 'package:cableTvBook/widgets/app_logo.dart';
 
 class SignupScreen extends StatefulWidget {
   static const routeName = '/signupScreen';
@@ -25,42 +25,32 @@ class _SignupScreenState extends State<SignupScreen> {
   final _passwordController = TextEditingController();
   final _reterPasswordController = TextEditingController();
   bool _accepted = false;
+  bool _obscurePassword = true;
+  bool _obscureConfirmPassword = true;
   late TapGestureRecognizer _privacyPolicy;
   late TapGestureRecognizer _termsAndConditions;
 
-  Widget getTextWidget(String data, double size, Color color, bool isBold) {
-    return Text(
-      data,
-      style: TextStyle(
-        color: color,
-        fontSize: size,
-        fontWeight: isBold ? FontWeight.bold : FontWeight.normal,
-        letterSpacing: 0.5,
-      ),
-    );
-  }
-
   void _handlePrivacyPolicy() async {
-    final uri = Uri.parse("https://sites.google.com/view/srinivasasoftwares-privacy");
+    final uri = Uri.parse(
+        "https://sites.google.com/view/srinivasasoftwares-privacy");
     if (await canLaunchUrl(uri)) {
       try {
         await launchUrl(uri, mode: LaunchMode.externalApplication);
       } catch (_) {}
     } else {
-      Fluttertoast.showToast(
-          msg: 'Could not process your request, Please try again');
+      Fluttertoast.showToast(msg: 'Could not open privacy policy');
     }
   }
 
   void _handleTermsAndConditions() async {
-    final uri = Uri.parse("https://sites.google.com/view/srinivasasoftwares-terms");
+    final uri = Uri.parse(
+        "https://sites.google.com/view/srinivasasoftwares-terms");
     if (await canLaunchUrl(uri)) {
       try {
         await launchUrl(uri, mode: LaunchMode.externalApplication);
       } catch (_) {}
     } else {
-      Fluttertoast.showToast(
-          msg: 'Could not process your request, Please try again');
+      Fluttertoast.showToast(msg: 'Could not open terms & conditions');
     }
   }
 
@@ -82,196 +72,264 @@ class _SignupScreenState extends State<SignupScreen> {
     super.dispose();
   }
 
+  void _submit() {
+    if (_formKey.currentState?.validate() == true && _accepted) {
+      _formKey.currentState?.save();
+      Navigator.of(context).pushNamed(
+        RegisterScreen.routeName,
+        arguments: {
+          'email': _emailController.text.trim(),
+          'password': _passwordController.text
+        },
+      );
+    } else if (!_accepted) {
+      Fluttertoast.showToast(
+        msg: 'Please agree to Privacy Policy and Terms to proceed',
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    final size = MediaQuery.of(context).size;
-    final top = MediaQuery.of(context).padding.top;
-    final primaryColor = Theme.of(context).primaryColor;
-    final errorColor = Theme.of(context).colorScheme.error;
-
     return Scaffold(
-      body: Stack(
-        alignment: Alignment.center,
-        children: <Widget>[
-          SizedBox(
-            height: size.height,
-            width: size.width,
-            child: Image.asset('assets/images/splash.png', fit: BoxFit.cover),
-          ),
-          BackdropFilter(
-            filter: ImageFilter.blur(sigmaX: 2, sigmaY: 2),
-            child: Container(
-              height: size.height,
-              width: size.width,
-              decoration: pageDecoration(context),
+      backgroundColor: AppColors.background,
+      body: SafeArea(
+        child: Center(
+          child: ResponsiveContainer(
+            maxWidth: 460,
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+            child: SingleChildScrollView(
+              physics: const BouncingScrollPhysics(),
               child: Form(
                 key: _formKey,
-                child: ListView(
-                  physics: const BouncingScrollPhysics(),
-                  padding: const EdgeInsets.symmetric(horizontal: 32),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: <Widget>[
-                    SizedBox(height: top * 1.5),
-                    getTextWidget('Register', 28, Colors.white, true),
-                    Divider(
-                      thickness: 2,
-                      color: Colors.black,
-                      indent: 0,
-                      endIndent: size.width * 0.575,
-                    ),
-                    SizedBox(height: top),
-                    getTextWidget('E-Mail', 16, Colors.white, false),
-                    SizedBox(height: top * 0.25),
-                    TextFormField(
-                      validator: emailValidator,
-                      controller: _emailController,
-                      cursorColor: Colors.black,
-                      keyboardType: TextInputType.emailAddress,
-                      style: const TextStyle(color: Colors.white),
-                      decoration: inputDecoration(
-                        filled: true,
-                        hintColor: Colors.white,
-                        filledColor: primaryColor.withAlpha(200),
-                        hint: 'email',
-                        icon: Icons.email,
-                        iconColor: Colors.white,
-                      ),
-                    ),
-                    SizedBox(height: top * 0.5),
-                    getTextWidget('Password', 16, Colors.white, false),
-                    SizedBox(height: top * 0.25),
-                    TextFormField(
-                      validator: (value) => passwordValidator(value, false),
-                      controller: _passwordController,
-                      obscureText: true,
-                      cursorColor: Colors.black,
-                      style: const TextStyle(color: Colors.white),
-                      decoration: inputDecoration(
-                        filled: true,
-                        hintColor: Colors.white,
-                        filledColor: primaryColor.withAlpha(200),
-                        hint: 'password',
-                        icon: Icons.lock,
-                        iconColor: Colors.white,
-                      ),
-                    ),
-                    SizedBox(height: top * 0.5),
-                    getTextWidget('Re-enter password', 16, Colors.white, false),
-                    SizedBox(height: top * 0.25),
-                    TextFormField(
-                      controller: _reterPasswordController,
-                      validator: (value) => reCheckValidator(
-                          value, _passwordController.text),
-                      obscureText: true,
-                      cursorColor: Colors.black,
-                      style: const TextStyle(color: Colors.white),
-                      decoration: inputDecoration(
-                        filled: true,
-                        hintColor: Colors.white,
-                        filledColor: primaryColor.withAlpha(200),
-                        hint: 're-enter password',
-                        icon: Icons.lock_outline,
-                        iconColor: Colors.white,
-                      ),
-                    ),
-                    SizedBox(height: top * 1.5),
-                    FittedBox(
-                      child: Container(
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        padding: const EdgeInsets.symmetric(horizontal: 8),
-                        child: Row(
-                          children: [
-                            Checkbox(
-                              checkColor: Colors.green[900],
-                              value: _accepted,
-                              onChanged: (value) {
-                                setState(() {
-                                  _accepted = value ?? false;
-                                });
-                              },
+                    const SizedBox(height: 16),
+
+                    // Brand Logo & Heading
+                    Center(
+                      child: Column(
+                        children: [
+                          const AppLogo(size: 72, borderRadius: 18),
+                          const SizedBox(height: 16),
+                          const Text(
+                            'Create Account',
+                            style: TextStyle(
+                              fontSize: 24,
+                              fontWeight: FontWeight.bold,
+                              letterSpacing: -0.5,
+                              color: AppColors.textPrimary,
                             ),
-                            RichText(
-                              text: TextSpan(
-                                text: 'Accept ',
-                                children: [
-                                  TextSpan(
-                                    text: 'Privacy Policy',
-                                    style: const TextStyle(
-                                      color: Colors.blue,
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                    recognizer: _privacyPolicy,
-                                  ),
-                                  const TextSpan(text: ' and '),
-                                  TextSpan(
-                                    text: 'Terms & Conditions',
-                                    style: const TextStyle(
-                                      color: Colors.blue,
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                    recognizer: _termsAndConditions,
-                                  ),
-                                ],
-                                style: const TextStyle(color: Colors.black),
+                          ),
+                          const SizedBox(height: 4),
+                          const Text(
+                            'Step 1 of 2: Operator Credentials',
+                            style: TextStyle(
+                              fontSize: 13,
+                              color: AppColors.textSecondary,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    const SizedBox(height: 28),
+
+                    // Signup Card
+                    Container(
+                      padding: const EdgeInsets.all(22),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(20),
+                        border:
+                            Border.all(color: AppColors.cardBorder, width: 1),
+                        boxShadow: AppColors.cardShadow,
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          // Email
+                          TextFormField(
+                            validator: emailValidator,
+                            controller: _emailController,
+                            keyboardType: TextInputType.emailAddress,
+                            decoration: const InputDecoration(
+                              labelText: 'Email Address',
+                              hintText: 'operator@example.com',
+                              prefixIcon:
+                                  Icon(Icons.email_outlined, size: 20),
+                            ),
+                          ),
+                          const SizedBox(height: 14),
+
+                          // Password
+                          TextFormField(
+                            validator: (value) =>
+                                passwordValidator(value, false),
+                            controller: _passwordController,
+                            obscureText: _obscurePassword,
+                            decoration: InputDecoration(
+                              labelText: 'Password',
+                              hintText: 'Min 8 chars with 1 Cap, 1 Small, 1 Num & 1 Spl',
+                              prefixIcon: const Icon(Icons.lock_outline_rounded,
+                                  size: 20),
+                              suffixIcon: IconButton(
+                                icon: Icon(
+                                  _obscurePassword
+                                      ? Icons.visibility_off_outlined
+                                      : Icons.visibility_outlined,
+                                  size: 20,
+                                ),
+                                onPressed: () {
+                                  setState(() {
+                                    _obscurePassword = !_obscurePassword;
+                                  });
+                                },
                               ),
-                              textAlign: TextAlign.center,
                             ),
-                            const SizedBox(width: 10),
-                          ],
-                        ),
+                          ),
+                          const SizedBox(height: 14),
+
+                          // Re-enter Password
+                          TextFormField(
+                            controller: _reterPasswordController,
+                            validator: (value) => reCheckValidator(
+                                value, _passwordController.text),
+                            obscureText: _obscureConfirmPassword,
+                            decoration: InputDecoration(
+                              labelText: 'Confirm Password',
+                              prefixIcon: const Icon(Icons.lock_outline_rounded,
+                                  size: 20),
+                              suffixIcon: IconButton(
+                                icon: Icon(
+                                  _obscureConfirmPassword
+                                      ? Icons.visibility_off_outlined
+                                      : Icons.visibility_outlined,
+                                  size: 20,
+                                ),
+                                onPressed: () {
+                                  setState(() {
+                                    _obscureConfirmPassword =
+                                        !_obscureConfirmPassword;
+                                  });
+                                },
+                              ),
+                            ),
+                          ),
+
+                          const SizedBox(height: 16),
+
+                          // Terms agreement checkbox
+                          Row(
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              Checkbox(
+                                value: _accepted,
+                                activeColor: AppColors.primary,
+                                onChanged: (value) {
+                                  setState(() {
+                                    _accepted = value ?? false;
+                                  });
+                                },
+                              ),
+                              Expanded(
+                                child: RichText(
+                                  text: TextSpan(
+                                    style: const TextStyle(
+                                      color: AppColors.textSecondary,
+                                      fontSize: 12,
+                                    ),
+                                    children: [
+                                      const TextSpan(text: 'I agree to the '),
+                                      TextSpan(
+                                        text: 'Privacy Policy',
+                                        style: const TextStyle(
+                                          color: AppColors.primary,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                        recognizer: _privacyPolicy,
+                                      ),
+                                      const TextSpan(text: ' & '),
+                                      TextSpan(
+                                        text: 'Terms & Conditions',
+                                        style: const TextStyle(
+                                          color: AppColors.primary,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                        recognizer: _termsAndConditions,
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+
+                          const SizedBox(height: 20),
+
+                          // Next Button
+                          FilledButton(
+                            style: FilledButton.styleFrom(
+                              minimumSize: const Size(double.infinity, 50),
+                              backgroundColor: AppColors.primary,
+                            ),
+                            onPressed: _submit,
+                            child: const Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Text(
+                                  'Continue to Operator Profile',
+                                  style: TextStyle(
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                SizedBox(width: 8),
+                                Icon(Icons.arrow_forward_rounded, size: 18),
+                              ],
+                            ),
+                          ),
+                        ],
                       ),
                     ),
-                    SizedBox(height: top * 1.5),
-                    Align(
-                      child: FloatingActionButton.extended(
-                        heroTag: 'register',
-                        onPressed: () {
-                          if (_formKey.currentState?.validate() == true &&
-                              _accepted) {
-                            _formKey.currentState?.save();
-                            Navigator.of(context).pushNamed(
-                              RegisterScreen.routeName,
-                              arguments: {
-                                'email': _emailController.text.trim(),
-                                'password': _passwordController.text
-                              },
-                            );
-                          } else if (!_accepted) {
-                            Fluttertoast.showToast(
-                                msg:
-                                    'Please accept privacy policy and terms & conditions');
-                          }
-                        },
-                        label: getTextWidget(
-                          '        Register        ',
-                          20,
-                          primaryColor,
-                          true,
-                        ),
-                      ),
-                    ),
-                    SizedBox(height: top * 2),
+
+                    const SizedBox(height: 24),
+
+                    // Already have account? Sign in link
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: <Widget>[
-                        getTextWidget(
-                            'Already have an account?  ', 18, Colors.black, false),
+                        const Text(
+                          'Already registered? ',
+                          style: TextStyle(
+                            color: AppColors.textSecondary,
+                            fontSize: 14,
+                          ),
+                        ),
                         GestureDetector(
                           onTap: () => Navigator.of(context)
                               .pushReplacementNamed(SigninScreen.routeName),
-                          child: getTextWidget(
-                              'Sign In', 18, errorColor, true),
+                          child: const Text(
+                            'Sign In',
+                            style: TextStyle(
+                              color: AppColors.primary,
+                              fontSize: 14,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
                         ),
                       ],
                     ),
+
+                    const SizedBox(height: 24),
                   ],
                 ),
               ),
             ),
-          )
-        ],
+          ),
+        ),
       ),
     );
   }

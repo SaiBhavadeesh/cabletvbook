@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 
 ImageProvider getAvatarImageProvider(String? imageSource) {
   if (imageSource == null || imageSource.trim().isEmpty) {
-    return const AssetImage('assets/images/user.png');
+    return const AssetImage('assets/images/default_profile.png');
   }
 
   final trimmed = imageSource.trim();
@@ -22,6 +22,6 @@ ImageProvider getAvatarImageProvider(String? imageSource) {
     final bytes = base64Decode(cleanBase64);
     return MemoryImage(bytes);
   } catch (_) {
-    return const AssetImage('assets/images/user.png');
+    return const AssetImage('assets/images/default_profile.png');
   }
 }

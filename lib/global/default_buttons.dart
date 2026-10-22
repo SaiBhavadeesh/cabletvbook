@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:cableTvBook/global/box_decoration.dart';
+import 'package:cableTvBook/theme/app_colors.dart';
 
 Widget defaultbutton({
   required BuildContext context,
@@ -8,29 +8,57 @@ Widget defaultbutton({
   IconData? icon,
   double width = 45,
   double height = 16,
+  bool fullWidth = false,
+  bool isLoading = false,
 }) {
-  return FloatingActionButton.extended(
-    heroTag: title,
-    onPressed: function,
-    isExtended: false,
-    elevation: 0,
-    label: Container(
-      padding: EdgeInsets.symmetric(horizontal: width, vertical: height),
-      decoration: defaultBoxDecoration(context, true),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: <Widget>[
-          if (icon != null) Icon(icon, color: Colors.white),
-          if (icon != null) const SizedBox(width: 5),
-          Text(
-            title,
-            style: const TextStyle(
-              color: Colors.white,
-              fontWeight: FontWeight.bold,
-              fontSize: 18,
-            ),
+  final buttonContent = Row(
+    mainAxisSize: fullWidth ? MainAxisSize.max : MainAxisSize.min,
+    mainAxisAlignment: MainAxisAlignment.center,
+    children: <Widget>[
+      if (isLoading)
+        const SizedBox(
+          width: 18,
+          height: 18,
+          child: CircularProgressIndicator(
+            strokeWidth: 2,
+            valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
           ),
-        ],
+        )
+      else if (icon != null) ...[
+        Icon(icon, color: Colors.white, size: 20),
+        const SizedBox(width: 8),
+      ],
+      Text(
+        title,
+        style: const TextStyle(
+          color: Colors.white,
+          fontWeight: FontWeight.w700,
+          fontSize: 16,
+          letterSpacing: 0.3,
+        ),
+      ),
+    ],
+  );
+
+  return Container(
+    width: fullWidth ? double.infinity : null,
+    decoration: BoxDecoration(
+      gradient: AppColors.primaryGradient,
+      borderRadius: BorderRadius.circular(14),
+      boxShadow: AppColors.floatingShadow,
+    ),
+    child: Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: isLoading ? null : function,
+        borderRadius: BorderRadius.circular(14),
+        child: Padding(
+          padding: EdgeInsets.symmetric(
+            horizontal: width > 0 ? width : 24,
+            vertical: height > 0 ? height : 14,
+          ),
+          child: buttonContent,
+        ),
       ),
     ),
   );

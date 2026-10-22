@@ -28,14 +28,30 @@ void main() {
     });
 
     test('passwordValidator should enforce security rules for sign-up', () {
-      // Must contain: uppercase, lowercase, digit, special char, length >= 6
+      // Must contain: uppercase, lowercase, digit, special char, length >= 8
       expect(passwordValidator('StrongP@ss1', false), isNull);
+      expect(
+        passwordValidator('Str0n@', false), // 6 characters (less than 8)
+        contains('must be at least 8 characters'),
+      );
       expect(
         passwordValidator('weak', false),
         contains('must contain atleast 1 number'),
       );
       expect(
-        passwordValidator('nocaps1@', false),
+        passwordValidator('nocaps1@pass', false),
+        contains('must contain atleast 1 number'),
+      );
+      expect(
+        passwordValidator('NOLOWER1@PASS', false),
+        contains('must contain atleast 1 number'),
+      );
+      expect(
+        passwordValidator('NoNumbers@Pass', false),
+        contains('must contain atleast 1 number'),
+      );
+      expect(
+        passwordValidator('NoSpecialChar123', false),
         contains('must contain atleast 1 number'),
       );
     });

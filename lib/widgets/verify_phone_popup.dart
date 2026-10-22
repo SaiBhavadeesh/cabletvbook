@@ -63,6 +63,8 @@ class VerifyPhonePopup extends StatelessWidget {
                     child: PinCodeTextField(
                       appContext: context,
                       length: 6,
+                      autoFocus: true,
+                      keyboardType: TextInputType.number,
                       inputFormatters: [
                         FilteringTextInputFormatter.digitsOnly
                       ],

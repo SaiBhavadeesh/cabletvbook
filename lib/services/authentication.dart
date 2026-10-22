@@ -113,15 +113,39 @@ class Authentication {
             if (isGoogleUser) {
               final current = FirebaseAuth.instance.currentUser;
               if (current != null) {
-                _authResult =
-                    await current.linkWithCredential(_phoneCredential!);
+                try {
+                  _authResult =
+                      await current.linkWithCredential(_phoneCredential!);
+                } on FirebaseAuthException catch (e) {
+                  if (e.code != 'provider-already-linked' &&
+                      e.code != 'credential-already-in-use') {
+                    rethrow;
+                  }
+                }
               }
             } else {
-              _authResult = await FirebaseAuth.instance
-                  .createUserWithEmailAndPassword(
-                      email: email, password: password ?? '');
-              _authResult =
-                  await _authResult?.user?.linkWithCredential(_phoneCredential!);
+              try {
+                _authResult = await FirebaseAuth.instance
+                    .createUserWithEmailAndPassword(
+                        email: email, password: password ?? '');
+              } on FirebaseAuthException catch (e) {
+                if (e.code == 'email-already-in-use') {
+                  _authResult = await FirebaseAuth.instance
+                      .signInWithEmailAndPassword(
+                          email: email, password: password ?? '');
+                } else {
+                  rethrow;
+                }
+              }
+              try {
+                _authResult =
+                    await _authResult?.user?.linkWithCredential(_phoneCredential!);
+              } on FirebaseAuthException catch (e) {
+                if (e.code != 'provider-already-linked' &&
+                    e.code != 'credential-already-in-use') {
+                  rethrow;
+                }
+              }
             }
             firebaseUser = _authResult?.user;
             final user = firebaseUser;
@@ -142,15 +166,21 @@ class Authentication {
             }
             Navigator.of(context).pushNamedAndRemoveUntil(
                 BottomTabsScreen.routeName, (route) => false);
+          } on FirebaseException catch (error) {
+            Navigator.pop(context);
+            DefaultDialogBox.errorDialog(context, content: error.message ?? error.toString());
+            try {
+              await _authResult?.user?.delete();
+            } catch (_) {}
           } on PlatformException catch (error) {
             Navigator.pop(context);
-            DefaultDialogBox.errorDialog(context, content: error.message ?? '');
+            DefaultDialogBox.errorDialog(context, content: error.message ?? error.toString());
             try {
               await _authResult?.user?.delete();
             } catch (_) {}
           } catch (error) {
             Navigator.pop(context);
-            DefaultDialogBox.errorDialog(context);
+            DefaultDialogBox.errorDialog(context, content: error.toString());
             try {
               await _authResult?.user?.delete();
             } catch (_) {}
@@ -158,21 +188,21 @@ class Authentication {
         },
         verificationFailed: (error) async {
           Navigator.pop(context);
-          DefaultDialogBox.errorDialog(context, content: error.message ?? '');
+          DefaultDialogBox.errorDialog(context, content: error.message ?? error.toString());
         },
         codeSent: (verificationId, [forceResendingToken]) {
           _phoneVerificationId = verificationId;
         },
         codeAutoRetrievalTimeout: (verificationId) {},
       );
-    } on FirebaseAuthException catch (error) {
+    } on FirebaseException catch (error) {
       Navigator.pop(context);
       try {
         await _authResult?.user?.delete();
       } catch (_) {}
       Navigator.of(context)
           .pushNamedAndRemoveUntil(SigninScreen.routeName, (route) => false);
-      DefaultDialogBox.errorDialog(context, content: error.message ?? '');
+      DefaultDialogBox.errorDialog(context, content: error.message ?? error.toString());
     } on PlatformException catch (error) {
       Navigator.pop(context);
       try {
@@ -180,15 +210,15 @@ class Authentication {
       } catch (_) {}
       Navigator.of(context)
           .pushNamedAndRemoveUntil(SigninScreen.routeName, (route) => false);
-      DefaultDialogBox.errorDialog(context, content: error.message ?? '');
-    } catch (_) {
+      DefaultDialogBox.errorDialog(context, content: error.message ?? error.toString());
+    } catch (error) {
       Navigator.pop(context);
       try {
         await _authResult?.user?.delete();
         Navigator.of(context)
             .pushNamedAndRemoveUntil(SigninScreen.routeName, (route) => false);
       } catch (_) {}
-      DefaultDialogBox.errorDialog(context);
+      DefaultDialogBox.errorDialog(context, content: error.toString());
     }
   }
 
@@ -200,19 +230,50 @@ class Authentication {
   }) async {
     try {
       DefaultDialogBox.loadingDialog(context);
+      if (_phoneVerificationId == null || _phoneVerificationId!.isEmpty) {
+        Navigator.pop(context);
+        DefaultDialogBox.errorDialog(
+          context,
+          content: 'Verification session expired. Please go back and request a new code.',
+        );
+        return;
+      }
       _phoneCredential = PhoneAuthProvider.credential(
-          verificationId: _phoneVerificationId ?? '', smsCode: otp);
+          verificationId: _phoneVerificationId!, smsCode: otp);
       if (isGoogleUser) {
         final current = FirebaseAuth.instance.currentUser;
         if (current != null) {
-          _authResult =
-              await current.linkWithCredential(_phoneCredential!);
+          try {
+            _authResult =
+                await current.linkWithCredential(_phoneCredential!);
+          } on FirebaseAuthException catch (e) {
+            if (e.code != 'provider-already-linked' &&
+                e.code != 'credential-already-in-use') {
+              rethrow;
+            }
+          }
         }
       } else {
-        _authResult = await FirebaseAuth.instance
-            .createUserWithEmailAndPassword(email: email, password: password ?? '');
-        _authResult =
-            await _authResult?.user?.linkWithCredential(_phoneCredential!);
+        try {
+          _authResult = await FirebaseAuth.instance
+              .createUserWithEmailAndPassword(email: email, password: password ?? '');
+        } on FirebaseAuthException catch (e) {
+          if (e.code == 'email-already-in-use') {
+            _authResult = await FirebaseAuth.instance
+                .signInWithEmailAndPassword(email: email, password: password ?? '');
+          } else {
+            rethrow;
+          }
+        }
+        try {
+          _authResult =
+              await _authResult?.user?.linkWithCredential(_phoneCredential!);
+        } on FirebaseAuthException catch (e) {
+          if (e.code != 'provider-already-linked' &&
+              e.code != 'credential-already-in-use') {
+            rethrow;
+          }
+        }
       }
       firebaseUser = _authResult?.user;
       final user = firebaseUser;
@@ -231,32 +292,25 @@ class Authentication {
       }
       Navigator.of(context)
           .pushNamedAndRemoveUntil(BottomTabsScreen.routeName, (route) => false);
-    } on FirebaseAuthException catch (error) {
+    } on FirebaseException catch (error) {
       Navigator.pop(context);
-      if (error.code != 'invalid-verification-code') {
+      if (error is FirebaseAuthException && error.code == 'invalid-verification-code') {
+        // Do not delete user, allow re-entering the code
+      } else {
         try {
           await _authResult?.user?.delete();
         } catch (_) {}
-        Navigator.of(context)
-            .pushNamedAndRemoveUntil(SigninScreen.routeName, (route) => false);
       }
-      DefaultDialogBox.errorDialog(context, content: error.message ?? '');
+      DefaultDialogBox.errorDialog(context, content: error.message ?? error.toString());
     } on PlatformException catch (error) {
       Navigator.pop(context);
       try {
         await _authResult?.user?.delete();
       } catch (_) {}
-      Navigator.of(context)
-          .pushNamedAndRemoveUntil(SigninScreen.routeName, (route) => false);
-      DefaultDialogBox.errorDialog(context, content: error.message ?? '');
+      DefaultDialogBox.errorDialog(context, content: error.message ?? error.toString());
     } catch (error) {
       Navigator.pop(context);
-      try {
-        await _authResult?.user?.delete();
-        Navigator.of(context)
-            .pushNamedAndRemoveUntil(SigninScreen.routeName, (route) => false);
-      } catch (_) {}
-      DefaultDialogBox.errorDialog(context);
+      DefaultDialogBox.errorDialog(context, content: error.toString());
     }
   }
 
@@ -401,8 +455,16 @@ class Authentication {
     try {
       final user = FirebaseAuth.instance.currentUser;
       if (user == null) return;
+      if (_phoneVerificationId == null || _phoneVerificationId!.isEmpty) {
+        Navigator.pop(context);
+        DefaultDialogBox.errorDialog(
+          context,
+          content: 'Verification session expired. Please go back and request a new code.',
+        );
+        return;
+      }
       _phoneCredential = PhoneAuthProvider.credential(
-          verificationId: _phoneVerificationId ?? '', smsCode: otp);
+          verificationId: _phoneVerificationId!, smsCode: otp);
       await user.updatePhoneNumber(_phoneCredential as PhoneAuthCredential);
       firebaseUser = FirebaseAuth.instance.currentUser;
       await FirebaseFirestore.instance

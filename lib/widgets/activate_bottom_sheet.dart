@@ -3,8 +3,8 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 
 import 'package:cableTvBook/global/variables.dart';
-import 'package:cableTvBook/global/default_buttons.dart';
 import 'package:cableTvBook/services/database_services.dart';
+import 'package:cableTvBook/theme/app_colors.dart';
 
 class ActivateBottomSheet extends StatefulWidget {
   final String customerId;
@@ -30,25 +30,9 @@ class ActivateBottomSheet extends StatefulWidget {
 
 class _ActivateBottomSheetState extends State<ActivateBottomSheet> {
   late double _selectedPlan;
-  bool _checked = true;
-  bool _selected = false;
+  bool _billPaid = true;
+  bool _launchPortal = false;
   int _selectedTerm = 1;
-
-  void _selectPlanField(double? value) {
-    if (value != null) {
-      setState(() {
-        _selectedPlan = value;
-      });
-    }
-  }
-
-  void _selectTermField(int? value) {
-    if (value != null) {
-      setState(() {
-        _selectedTerm = value;
-      });
-    }
-  }
 
   @override
   void initState() {
@@ -56,183 +40,294 @@ class _ActivateBottomSheetState extends State<ActivateBottomSheet> {
     _selectedPlan = widget.plan;
   }
 
+  void _recharge() async {
+    final uri = Uri.parse("https://partnerportal.actcorp.in/packages");
+    if (_launchPortal) {
+      if (await canLaunchUrl(uri)) {
+        try {
+          await launchUrl(uri, mode: LaunchMode.externalApplication);
+        } catch (_) {}
+      } else {
+        Fluttertoast.showToast(msg: 'Could not open partner portal');
+      }
+    }
+
+    if (!mounted) return;
+
+    await showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Confirm Activation'),
+        content: Text(
+          'Activate \u20B9 $_selectedPlan plan for $_selectedTerm month${_selectedTerm > 1 ? 's' : ''} (${_billPaid ? 'Paid' : 'Unpaid'})?',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            style: FilledButton.styleFrom(backgroundColor: AppColors.success),
+            onPressed: () async {
+              Navigator.pop(ctx);
+              await DatabaseService.rechargeCustomer(
+                context,
+                customerId: widget.customerId,
+                areaId: widget.areaId,
+                status: widget.status,
+                plan: _selectedPlan,
+                term: _selectedTerm,
+                billPay: _billPaid,
+                unPaidNo: widget.unpaidNo,
+              );
+              if (mounted) {
+                Navigator.pop(context);
+              }
+            },
+            child: const Text('Confirm'),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    final size = MediaQuery.of(context).size;
     final opPlans = operatorDetails?.plans ?? [];
+
     return Scaffold(
-      backgroundColor: Colors.black45,
-      body: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: <Widget>[
-          Expanded(
-            child: GestureDetector(
-              onTap: () => Navigator.of(context).pop(),
-            ),
-          ),
-          Container(
-            height: size.height * 0.75 -
-                size.height * 0.04 * ((16 - opPlans.length) / 4).floor(),
-            alignment: Alignment.bottomCenter,
-            decoration: const BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.vertical(
-                top: Radius.circular(30),
+      backgroundColor: Colors.black54,
+      body: SafeArea(
+        child: Column(
+          children: [
+            Expanded(
+              child: GestureDetector(
+                behavior: HitTestBehavior.opaque,
+                onTap: () => Navigator.pop(context),
+                child: const SizedBox.expand(),
               ),
             ),
-            padding: const EdgeInsets.all(20),
-            child: ListView(
-              shrinkWrap: true,
-              children: [
-                Text(
-                  'Select Plan : ',
-                  style: TextStyle(
-                    color: Theme.of(context).primaryColor,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 18,
-                    letterSpacing: 1,
+            Container(
+              constraints: BoxConstraints(
+                maxHeight: MediaQuery.sizeOf(context).height * 0.85,
+                maxWidth: 550,
+              ),
+              decoration: const BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // Handle
+                  Center(
+                    child: Container(
+                      margin: const EdgeInsets.only(top: 12, bottom: 8),
+                      width: 40,
+                      height: 4,
+                      decoration: BoxDecoration(
+                        color: AppColors.cardBorder,
+                        borderRadius: BorderRadius.circular(2),
+                      ),
+                    ),
                   ),
-                ),
-                GridView.builder(
-                  physics: const NeverScrollableScrollPhysics(),
-                  shrinkWrap: true,
-                  padding: EdgeInsets.zero,
-                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: 4),
-                  itemBuilder: (context, index) => FittedBox(
-                    fit: BoxFit.contain,
+
+                  // Header
+                  Padding(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 20, vertical: 8),
                     child: Row(
-                      children: <Widget>[
-                        Radio<double>(
-                          materialTapTargetSize:
-                              MaterialTapTargetSize.shrinkWrap,
-                          activeColor: Theme.of(context).primaryColor,
-                          value: opPlans[index],
-                          groupValue: _selectedPlan,
-                          onChanged: _selectPlanField,
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Text(
+                          'Activate / Renew Plan',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: AppColors.textPrimary,
+                          ),
                         ),
-                        Text('\u20B9 ${opPlans[index]}'),
+                        IconButton(
+                          visualDensity: VisualDensity.compact,
+                          icon: const Icon(Icons.close_rounded),
+                          onPressed: () => Navigator.pop(context),
+                        ),
                       ],
                     ),
                   ),
-                  itemCount: opPlans.length,
-                ),
-                const SizedBox(height: 10),
-                Row(
-                  children: [
-                    Text(
-                      'Select Period : ',
-                      style: TextStyle(
-                        color: Theme.of(context).primaryColor,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 18,
-                        letterSpacing: 1,
-                      ),
-                    ),
-                    const SizedBox(width: 20),
-                    DropdownButton<int>(
-                      items: List.generate(
-                        12,
-                        (index) => DropdownMenuItem(
-                          value: index + 1,
-                          child: Text('${index + 1} Month${index == 0 ? '' : 's'}'),
+                  const Divider(height: 1),
+
+                  Flexible(
+                    child: ListView(
+                      shrinkWrap: true,
+                      padding: const EdgeInsets.all(20),
+                      children: [
+                        const Text(
+                          'Select Monthly Plan',
+                          style: TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.bold,
+                            color: AppColors.textSecondary,
+                          ),
                         ),
-                      ),
-                      onChanged: _selectTermField,
-                      isDense: true,
-                      underline: const SizedBox.shrink(),
-                      value: _selectedTerm,
-                    ),
-                  ],
-                ),
-                const Divider(),
-                CheckboxListTile(
-                  activeColor: Colors.green,
-                  controlAffinity: ListTileControlAffinity.leading,
-                  value: _checked,
-                  title: const Text('If bill paid'),
-                  onChanged: (value) {
-                    setState(() {
-                      _checked = value ?? false;
-                    });
-                  },
-                ),
-                const Divider(),
-                CheckboxListTile(
-                  activeColor: Colors.green,
-                  controlAffinity: ListTileControlAffinity.leading,
-                  value: _selected,
-                  title: const Text('Launch portal.'),
-                  onChanged: (value) {
-                    setState(() {
-                      _selected = value ?? false;
-                    });
-                  },
-                ),
-                const Divider(),
-                const SizedBox(height: 10),
-                Align(
-                  child: defaultbutton(
-                    context: context,
-                    function: () async {
-                      final uri = Uri.parse("https://partnerportal.actcorp.in/packages");
-                      if (await canLaunchUrl(uri) || !_selected) {
-                        try {
-                          if (_selected) {
-                            await launchUrl(uri, mode: LaunchMode.externalApplication);
-                          }
-                          if (!context.mounted) return;
-                          await showDialog(
-                            context: context,
-                            builder: (ctx) => AlertDialog(
-                              content: const Text('Activation successful ?'),
-                              actions: [
-                                TextButton(
-                                  onPressed: () => Navigator.pop(ctx),
-                                  style: TextButton.styleFrom(
-                                    foregroundColor: Theme.of(ctx).colorScheme.error,
-                                  ),
-                                  child: const Text('no'),
+                        const SizedBox(height: 10),
+                        Wrap(
+                          spacing: 8,
+                          runSpacing: 8,
+                          children: opPlans.map((plan) {
+                            final isSelected = _selectedPlan == plan;
+                            return ChoiceChip(
+                              label: Text(
+                                '\u20B9 $plan / mo',
+                                style: TextStyle(
+                                  fontWeight: isSelected
+                                      ? FontWeight.bold
+                                      : FontWeight.w500,
+                                  color: isSelected
+                                      ? AppColors.primary
+                                      : AppColors.textPrimary,
                                 ),
-                                TextButton(
-                                  onPressed: () async {
-                                    Navigator.pop(ctx);
-                                    await DatabaseService.rechargeCustomer(
-                                      context,
-                                      customerId: widget.customerId,
-                                      areaId: widget.areaId,
-                                      status: widget.status,
-                                      plan: _selectedPlan,
-                                      term: _selectedTerm,
-                                      billPay: _checked,
-                                      unPaidNo: widget.unpaidNo,
-                                    );
-                                    if (context.mounted) {
-                                      Navigator.pop(context);
+                              ),
+                              selected: isSelected,
+                              onSelected: (selected) {
+                                if (selected) {
+                                  setState(() => _selectedPlan = plan);
+                                }
+                              },
+                            );
+                          }).toList(),
+                        ),
+
+                        const SizedBox(height: 20),
+
+                        // Term Duration
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            const Text(
+                              'Duration (Months)',
+                              style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.bold,
+                                color: AppColors.textPrimary,
+                              ),
+                            ),
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 12, vertical: 4),
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(
+                                    color: const Color(0xFFE2E8F0), width: 1.2),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: const Color(0xFF0F172A)
+                                        .withValues(alpha: 0.04),
+                                    blurRadius: 6,
+                                    offset: const Offset(1, 2),
+                                  ),
+                                ],
+                              ),
+                              child: DropdownButtonHideUnderline(
+                                child: DropdownButton<int>(
+                                  value: _selectedTerm,
+                                  isDense: true,
+                                  dropdownColor: Colors.white,
+                                  borderRadius: BorderRadius.circular(12),
+                                  elevation: 4,
+                                  icon: const Icon(
+                                      Icons.keyboard_arrow_down_rounded,
+                                      color: AppColors.primary,
+                                      size: 20),
+                                  items: List.generate(
+                                    12,
+                                    (index) => DropdownMenuItem(
+                                      value: index + 1,
+                                      child: Text(
+                                        '${index + 1} Month${index == 0 ? '' : 's'}',
+                                        style: const TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                  onChanged: (val) {
+                                    if (val != null) {
+                                      setState(() => _selectedTerm = val);
                                     }
                                   },
-                                  style: TextButton.styleFrom(
-                                    foregroundColor: Theme.of(ctx).primaryColor,
-                                  ),
-                                  child: const Text('yes'),
                                 ),
-                              ],
+                              ),
                             ),
-                          );
-                        } catch (_) {}
-                      } else {
-                        Fluttertoast.showToast(
-                            msg: 'Could not process your request, Please try again');
-                      }
-                    },
-                    title: 'Recharge',
+                          ],
+                        ),
+
+                        const SizedBox(height: 16),
+                        const Divider(),
+
+                        CheckboxListTile(
+                          contentPadding: EdgeInsets.zero,
+                          activeColor: AppColors.primary,
+                          title: const Text(
+                            'Mark as Paid',
+                            style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          subtitle: const Text(
+                            'Payment collected upfront from subscriber',
+                            style: TextStyle(fontSize: 12),
+                          ),
+                          value: _billPaid,
+                          onChanged: (val) =>
+                              setState(() => _billPaid = val ?? false),
+                        ),
+
+                        CheckboxListTile(
+                          contentPadding: EdgeInsets.zero,
+                          activeColor: AppColors.primary,
+                          title: const Text(
+                            'Open ISP / Partner Portal',
+                            style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          subtitle: const Text(
+                            'Launch ACT / Network portal to submit provisioning',
+                            style: TextStyle(fontSize: 12),
+                          ),
+                          value: _launchPortal,
+                          onChanged: (val) =>
+                              setState(() => _launchPortal = val ?? false),
+                        ),
+
+                        const SizedBox(height: 20),
+
+                        FilledButton(
+                          style: FilledButton.styleFrom(
+                            minimumSize: const Size(double.infinity, 48),
+                            backgroundColor: AppColors.success,
+                          ),
+                          onPressed: _recharge,
+                          child: Text(
+                            'Recharge (\u20B9 ${(_selectedPlan * _selectedTerm).toStringAsFixed(0)})',
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-                const SizedBox(height: 20),
-              ],
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

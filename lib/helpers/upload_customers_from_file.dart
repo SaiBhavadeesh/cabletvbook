@@ -62,15 +62,12 @@ class PickFile {
     );
 
     try {
-      final pickedfile = await FilePicker.platform.pickFiles(
-        allowMultiple: false,
+      final pickedFiles = await FilePicker.pickFiles(
         type: FileType.custom,
         allowedExtensions: ['csv'],
       );
-      if (pickedfile != null &&
-          pickedfile.files.isNotEmpty &&
-          pickedfile.files.first.path != null) {
-        file = File(pickedfile.files.first.path!);
+      if (pickedFiles.isNotEmpty && pickedFiles.first.path != null) {
+        file = File(pickedFiles.first.path!);
       }
     } catch (_) {}
 

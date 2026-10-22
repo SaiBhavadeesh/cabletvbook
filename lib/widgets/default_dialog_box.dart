@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:cableTvBook/global/box_decoration.dart';
+import 'package:cableTvBook/theme/app_colors.dart';
 
 enum SelectLoader {
   ballClipRotateMultiple,
@@ -11,20 +11,36 @@ enum SelectLoader {
 class DefaultDialogBox {
   static Future<dynamic> errorDialog(
     BuildContext context, {
-    String title = 'Failed !',
-    String content = 'Something went wrong !\nPlease try again.',
+    String title = 'Notice',
+    String content = 'Something went wrong. Please try again.',
     VoidCallback? function,
   }) {
     return showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: Text(title),
-        content: Text(content),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: Row(
+          children: [
+            const Icon(Icons.info_outline_rounded,
+                color: AppColors.primary, size: 22),
+            const SizedBox(width: 8),
+            Flexible(
+              child: Text(
+                title,
+                style: const TextStyle(fontWeight: FontWeight.bold),
+              ),
+            ),
+          ],
+        ),
+        content: Text(
+          content,
+          style: const TextStyle(color: AppColors.textSecondary, fontSize: 14),
+        ),
         actions: <Widget>[
-          IconButton(
-            icon: const Icon(Icons.check_circle),
-            color: Theme.of(ctx).primaryColor,
+          FilledButton(
+            style: FilledButton.styleFrom(backgroundColor: AppColors.primary),
             onPressed: function ?? () => Navigator.pop(ctx),
+            child: const Text('OK'),
           ),
         ],
       ),
@@ -45,22 +61,38 @@ class DefaultDialogBox {
         child: AlertDialog(
           elevation: 0,
           backgroundColor: Colors.transparent,
-          title: title != null
-              ? Container(
-                  padding: const EdgeInsets.all(8),
-                  alignment: Alignment.center,
-                  decoration: defaultBoxDecoration(context, true),
-                  child: Text(
-                    title,
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(color: Colors.white),
-                  ),
-                )
-              : null,
           content: Center(
-            child: CircularProgressIndicator(
-              valueColor: AlwaysStoppedAnimation<Color>(
-                Theme.of(context).primaryColor,
+            child: Container(
+              padding: const EdgeInsets.all(24),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: AppColors.cardShadow,
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const SizedBox(
+                    width: 36,
+                    height: 36,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 3,
+                      color: AppColors.primary,
+                    ),
+                  ),
+                  if (title != null) ...[
+                    const SizedBox(height: 16),
+                    Text(
+                      title,
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.textPrimary,
+                      ),
+                    ),
+                  ],
+                ],
               ),
             ),
           ),

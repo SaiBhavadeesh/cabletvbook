@@ -8,6 +8,8 @@ import 'package:cableTvBook/screens/signin_screen.dart';
 import 'package:cableTvBook/services/database_services.dart';
 import 'package:cableTvBook/screens/bottom_tabs_screen.dart';
 
+import 'package:cableTvBook/theme/app_colors.dart';
+
 class InitialScreen extends StatefulWidget {
   const InitialScreen({super.key});
 
@@ -52,30 +54,55 @@ class _InitialScreenState extends State<InitialScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: AppColors.canvasDark,
       body: FutureBuilder(
         future: _initialDataFuture,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            final width = MediaQuery.of(context).size.width;
-            return Container(
-              height: MediaQuery.of(context).size.height,
-              decoration: const BoxDecoration(
-                image: DecorationImage(
-                  fit: BoxFit.fill,
-                  image: AssetImage('assets/images/splash.png'),
+            return Stack(
+              fit: StackFit.expand,
+              children: [
+                // Seamless full-screen brand splash background
+                Image.asset(
+                  'assets/images/splash.png',
+                  fit: BoxFit.cover,
+                  width: double.infinity,
+                  height: double.infinity,
                 ),
-              ),
-              alignment: Alignment.bottomCenter,
-              padding: const EdgeInsets.only(bottom: 30),
-              child: SizedBox(
-                height: width * 0.15,
-                width: width * 0.15,
-                child: const LoadingIndicator(
-                  colors: [Colors.orange],
-                  indicatorType: Indicator.ballSpinFadeLoader,
+                // Bottom loading indicator with subtle theme palette
+                Positioned(
+                  left: 0,
+                  right: 0,
+                  bottom: 40,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      SizedBox(
+                        height: 38,
+                        width: 38,
+                        child: const LoadingIndicator(
+                          colors: [
+                            AppColors.secondary,
+                            AppColors.primary,
+                            AppColors.champagne,
+                          ],
+                          indicatorType: Indicator.ballSpinFadeLoader,
+                        ),
+                      ),
+                      const SizedBox(height: 14),
+                      Text(
+                        'Initializing operator workspace...',
+                        style: TextStyle(
+                          color: Colors.white.withValues(alpha: 0.65),
+                          fontSize: 12,
+                          letterSpacing: 0.8,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
+              ],
             );
           } else {
             final user = firebaseUser;

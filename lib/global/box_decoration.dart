@@ -1,38 +1,21 @@
 import 'package:flutter/material.dart';
+import 'package:cableTvBook/theme/app_colors.dart';
 
 BoxDecoration defaultBoxDecoration(BuildContext context, bool shadow) {
-  final primary = Theme.of(context).primaryColor;
   return BoxDecoration(
-    boxShadow: shadow
-        ? [
-            const BoxShadow(
-              color: Colors.black26,
-              offset: Offset(0, 4),
-              blurRadius: 3,
-            ),
-          ]
-        : null,
-    borderRadius: BorderRadius.circular(30),
-    gradient: LinearGradient(
-      colors: [
-        primary.withAlpha(200),
-        primary.withAlpha(230),
-        primary,
-      ],
-    ),
+    boxShadow: shadow ? AppColors.floatingShadow : null,
+    borderRadius: BorderRadius.circular(16),
+    gradient: AppColors.primaryGradient,
   );
 }
 
 BoxDecoration pageDecoration(BuildContext context) {
-  final primary = Theme.of(context).primaryColor;
-  return BoxDecoration(
+  return const BoxDecoration(
     gradient: LinearGradient(
       colors: [
-        primary.withAlpha(190),
-        primary.withAlpha(220),
-        primary,
-        primary.withAlpha(220),
-        primary.withAlpha(190),
+        Color(0xFF18181B),
+        Color(0xFF27272A),
+        Color(0xFF78350F),
       ],
       begin: Alignment.topLeft,
       end: Alignment.bottomRight,
@@ -41,14 +24,15 @@ BoxDecoration pageDecoration(BuildContext context) {
 }
 
 BoxDecoration sweepGradientDecoration(BuildContext context) {
-  final primary = Theme.of(context).primaryColor;
   return BoxDecoration(
-    borderRadius: BorderRadius.circular(20),
-    gradient: SweepGradient(colors: [
-      primary,
-      primary.withAlpha(128),
-      primary.withAlpha(178),
-    ]),
+    borderRadius: BorderRadius.circular(16),
+    gradient: const SweepGradient(
+      colors: [
+        AppColors.primary,
+        AppColors.accent,
+        AppColors.primaryLight,
+      ],
+    ),
   );
 }
 
@@ -57,27 +41,46 @@ InputDecoration inputDecoration({
   String? prefixText,
   IconData? icon,
   Color? filledColor,
-  bool filled = false,
+  bool filled = true,
   String? hint,
   Color? iconColor,
-  Color hintColor = Colors.black,
-  double radius = 15,
+  Color hintColor = AppColors.textMuted,
+  double radius = 12,
+  Widget? suffixIcon,
 }) {
   return InputDecoration(
     counter: const SizedBox.shrink(),
-    fillColor: filledColor,
+    fillColor: filledColor ?? Colors.white,
     filled: filled,
     hintText: hint,
-    hintStyle: TextStyle(color: hintColor),
-    focusedBorder: filled
-        ? OutlineInputBorder(borderRadius: BorderRadius.circular(15))
-        : null,
+    hintStyle: TextStyle(
+      color: hintColor,
+      fontSize: 14,
+      fontWeight: FontWeight.normal,
+    ),
     labelText: label,
-    contentPadding: const EdgeInsets.all(8),
+    labelStyle: const TextStyle(
+      color: AppColors.textSecondary,
+      fontSize: 14,
+      fontWeight: FontWeight.w500,
+    ),
+    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
     prefixText: prefixText,
-    prefixIcon: icon == null ? null : Icon(icon, color: iconColor),
+    prefixIcon: icon == null
+        ? null
+        : Icon(icon, color: iconColor ?? AppColors.textSecondary, size: 20),
+    suffixIcon: suffixIcon,
     border: OutlineInputBorder(
       borderRadius: BorderRadius.circular(radius),
+      borderSide: const BorderSide(color: AppColors.cardBorder, width: 1),
+    ),
+    enabledBorder: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(radius),
+      borderSide: const BorderSide(color: AppColors.cardBorder, width: 1),
+    ),
+    focusedBorder: OutlineInputBorder(
+      borderRadius: BorderRadius.circular(radius),
+      borderSide: const BorderSide(color: AppColors.primary, width: 2),
     ),
   );
 }

@@ -15,14 +15,17 @@ String? emailValidator(String? value) {
 String? passwordValidator(String? value, bool isLogin) {
   if (value == null || value.isEmpty) return 'This field is required !';
   if (!isLogin) {
+    final hasLength = value.length >= 8;
     final hasUpper = RegExp(r'[A-Z]').hasMatch(value);
     final hasLower = RegExp(r'[a-z]').hasMatch(value);
     final hasDigit = RegExp(r'[0-9]').hasMatch(value);
-    final hasSpecial = RegExp(r'[!@#\$&*~]').hasMatch(value);
-    if (value.length >= 6 && hasUpper && hasLower && hasDigit && hasSpecial) {
+    final hasSpecial =
+        RegExp(r'[!@#\$%^&*(),.?":{}|<>_\-+=\[\]\\;/~`]').hasMatch(value);
+
+    if (hasLength && hasUpper && hasLower && hasDigit && hasSpecial) {
       return null;
     }
-    return 'must contain atleast 1 number, 1 special character,\n1 capital letter and 1 small letter !';
+    return 'Password must be at least 8 characters and must contain atleast 1 number, 1 special character, 1 capital letter and 1 small letter !';
   }
   return null;
 }
@@ -62,9 +65,8 @@ String? addressValidator(String? value) {
 String? planValidator(String? value) {
   if (value == null || value.trim().isEmpty) return 'This field is required !';
   final trimmed = value.trim();
-  if (!validate.isNumeric(trimmed)) return 'not a valid number !';
   final parsed = double.tryParse(trimmed);
-  if (parsed == null) return 'not a valid number !';
-  if (trimmed.length > 5) return 'amount is too high!';
+  if (parsed == null || parsed < 0) return 'not a valid number !';
+  if (parsed > 99999) return 'amount is too high!';
   return null;
 }

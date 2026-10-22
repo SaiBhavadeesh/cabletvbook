@@ -1,11 +1,9 @@
-import 'dart:ui';
-
 import 'package:flutter/material.dart';
 
 import 'package:cableTvBook/models/customer.dart';
 import 'package:cableTvBook/global/validators.dart';
-import 'package:cableTvBook/global/box_decoration.dart';
 import 'package:cableTvBook/services/database_services.dart';
+import 'package:cableTvBook/theme/app_colors.dart';
 
 class CustomerEditBottomSheet extends StatefulWidget {
   final Customer customer;
@@ -23,6 +21,7 @@ class _CustomerEditBottomSheetState extends State<CustomerEditBottomSheet> {
   late String _phone;
   late String _account;
   late String _mac;
+  bool _isSaving = false;
 
   @override
   void initState() {
@@ -30,170 +29,213 @@ class _CustomerEditBottomSheetState extends State<CustomerEditBottomSheet> {
     _name = widget.customer.name;
     _address = widget.customer.address;
     _phone = widget.customer.phoneNumber.length >= 5
-        ? widget.customer.phoneNumber.substring(5)
+        ? widget.customer.phoneNumber.substring(5).trim()
         : widget.customer.phoneNumber;
     _account = widget.customer.accountNumber;
     _mac = widget.customer.macId;
   }
 
+  void _save() async {
+    if (_formKey.currentState?.validate() == true) {
+      _formKey.currentState?.save();
+      setState(() => _isSaving = true);
+      try {
+        Map<String, dynamic> data = {};
+        if (widget.customer.name != _name) {
+          data['name'] = _name;
+        }
+        if (widget.customer.address != _address) {
+          data['adrs'] = _address;
+        }
+        if (widget.customer.phoneNumber != '+ 91 $_phone') {
+          data['pn'] = '+ 91 $_phone';
+        }
+        if (widget.customer.accountNumber != _account) {
+          data['accNo'] = _account;
+        }
+        if (widget.customer.macId != _mac) {
+          data['macId'] = _mac;
+        }
+        await DatabaseService.updateCustomerData(
+          context,
+          data: data,
+          customerId: widget.customer.id,
+        );
+        if (mounted) Navigator.of(context).pop();
+      } finally {
+        if (mounted) setState(() => _isSaving = false);
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    final size = MediaQuery.of(context).size;
-    final top = MediaQuery.of(context).padding.top;
     return Scaffold(
-      backgroundColor: Colors.black45,
-      body: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 2, sigmaY: 2),
-        child: ListView(
-          children: <Widget>[
-            GestureDetector(
-              onTap: () => Navigator.pop(context),
-              child: Container(
-                height: (size.height - top) * 0.375,
-                width: size.width,
-                color: Colors.transparent,
+      backgroundColor: Colors.black54,
+      body: SafeArea(
+        child: Column(
+          children: [
+            Expanded(
+              child: GestureDetector(
+                behavior: HitTestBehavior.opaque,
+                onTap: () => Navigator.pop(context),
+                child: const SizedBox.expand(),
               ),
             ),
             Container(
-              height: (size.height - top) * 0.625,
+              constraints: BoxConstraints(
+                maxHeight: MediaQuery.sizeOf(context).height * 0.85,
+                maxWidth: 600,
+              ),
               decoration: const BoxDecoration(
                 color: Colors.white,
-                borderRadius: BorderRadius.vertical(
-                  top: Radius.circular(30),
-                ),
+                borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
               ),
-              padding: const EdgeInsets.only(
-                left: 8.0,
-                right: 8.0,
-              ),
-              child: Form(
-                key: _formKey,
-                child: SingleChildScrollView(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: <Widget>[
-                      Container(
-                        padding: const EdgeInsets.all(10),
-                        decoration: BoxDecoration(
-                          color: Theme.of(context).primaryColor,
-                          borderRadius: const BorderRadius.vertical(
-                            bottom: Radius.circular(15),
-                          ),
-                        ),
-                        child: const Text(
-                          'Edit Customer Details',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 20,
-                          ),
-                        ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // Handle bar
+                  Center(
+                    child: Container(
+                      margin: const EdgeInsets.only(top: 12, bottom: 8),
+                      width: 40,
+                      height: 4,
+                      decoration: BoxDecoration(
+                        color: AppColors.cardBorder,
+                        borderRadius: BorderRadius.circular(2),
                       ),
-                      const SizedBox(height: 10),
-                      TextFormField(
-                        initialValue: widget.customer.name,
-                        validator: nameValidator,
-                        decoration: inputDecoration(
-                          label: 'Customer name',
-                          icon: Icons.person,
-                        ),
-                        onSaved: (newValue) {
-                          _name = newValue ?? '';
-                        },
-                      ),
-                      const SizedBox(height: 10),
-                      TextFormField(
-                        initialValue: widget.customer.address,
-                        keyboardType: TextInputType.text,
-                        validator: addressValidator,
-                        decoration: inputDecoration(
-                          label: 'Address',
-                          icon: Icons.location_on,
-                        ),
-                        onSaved: (newValue) {
-                          _address = newValue ?? '';
-                        },
-                      ),
-                      const SizedBox(height: 10),
-                      TextFormField(
-                        initialValue: _phone,
-                        keyboardType: TextInputType.phone,
-                        validator: phoneValidator,
-                        decoration: inputDecoration(
-                          label: 'Phone number',
-                          icon: Icons.phone,
-                          prefixText: '+91 ',
-                        ),
-                        onSaved: (newValue) {
-                          _phone = newValue ?? '';
-                        },
-                      ),
-                      const SizedBox(height: 10),
-                      TextFormField(
-                        initialValue: widget.customer.accountNumber,
-                        keyboardType: TextInputType.number,
-                        validator: defaultValidator,
-                        decoration: inputDecoration(
-                          label: 'Account number',
-                          icon: Icons.badge,
-                        ),
-                        onSaved: (newValue) {
-                          _account = newValue ?? '';
-                        },
-                      ),
-                      const SizedBox(height: 10),
-                      TextFormField(
-                        initialValue: widget.customer.macId,
-                        validator: defaultValidator,
-                        decoration: inputDecoration(
-                          label: 'MAC Id',
-                          icon: Icons.router,
-                        ),
-                        onSaved: (newValue) {
-                          _mac = newValue ?? '';
-                        },
-                      ),
-                      const SizedBox(height: 10),
-                      FloatingActionButton.extended(
-                        elevation: 0,
-                        onPressed: () async {
-                          if (_formKey.currentState?.validate() == true) {
-                            _formKey.currentState?.save();
-                            Map<String, dynamic> data = {};
-                            if (widget.customer.name != _name) {
-                              data.addAll({'name': _name});
-                            }
-                            if (widget.customer.address != _address) {
-                              data.addAll({'adrs': _address});
-                            }
-                            if (widget.customer.phoneNumber != '+ 91 $_phone') {
-                              data.addAll({'pn': '+ 91 $_phone'});
-                            }
-                            if (widget.customer.accountNumber != _account) {
-                              data.addAll({'accNo': _account});
-                            }
-                            if (widget.customer.macId != _mac) {
-                              data.addAll({'macId': _mac});
-                            }
-                            await DatabaseService.updateCustomerData(
-                              context,
-                              data: data,
-                              customerId: widget.customer.id,
-                            );
-                            if (context.mounted) {
-                              Navigator.of(context).pop();
-                            }
-                          }
-                        },
-                        backgroundColor: Theme.of(context).primaryColor,
-                        foregroundColor: Colors.white,
-                        label: const Text('Save'),
-                        icon: const Icon(Icons.save),
-                      ),
-                      const SizedBox(height: 5),
-                    ],
+                    ),
                   ),
-                ),
+
+                  // Header
+                  Padding(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 20, vertical: 8),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Text(
+                          'Edit Subscriber Details',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: AppColors.textPrimary,
+                          ),
+                        ),
+                        IconButton(
+                          visualDensity: VisualDensity.compact,
+                          icon: const Icon(Icons.close_rounded),
+                          onPressed: () => Navigator.pop(context),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const Divider(height: 1),
+
+                  // Form
+                  Flexible(
+                    child: SingleChildScrollView(
+                      padding: EdgeInsets.only(
+                        left: 20,
+                        right: 20,
+                        top: 16,
+                        bottom: MediaQuery.viewInsetsOf(context).bottom + 20,
+                      ),
+                      child: Form(
+                        key: _formKey,
+                        child: Column(
+                          children: [
+                            TextFormField(
+                              initialValue: widget.customer.name,
+                              validator: nameValidator,
+                              textCapitalization: TextCapitalization.words,
+                              decoration: const InputDecoration(
+                                labelText: 'Full Name',
+                                prefixIcon: Icon(Icons.person_outline, size: 20),
+                              ),
+                              onSaved: (newValue) =>
+                                  _name = newValue?.trim() ?? '',
+                            ),
+                            const SizedBox(height: 12),
+                            TextFormField(
+                              initialValue: _phone,
+                              keyboardType: TextInputType.phone,
+                              validator: phoneValidator,
+                              decoration: const InputDecoration(
+                                labelText: 'Phone Number',
+                                prefixText: '+91 ',
+                                prefixIcon: Icon(Icons.phone_outlined, size: 20),
+                              ),
+                              onSaved: (newValue) =>
+                                  _phone = newValue?.trim() ?? '',
+                            ),
+                            const SizedBox(height: 12),
+                            TextFormField(
+                              initialValue: widget.customer.address,
+                              keyboardType: TextInputType.streetAddress,
+                              validator: addressValidator,
+                              maxLines: 2,
+                              decoration: const InputDecoration(
+                                labelText: 'Address',
+                                prefixIcon: Icon(Icons.home_outlined, size: 20),
+                              ),
+                              onSaved: (newValue) =>
+                                  _address = newValue?.trim() ?? '',
+                            ),
+                            const SizedBox(height: 12),
+                            TextFormField(
+                              initialValue: widget.customer.accountNumber,
+                              keyboardType: TextInputType.number,
+                              validator: defaultValidator,
+                              decoration: const InputDecoration(
+                                labelText: 'Account Number',
+                                prefixIcon: Icon(Icons.badge_outlined, size: 20),
+                              ),
+                              onSaved: (newValue) =>
+                                  _account = newValue?.trim() ?? '',
+                            ),
+                            const SizedBox(height: 12),
+                            TextFormField(
+                              initialValue: widget.customer.macId,
+                              validator: defaultValidator,
+                              decoration: const InputDecoration(
+                                labelText: 'MAC ID',
+                                prefixIcon:
+                                    Icon(Icons.router_outlined, size: 20),
+                              ),
+                              onSaved: (newValue) =>
+                                  _mac = newValue?.trim() ?? '',
+                            ),
+                            const SizedBox(height: 20),
+                            FilledButton(
+                              style: FilledButton.styleFrom(
+                                minimumSize: const Size(double.infinity, 48),
+                                backgroundColor: AppColors.primary,
+                              ),
+                              onPressed: _isSaving ? null : _save,
+                              child: _isSaving
+                                  ? const SizedBox(
+                                      width: 20,
+                                      height: 20,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                        color: Colors.white,
+                                      ),
+                                    )
+                                  : const Text(
+                                      'Save Changes',
+                                      style: TextStyle(
+                                        fontSize: 15,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
           ],

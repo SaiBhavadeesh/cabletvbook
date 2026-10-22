@@ -2,7 +2,6 @@ include: package:flutter_lints/flutter.yaml
 
 analyzer:
   errors:
-    deprecated_member_use: ignore
     package_names: ignore
   exclude:
     - build/**

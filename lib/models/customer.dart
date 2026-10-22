@@ -91,9 +91,11 @@ class Customer {
       areaId: document['areaId'] ?? '',
       address: document['adrs'] ?? '',
       tempInfo: document['tempInfo'],
-      startDate: document['sd'] != null
+      startDate: document['sd'] is Timestamp
           ? (document['sd'] as Timestamp).toDate()
-          : DateTime.now(),
+          : document['sd'] is DateTime
+              ? document['sd'] as DateTime
+              : DateTime.now(),
       runningYear: document['runYear'] ?? DateTime.now().year,
       expiryMonth: document['expMon'] ?? 0,
       noOfPendingBills: document['noOfPenBil'] ?? 0,

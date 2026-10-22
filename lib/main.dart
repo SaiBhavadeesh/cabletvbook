@@ -13,27 +13,48 @@ import 'package:cableTvBook/screens/register_screen.dart';
 import 'package:cableTvBook/services/initial_screen.dart';
 import 'package:cableTvBook/screens/settings_screen.dart';
 import 'package:cableTvBook/screens/collection_screen.dart';
-import 'package:cableTvBook/helpers/custom_transition.dart';
 import 'package:cableTvBook/screens/bottom_tabs_screen.dart';
 import 'package:cableTvBook/screens/add_customer_screen.dart';
 import 'package:cableTvBook/screens/area_customers_screen.dart';
 import 'package:cableTvBook/screens/customer_detail_screen.dart';
 import 'package:cableTvBook/firebase_options.dart';
+import 'package:cableTvBook/theme/app_theme.dart';
+
+class _AuthDeepLinkInterceptor extends WidgetsBindingObserver {
+  @override
+  Future<bool> didPushRouteInformation(RouteInformation routeInformation) async {
+    final location = routeInformation.uri.toString();
+    if (location.contains('authType=verifyApp') ||
+        location.contains('recaptchaToken') ||
+        location.startsWith('/link')) {
+      // Intercepted: Firebase Auth handles this natively via openURL.
+      // Returning true prevents Flutter Navigator from pushing any route or blank screen.
+      return true;
+    }
+    return false;
+  }
+}
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  WidgetsBinding.instance.addObserver(_AuthDeepLinkInterceptor());
   SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
     statusBarColor: Colors.transparent,
-    statusBarBrightness: Brightness.dark,
+    statusBarBrightness: Brightness.light,
     statusBarIconBrightness: Brightness.dark,
-    systemNavigationBarColor: Colors.black,
-    systemNavigationBarDividerColor: Colors.white,
-    systemNavigationBarIconBrightness: Brightness.light,
+    systemNavigationBarColor: Colors.white,
+    systemNavigationBarDividerColor: Colors.transparent,
+    systemNavigationBarIconBrightness: Brightness.dark,
   ));
+
+  // Support portrait and landscape across phones, tablets, and foldables
   await SystemChrome.setPreferredOrientations([
     DeviceOrientation.portraitUp,
     DeviceOrientation.portraitDown,
+    DeviceOrientation.landscapeLeft,
+    DeviceOrientation.landscapeRight,
   ]);
+
   app = await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
@@ -49,46 +70,10 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const primaryBlue = Color.fromRGBO(14, 137, 234, 1);
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'Cable Tv Book',
-      theme: ThemeData(
-        useMaterial3: false,
-        primaryColor: primaryBlue,
-        colorScheme: ColorScheme.fromSwatch(
-          primarySwatch: Colors.blue,
-        ).copyWith(
-          secondary: Colors.white,
-          error: Colors.red,
-        ),
-        iconTheme: const IconThemeData(
-          color: primaryBlue,
-        ),
-        pageTransitionsTheme: PageTransitionsTheme(
-          builders: {
-            TargetPlatform.android: CustomPageTransitionBuilder(),
-          },
-        ),
-        dividerTheme: DividerThemeData(
-          color: primaryBlue.withAlpha(51),
-          endIndent: 10,
-          indent: 10,
-          thickness: 1.5,
-        ),
-        dialogTheme: DialogThemeData(
-          elevation: 5,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(15),
-          ),
-          titleTextStyle: const TextStyle(
-            color: primaryBlue,
-            fontWeight: FontWeight.bold,
-            fontSize: 25,
-          ),
-        ),
-        fontFamily: 'Roboto',
-      ),
+      title: 'Cable TV Book',
+      theme: AppTheme.lightTheme,
       home: const InitialScreen(),
       routes: {
         HomeScreen.routeName: (ctx) => const HomeScreen(),

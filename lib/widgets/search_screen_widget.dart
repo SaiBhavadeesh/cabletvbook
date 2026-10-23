@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:loading_indicator/loading_indicator.dart';
+import 'package:cableTvBook/widgets/app_svg_icon.dart';
+import 'package:cableTvBook/screens/add_customer_screen.dart';
 
 import 'package:cableTvBook/global/variables.dart';
 import 'package:cableTvBook/models/customer.dart';
@@ -286,29 +288,110 @@ class _SearchScreenWidgetState extends State<SearchScreenWidget>
           ),
         ),
 
-        // Subheader count & refresh cue
+        // Subheader count & action row
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 6),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                '${_filteredCustomers.length} ${_filteredCustomers.length == 1 ? 'subscriber' : 'subscribers'} found',
-                style: const TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600,
-                  color: AppColors.textMuted,
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    RichText(
+                      text: TextSpan(
+                        children: [
+                          TextSpan(
+                            text: '${_filteredCustomers.length}',
+                            style: const TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w800,
+                              color: AppColors.textPrimary,
+                            ),
+                          ),
+                          TextSpan(
+                            text:
+                                ' ${_filteredCustomers.length == 1 ? 'subscriber' : 'subscribers'} found',
+                            style: const TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w500,
+                              color: AppColors.textMuted,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    if (_searchController.text.isNotEmpty)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 2),
+                        child: Text(
+                          'Filtered by "${_searchController.text.trim()}"',
+                          style: const TextStyle(
+                            fontSize: 11,
+                            fontStyle: FontStyle.italic,
+                            color: AppColors.primary,
+                          ),
+                        ),
+                      ),
+                  ],
                 ),
               ),
-              if (_searchController.text.isNotEmpty)
-                Text(
-                  'Filtered by "${_searchController.text.trim()}"',
-                  style: const TextStyle(
-                    fontSize: 11,
-                    fontStyle: FontStyle.italic,
-                    color: AppColors.primary,
+              Material(
+                color: Colors.transparent,
+                child: InkWell(
+                  borderRadius: BorderRadius.circular(20),
+                  onTap: () => Navigator.of(context)
+                      .pushNamed(AddCustomerScreen.routeName),
+                  child: Ink(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 13, vertical: 7),
+                    decoration: BoxDecoration(
+                      gradient: const LinearGradient(
+                        colors: [
+                          Color(0xFFFEF3C7),
+                          Color(0xFFFDE68A),
+                        ],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(
+                        color: const Color(0xFFF59E0B)
+                            .withValues(alpha: 0.35),
+                        width: 1,
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: const Color(0xFFB45309)
+                              .withValues(alpha: 0.14),
+                          blurRadius: 6,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const AppSvgIcon(
+                          AppSvgIconType.addCustomer,
+                          size: 20,
+                          color: AppColors.primary,
+                        ),
+                        const SizedBox(width: 7),
+                        const Text(
+                          'Add Customer',
+                          style: TextStyle(
+                            color: AppColors.primaryDark,
+                            fontWeight: FontWeight.w700,
+                            fontSize: 13.5,
+                            letterSpacing: 0.1,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
+              ),
             ],
           ),
         ),
@@ -367,7 +450,7 @@ class _SearchScreenWidgetState extends State<SearchScreenWidget>
                     controller: _scrollController,
                     child: ListView.builder(
                       controller: _scrollController,
-                      padding: const EdgeInsets.only(bottom: 24, top: 4),
+                      padding: const EdgeInsets.only(bottom: 100, top: 4),
                       itemCount: _filteredCustomers.length +
                           (_isLoadingMore ? 1 : 0),
                       physics: const AlwaysScrollableScrollPhysics(),

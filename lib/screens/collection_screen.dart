@@ -40,8 +40,9 @@ class CollectionMetrics {
 
 class CollectionScreen extends StatefulWidget {
   static const routeName = '/collectionScreen';
+  final bool isEmbedded;
 
-  const CollectionScreen({super.key});
+  const CollectionScreen({super.key, this.isEmbedded = false});
 
   @override
   State<CollectionScreen> createState() => _CollectionScreenState();
@@ -50,31 +51,55 @@ class CollectionScreen extends StatefulWidget {
 class _CollectionScreenState extends State<CollectionScreen> {
   bool _isSyncing = false;
 
-  Widget _buildSectionHeader(String title, String subtitle) {
+  Widget _buildSectionHeader(String title, String subtitle, {Widget? trailing}) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      padding: const EdgeInsets.only(bottom: 8),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(
-            title,
-            style: const TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-              color: AppColors.textPrimary,
-              letterSpacing: -0.3,
-            ),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                title,
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.textPrimary,
+                  letterSpacing: -0.3,
+                ),
+              ),
+              const SizedBox(height: 2),
+              Text(
+                subtitle,
+                style: const TextStyle(
+                  fontSize: 13,
+                  color: AppColors.textSecondary,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ],
           ),
-          const SizedBox(height: 2),
-          Text(
-            subtitle,
-            style: const TextStyle(
-              fontSize: 13,
-              color: AppColors.textSecondary,
-            ),
-          ),
+          if (trailing != null) trailing,
         ],
       ),
+    );
+  }
+
+  Widget _buildSyncButton(String opId) {
+    return IconButton(
+      icon: _isSyncing
+          ? const SizedBox(
+              width: 18,
+              height: 18,
+              child: CircularProgressIndicator(
+                strokeWidth: 2,
+                color: AppColors.primary,
+              ),
+            )
+          : const Icon(Icons.sync_rounded),
+      tooltip: 'Sync Collections',
+      onPressed: _isSyncing ? null : () => _handleManualSync(opId),
     );
   }
 
@@ -107,7 +132,7 @@ class _CollectionScreenState extends State<CollectionScreen> {
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        mainAxisSize: MainAxisSize.min,
         children: [
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -127,15 +152,16 @@ class _CollectionScreenState extends State<CollectionScreen> {
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
-                      fontSize: 11,
+                      fontSize: 13.5,
                       fontWeight: FontWeight.w700,
                       color: color,
+                      letterSpacing: 0.1,
                     ),
                   ),
                 ),
             ],
           ),
-          const Spacer(),
+          const SizedBox(height: 10),
           FittedBox(
             fit: BoxFit.scaleDown,
             alignment: Alignment.centerLeft,
@@ -203,8 +229,8 @@ class _CollectionScreenState extends State<CollectionScreen> {
                   '$percent% Collected',
                   style: const TextStyle(
                     color: AppColors.success,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 13,
+                    fontWeight: FontWeight.w800,
+                    fontSize: 13.5,
                   ),
                 ),
               ),
@@ -427,29 +453,18 @@ class _CollectionScreenState extends State<CollectionScreen> {
 
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: AppBar(
-        title: const Text(
-          'Collections & Revenue',
-          style: TextStyle(fontWeight: FontWeight.bold),
-        ),
-        actions: [
-          IconButton(
-            icon: _isSyncing
-                ? const SizedBox(
-                    width: 20,
-                    height: 20,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      color: AppColors.primary,
-                    ),
-                  )
-                : const Icon(Icons.sync_rounded),
-            tooltip: 'Sync Collections',
-            onPressed: _isSyncing ? null : () => _handleManualSync(op.id),
-          ),
-          const SizedBox(width: 8),
-        ],
-      ),
+      appBar: widget.isEmbedded
+          ? null
+          : AppBar(
+              title: const Text(
+                'Collections & Revenue',
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
+              actions: [
+                _buildSyncButton(op.id),
+                const SizedBox(width: 8),
+              ],
+            ),
       body: ResponsiveContainer(
         maxWidth: 900,
         child: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
@@ -506,57 +521,122 @@ class _CollectionScreenState extends State<CollectionScreen> {
       physics: const BouncingScrollPhysics(),
       children: [
         // Monthly Section Header
-        _buildSectionHeader('Current Month Overview', monthName),
+        _buildSectionHeader(
+          'Current Month Overview',
+          monthName,
+          trailing: (widget.isEmbedded && operatorDetails != null)
+              ? _buildSyncButton(operatorDetails!.id)
+              : null,
+        ),
 
         // Efficiency Card
         _buildEfficiencyCard(metrics.monthlySubtotal, metrics.monthlyPaid),
         const SizedBox(height: 16),
 
-        // 2x2 or 4x1 KPI Grid for Monthly
-        GridView.count(
-          crossAxisCount: isWide ? 4 : 2,
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          crossAxisSpacing: 12,
-          mainAxisSpacing: 12,
-          childAspectRatio: isWide ? 1.4 : 1.05,
-          children: [
-            _buildKpiCard(
-              title: 'Total Billed',
-              value: '\u20B9 ${metrics.monthlySubtotal.toStringAsFixed(0)}',
-              icon: Icons.receipt_long_rounded,
-              color: AppColors.primary,
-              bgColor: AppColors.primaryContainer,
-              subtitle: 'Active Plans',
-            ),
-            _buildKpiCard(
-              title: 'Collected',
-              value: '\u20B9 ${metrics.monthlyPaid.toStringAsFixed(0)}',
-              icon: Icons.check_circle_rounded,
-              color: AppColors.success,
-              bgColor: AppColors.successLight,
-              subtitle: 'Paid',
-            ),
-            _buildKpiCard(
-              title: 'Pending Due',
-              value: '\u20B9 ${pendingMonth.toStringAsFixed(0)}',
-              icon: Icons.pending_actions_rounded,
-              color: AppColors.warningDark,
-              bgColor: AppColors.warningLight,
-              subtitle: 'To Collect',
-            ),
-            _buildKpiCard(
-              title: 'Inactive Accounts',
-              value: '${metrics.inactiveCustomers}',
-              icon: Icons.person_off_outlined,
-              color: AppColors.error,
-              bgColor: AppColors.errorLight,
-              subtitle: 'Subscribers',
-            ),
-          ],
-        ),
+        // Monthly Cards Layout (Responsive 4x1 or 2x2)
+        if (isWide)
+          Row(
+            children: [
+              Expanded(
+                child: _buildKpiCard(
+                  title: 'Total Billed',
+                  value: '\u20B9 ${metrics.monthlySubtotal.toStringAsFixed(0)}',
+                  icon: Icons.receipt_long_rounded,
+                  color: AppColors.primary,
+                  bgColor: AppColors.primaryContainer,
+                  subtitle: 'Active Plans',
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: _buildKpiCard(
+                  title: 'Collected',
+                  value: '\u20B9 ${metrics.monthlyPaid.toStringAsFixed(0)}',
+                  icon: Icons.check_circle_rounded,
+                  color: AppColors.success,
+                  bgColor: AppColors.successLight,
+                  subtitle: 'Paid',
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: _buildKpiCard(
+                  title: 'Pending Due',
+                  value: '\u20B9 ${pendingMonth.toStringAsFixed(0)}',
+                  icon: Icons.pending_actions_rounded,
+                  color: AppColors.warningDark,
+                  bgColor: AppColors.warningLight,
+                  subtitle: 'To Collect',
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: _buildKpiCard(
+                  title: 'Inactive Accounts',
+                  value: '${metrics.inactiveCustomers}',
+                  icon: Icons.person_off_outlined,
+                  color: AppColors.error,
+                  bgColor: AppColors.errorLight,
+                  subtitle: 'Subscribers',
+                ),
+              ),
+            ],
+          )
+        else ...[
+          Row(
+            children: [
+              Expanded(
+                child: _buildKpiCard(
+                  title: 'Total Billed',
+                  value: '\u20B9 ${metrics.monthlySubtotal.toStringAsFixed(0)}',
+                  icon: Icons.receipt_long_rounded,
+                  color: AppColors.primary,
+                  bgColor: AppColors.primaryContainer,
+                  subtitle: 'Active Plans',
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: _buildKpiCard(
+                  title: 'Collected',
+                  value: '\u20B9 ${metrics.monthlyPaid.toStringAsFixed(0)}',
+                  icon: Icons.check_circle_rounded,
+                  color: AppColors.success,
+                  bgColor: AppColors.successLight,
+                  subtitle: 'Paid',
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          Row(
+            children: [
+              Expanded(
+                child: _buildKpiCard(
+                  title: 'Pending Due',
+                  value: '\u20B9 ${pendingMonth.toStringAsFixed(0)}',
+                  icon: Icons.pending_actions_rounded,
+                  color: AppColors.warningDark,
+                  bgColor: AppColors.warningLight,
+                  subtitle: 'To Collect',
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: _buildKpiCard(
+                  title: 'Inactive Accounts',
+                  value: '${metrics.inactiveCustomers}',
+                  icon: Icons.person_off_outlined,
+                  color: AppColors.error,
+                  bgColor: AppColors.errorLight,
+                  subtitle: 'Subscribers',
+                ),
+              ),
+            ],
+          ),
+        ],
 
-        const SizedBox(height: 28),
+        const SizedBox(height: 24),
 
         // Yearly Section
         _buildSectionHeader(
@@ -564,39 +644,81 @@ class _CollectionScreenState extends State<CollectionScreen> {
           'Cumulative totals for year ${now.year}',
         ),
 
-        GridView.count(
-          crossAxisCount: isWide ? 3 : 2,
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          crossAxisSpacing: 12,
-          mainAxisSpacing: 12,
-          childAspectRatio: isWide ? 1.4 : 1.05,
-          children: [
-            _buildKpiCard(
-              title: 'Total Billed (${now.year})',
-              value: '\u20B9 ${metrics.yearlySubtotal.toStringAsFixed(0)}',
-              icon: Icons.calendar_today_rounded,
-              color: AppColors.primary,
-              bgColor: AppColors.primaryContainer,
-            ),
-            _buildKpiCard(
-              title: 'Total Collected',
-              value: '\u20B9 ${metrics.yearlyPaid.toStringAsFixed(0)}',
-              icon: Icons.account_balance_wallet_rounded,
-              color: AppColors.success,
-              bgColor: AppColors.successLight,
-            ),
-            _buildKpiCard(
-              title: 'Total Outstanding',
-              value: '\u20B9 ${pendingYear.toStringAsFixed(0)}',
-              icon: Icons.error_outline_rounded,
-              color: AppColors.error,
-              bgColor: AppColors.errorLight,
-            ),
-          ],
-        ),
+        if (isWide)
+          Row(
+            children: [
+              Expanded(
+                child: _buildKpiCard(
+                  title: 'Total Billed (${now.year})',
+                  value: '\u20B9 ${metrics.yearlySubtotal.toStringAsFixed(0)}',
+                  icon: Icons.calendar_today_rounded,
+                  color: AppColors.primary,
+                  bgColor: AppColors.primaryContainer,
+                  subtitle: 'Full Year',
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: _buildKpiCard(
+                  title: 'Total Collected',
+                  value: '\u20B9 ${metrics.yearlyPaid.toStringAsFixed(0)}',
+                  icon: Icons.account_balance_wallet_rounded,
+                  color: AppColors.success,
+                  bgColor: AppColors.successLight,
+                  subtitle: 'Received',
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: _buildKpiCard(
+                  title: 'Total Outstanding',
+                  value: '\u20B9 ${pendingYear.toStringAsFixed(0)}',
+                  icon: Icons.error_outline_rounded,
+                  color: AppColors.error,
+                  bgColor: AppColors.errorLight,
+                  subtitle: 'Due',
+                ),
+              ),
+            ],
+          )
+        else ...[
+          Row(
+            children: [
+              Expanded(
+                child: _buildKpiCard(
+                  title: 'Total Billed (${now.year})',
+                  value: '\u20B9 ${metrics.yearlySubtotal.toStringAsFixed(0)}',
+                  icon: Icons.calendar_today_rounded,
+                  color: AppColors.primary,
+                  bgColor: AppColors.primaryContainer,
+                  subtitle: 'Full Year',
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: _buildKpiCard(
+                  title: 'Total Collected',
+                  value: '\u20B9 ${metrics.yearlyPaid.toStringAsFixed(0)}',
+                  icon: Icons.account_balance_wallet_rounded,
+                  color: AppColors.success,
+                  bgColor: AppColors.successLight,
+                  subtitle: 'Received',
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          _buildKpiCard(
+            title: 'Total Outstanding (${now.year})',
+            value: '\u20B9 ${pendingYear.toStringAsFixed(0)}',
+            icon: Icons.error_outline_rounded,
+            color: AppColors.error,
+            bgColor: AppColors.errorLight,
+            subtitle: 'Unpaid Balance',
+          ),
+        ],
 
-        const SizedBox(height: 32),
+        const SizedBox(height: 120),
       ],
     );
   }

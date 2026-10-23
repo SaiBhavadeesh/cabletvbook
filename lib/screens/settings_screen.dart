@@ -25,50 +25,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
     String? prefix,
     required Future<void> Function(String value) onSaved,
   }) {
-    final textController = TextEditingController();
-    final formKey = GlobalKey<FormState>();
-
     return showDialog(
       context: context,
-      builder: (ctx) => Form(
-        key: formKey,
-        child: AlertDialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-          title: Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
-          content: TextFormField(
-            controller: textController,
-            validator: validator,
-            keyboardType: textInputType,
-            autofocus: true,
-            obscureText: icon == Icons.vpn_key,
-            decoration: InputDecoration(
-              prefixIcon: Icon(icon, size: 20),
-              prefixText: prefix,
-              hintText: icon == Icons.vpn_key
-                  ? 'Min 8 chars (1 cap, 1 small, 1 num, 1 spl)'
-                  : null,
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(ctx),
-              child: const Text('Cancel'),
-            ),
-            FilledButton(
-              onPressed: () async {
-                if (formKey.currentState?.validate() == true) {
-                  formKey.currentState?.save();
-                  await onSaved(textController.text.trim());
-                }
-              },
-              child: const Text('Save'),
-            ),
-          ],
-        ),
+      builder: (ctx) => _ChangeValueDialog(
+        title: title,
+        validator: validator,
+        icon: icon,
+        textInputType: textInputType,
+        prefix: prefix,
+        onSaved: onSaved,
       ),
-    ).then((_) {
-      textController.dispose();
-    });
+    );
   }
 
   Widget _buildSectionHeader(String title) {
@@ -234,6 +201,88 @@ class _SettingsScreenState extends State<SettingsScreen> {
               ),
             ],
 
+            _buildSectionHeader('Account Actions'),
+            Card(
+              child: Column(
+                children: [
+                  _buildSettingsTile(
+                    icon: Icons.pause_circle_outline_rounded,
+                    iconColor: AppColors.warningDark,
+                    title: 'Deactivate Account',
+                    subtitle: 'Temporarily pause your operator account and services',
+                    onTap: () {
+                      showDialog(
+                        context: context,
+                        builder: (ctx) => AlertDialog(
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(18)),
+                          title: const Text('Deactivate Account?'),
+                          content: const Text(
+                            'Your business profile and active services will be paused and you will be signed out. You can log back in at any time to reactivate.',
+                            style: TextStyle(fontSize: 14),
+                          ),
+                          actions: [
+                            TextButton(
+                              onPressed: () => Navigator.pop(ctx),
+                              child: const Text('Cancel'),
+                            ),
+                            FilledButton(
+                              style: FilledButton.styleFrom(
+                                  backgroundColor: AppColors.warningDark),
+                              onPressed: () {
+                                Navigator.pop(ctx);
+                                Authentication.deactivateOperatorAccount(context);
+                              },
+                              child: const Text('Deactivate'),
+                            ),
+                          ],
+                        ),
+                      );
+                    },
+                  ),
+                  const Divider(height: 1),
+                  _buildSettingsTile(
+                    icon: Icons.delete_forever_rounded,
+                    iconColor: AppColors.error,
+                    title: 'Delete Account',
+                    subtitle: 'Permanently remove your account and subscriber data',
+                    onTap: () {
+                      showDialog(
+                        context: context,
+                        builder: (ctx) => AlertDialog(
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(18)),
+                          title: const Text(
+                            'Delete Account Permanently?',
+                            style: TextStyle(color: AppColors.error),
+                          ),
+                          content: const Text(
+                            'Warning: This action is permanent and cannot be undone. All your areas, subscribers, and transaction ledgers will be permanently deleted.',
+                            style: TextStyle(fontSize: 14),
+                          ),
+                          actions: [
+                            TextButton(
+                              onPressed: () => Navigator.pop(ctx),
+                              child: const Text('Cancel'),
+                            ),
+                            FilledButton(
+                              style: FilledButton.styleFrom(
+                                  backgroundColor: AppColors.error),
+                              onPressed: () {
+                                Navigator.pop(ctx);
+                                Authentication.deleteOperatorAccount(context);
+                              },
+                              child: const Text('Delete Permanently'),
+                            ),
+                          ],
+                        ),
+                      );
+                    },
+                  ),
+                ],
+              ),
+            ),
+
             _buildSectionHeader('About'),
             Card(
               child: Column(
@@ -249,6 +298,102 @@ class _SettingsScreenState extends State<SettingsScreen> {
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class _ChangeValueDialog extends StatefulWidget {
+  final String title;
+  final FormFieldValidator<String> validator;
+  final IconData icon;
+  final TextInputType? textInputType;
+  final String? prefix;
+  final Future<void> Function(String value) onSaved;
+
+  const _ChangeValueDialog({
+    required this.title,
+    required this.validator,
+    required this.icon,
+    this.textInputType,
+    this.prefix,
+    required this.onSaved,
+  });
+
+  @override
+  State<_ChangeValueDialog> createState() => _ChangeValueDialogState();
+}
+
+class _ChangeValueDialogState extends State<_ChangeValueDialog> {
+  late final TextEditingController _controller;
+  final _formKey = GlobalKey<FormState>();
+  bool _isLoading = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = TextEditingController();
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Form(
+      key: _formKey,
+      child: AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: Text(widget.title,
+            style: const TextStyle(fontWeight: FontWeight.bold)),
+        content: TextFormField(
+          controller: _controller,
+          validator: widget.validator,
+          keyboardType: widget.textInputType,
+          autofocus: true,
+          obscureText: widget.icon == Icons.vpn_key,
+          decoration: InputDecoration(
+            prefixIcon: Icon(widget.icon, size: 20),
+            prefixText: widget.prefix,
+            hintText: widget.icon == Icons.vpn_key
+                ? 'Min 8 chars (1 cap, 1 small, 1 num, 1 spl)'
+                : null,
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            onPressed: _isLoading
+                ? null
+                : () async {
+                    if (_formKey.currentState?.validate() == true) {
+                      _formKey.currentState?.save();
+                      setState(() => _isLoading = true);
+                      try {
+                        await widget.onSaved(_controller.text.trim());
+                      } finally {
+                        if (mounted) setState(() => _isLoading = false);
+                      }
+                    }
+                  },
+            child: _isLoading
+                ? const SizedBox(
+                    width: 18,
+                    height: 18,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: Colors.white,
+                    ),
+                  )
+                : const Text('Save'),
+          ),
+        ],
       ),
     );
   }

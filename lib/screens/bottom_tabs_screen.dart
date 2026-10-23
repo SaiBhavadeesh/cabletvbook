@@ -1,17 +1,18 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:cableTvBook/widgets/app_svg_icon.dart';
 
 import 'package:cableTvBook/global/variables.dart';
 import 'package:cableTvBook/widgets/home_drawer.dart';
 import 'package:cableTvBook/screens/home_screen.dart';
-import 'package:cableTvBook/helpers/image_getter.dart';
 import 'package:cableTvBook/helpers/avatar_image_provider.dart';
 import 'package:cableTvBook/screens/search_screen.dart';
-import 'package:cableTvBook/screens/settings_screen.dart';
-import 'package:cableTvBook/services/database_services.dart';
 import 'package:cableTvBook/screens/add_customer_screen.dart';
+import 'package:cableTvBook/screens/collection_screen.dart';
+import 'package:cableTvBook/screens/settings_screen.dart';
 import 'package:cableTvBook/theme/app_colors.dart';
 import 'package:cableTvBook/theme/responsive.dart';
 import 'package:cableTvBook/widgets/app_logo.dart';
@@ -44,7 +45,7 @@ class _BottomTabsScreenState extends State<BottomTabsScreen> {
       case 1:
         return 'Customer Directory';
       case 2:
-        return 'Add Customer';
+        return 'Collections & Revenue';
       default:
         return 'Cable TV Book';
     }
@@ -66,7 +67,7 @@ class _BottomTabsScreenState extends State<BottomTabsScreen> {
     final screens = const [
       HomeScreen(),
       SearchScreen(),
-      AddCustomerScreen(),
+      CollectionScreen(isEmbedded: true),
     ];
 
     return PopScope(
@@ -91,20 +92,12 @@ class _BottomTabsScreenState extends State<BottomTabsScreen> {
       },
       child: Scaffold(
         appBar: AppBar(
-          leading: Builder(
-            builder: (ctx) => IconButton(
-              icon: const Icon(Icons.menu_rounded),
-              tooltip: 'Menu',
-              onPressed: () => Scaffold.of(ctx).openDrawer(),
-            ),
-          ),
+          automaticallyImplyLeading: false,
           title: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              if (_currentIndex == 0) ...[
-                const AppLogo(size: 32, borderRadius: 8, hasShadow: false),
-                const SizedBox(width: 10),
-              ],
+              const AppLogo(size: 32, borderRadius: 8, hasShadow: false),
+              const SizedBox(width: 10),
               Flexible(
                 child: Text(
                   _getScreenTitle(_currentIndex),
@@ -119,28 +112,22 @@ class _BottomTabsScreenState extends State<BottomTabsScreen> {
           ),
           centerTitle: false,
           actions: <Widget>[
-            Padding(
-              padding: const EdgeInsets.only(right: 12),
-              child: GestureDetector(
-                onTap: () async {
-                  final picked = await ImageGetter.getImageFromDevice(context);
-                  if (picked != null) {
-                    _profilePic = picked;
-                    await DatabaseService.uploadProfilePicture(context,
-                        file: _profilePic!);
-                    if (mounted) setState(() {});
-                  }
-                },
-                child: Tooltip(
-                  message: 'Tap to change profile picture',
-                  child: CircleAvatar(
-                    radius: 19,
-                    backgroundColor: Colors.transparent,
-                    backgroundImage: avatarImage,
+            Builder(
+              builder: (ctx) => Padding(
+                padding: const EdgeInsets.only(right: 14),
+                child: GestureDetector(
+                  onTap: () => Scaffold.of(ctx).openDrawer(),
+                  child: Tooltip(
+                    message: 'Open Menu',
+                    child: CircleAvatar(
+                      radius: 19,
+                      backgroundColor: Colors.transparent,
+                      backgroundImage: avatarImage,
+                    ),
                   ),
                 ),
               ),
-            )
+            ),
           ],
         ),
         drawer: HomeDrawer(image: _profilePic),
@@ -201,23 +188,43 @@ class _BottomTabsScreenState extends State<BottomTabsScreen> {
                           ),
                           destinations: const [
                             NavigationRailDestination(
-                              icon: Icon(Icons.grid_view_outlined, size: 22),
-                              selectedIcon: Icon(Icons.grid_view_rounded,
-                                  size: 23, color: AppColors.primary),
+                              icon: AppSvgIcon(
+                                AppSvgIconType.areas,
+                                color: AppColors.textSecondary,
+                                size: 22,
+                              ),
+                              selectedIcon: AppSvgIcon(
+                                AppSvgIconType.areas,
+                                color: AppColors.primary,
+                                size: 23,
+                              ),
                               label: Text('Areas'),
                             ),
                             NavigationRailDestination(
-                              icon: Icon(Icons.group_outlined, size: 23),
-                              selectedIcon: Icon(Icons.group_rounded,
-                                  size: 24, color: AppColors.primary),
+                              icon: AppSvgIcon(
+                                AppSvgIconType.customers,
+                                color: AppColors.textSecondary,
+                                size: 22,
+                              ),
+                              selectedIcon: AppSvgIcon(
+                                AppSvgIconType.customers,
+                                color: AppColors.primary,
+                                size: 23,
+                              ),
                               label: Text('Customers'),
                             ),
                             NavigationRailDestination(
-                              icon: Icon(Icons.person_add_alt_1_outlined,
-                                  size: 23),
-                              selectedIcon: Icon(Icons.person_add_alt_1_rounded,
-                                  size: 24, color: AppColors.primary),
-                              label: Text('Add'),
+                              icon: AppSvgIcon(
+                                AppSvgIconType.collections,
+                                color: AppColors.textSecondary,
+                                size: 22,
+                              ),
+                              selectedIcon: AppSvgIcon(
+                                AppSvgIconType.collections,
+                                color: AppColors.primary,
+                                size: 23,
+                              ),
+                              label: Text('Collections'),
                             ),
                           ],
                         ),
@@ -229,61 +236,146 @@ class _BottomTabsScreenState extends State<BottomTabsScreen> {
             ),
           ],
         ),
+        extendBody: true,
         bottomNavigationBar: isWide
             ? null
-            : Container(
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  boxShadow: [
-                    BoxShadow(
-                      color: const Color(0xFF0F172A).withValues(alpha: 0.06),
-                      blurRadius: 16,
-                      offset: const Offset(0, -4),
+            : SafeArea(
+                top: false,
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 0, 20, 12),
+                  child: Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(30),
+                      border: Border.all(
+                        color: const Color(0xFFF1F5F9),
+                        width: 1.2,
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color:
+                              const Color(0xFFB45309).withValues(alpha: 0.14),
+                          blurRadius: 24,
+                          spreadRadius: 0,
+                          offset: const Offset(0, 8),
+                        ),
+                        BoxShadow(
+                          color:
+                              const Color(0xFF0F172A).withValues(alpha: 0.05),
+                          blurRadius: 10,
+                          spreadRadius: 0,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
                     ),
-                    BoxShadow(
-                      color: const Color(0xFFB45309).withValues(alpha: 0.04),
-                      blurRadius: 8,
-                      offset: const Offset(0, -1),
+                    child: Row(
+                      children: [
+                        _AnimatedNavTab(
+                          index: 0,
+                          selectedIndex: _currentIndex,
+                          label: 'Areas',
+                          icon: AppSvgIconType.areas,
+                          onTap: (val) => setState(() => _currentIndex = val),
+                        ),
+                        _AnimatedNavTab(
+                          index: 1,
+                          selectedIndex: _currentIndex,
+                          label: 'Customers',
+                          icon: AppSvgIconType.customers,
+                          onTap: (val) => setState(() => _currentIndex = val),
+                        ),
+                        _AnimatedNavTab(
+                          index: 2,
+                          selectedIndex: _currentIndex,
+                          label: 'Collections',
+                          icon: AppSvgIconType.collections,
+                          onTap: (val) => setState(() => _currentIndex = val),
+                        ),
+                      ],
                     ),
-                  ],
-                  border: const Border(
-                    top: BorderSide(color: Color(0xFFF1F5F9), width: 1.2),
-                  ),
-                ),
-                child: SafeArea(
-                  top: false,
-                  child: NavigationBar(
-                    height: 64,
-                    elevation: 0,
-                    backgroundColor: Colors.transparent,
-                    indicatorColor: AppColors.primaryContainer,
-                    selectedIndex: _currentIndex,
-                    onDestinationSelected: (value) {
-                      setState(() => _currentIndex = value);
-                    },
-                    destinations: const [
-                      NavigationDestination(
-                        icon: Icon(Icons.grid_view_outlined, size: 22),
-                        selectedIcon: Icon(Icons.grid_view_rounded,
-                            size: 23, color: AppColors.primary),
-                        label: 'Areas',
-                      ),
-                      NavigationDestination(
-                        icon: Icon(Icons.group_outlined, size: 23),
-                        selectedIcon: Icon(Icons.group_rounded,
-                            size: 24, color: AppColors.primary),
-                        label: 'Customers',
-                      ),
-                      NavigationDestination(
-                        icon: Icon(Icons.person_add_alt_1_outlined, size: 23),
-                        selectedIcon: Icon(Icons.person_add_alt_1_rounded,
-                            size: 24, color: AppColors.primary),
-                        label: 'Add Customer',
-                      ),
-                    ],
                   ),
                 ),
               ),
+      ),
+    );
+  }
+}
+
+class _AnimatedNavTab extends StatelessWidget {
+  final int index;
+  final int selectedIndex;
+  final String label;
+  final AppSvgIconType icon;
+  final ValueChanged<int> onTap;
+
+  const _AnimatedNavTab({
+    required this.index,
+    required this.selectedIndex,
+    required this.label,
+    required this.icon,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final isSelected = index == selectedIndex;
+
+    return Expanded(
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: () {
+          HapticFeedback.lightImpact();
+          onTap(index);
+        },
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 260),
+          curve: Curves.easeOutCubic,
+          padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 8),
+          decoration: BoxDecoration(
+            color: isSelected
+                ? const Color(0xFFFEF3C7) // warm amber accent container
+                : Colors.transparent,
+            borderRadius: BorderRadius.circular(22),
+            border: Border.all(
+              color: isSelected
+                  ? const Color(0xFFF59E0B).withValues(alpha: 0.35)
+                  : Colors.transparent,
+              width: 1,
+            ),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              AnimatedScale(
+                scale: isSelected ? 1.12 : 1.0,
+                duration: const Duration(milliseconds: 240),
+                curve: Curves.easeOutBack,
+                child: AppSvgIcon(
+                  icon,
+                  color:
+                      isSelected ? AppColors.primary : AppColors.textSecondary,
+                  size: 22,
+                ),
+              ),
+              const SizedBox(height: 3),
+              AnimatedDefaultTextStyle(
+                duration: const Duration(milliseconds: 200),
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
+                  color: isSelected
+                      ? AppColors.primaryDark
+                      : AppColors.textSecondary,
+                  letterSpacing: isSelected ? 0.1 : 0,
+                ),
+                child: Text(label),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }

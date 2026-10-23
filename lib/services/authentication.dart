@@ -332,6 +332,73 @@ class Authentication {
     }
   }
 
+  static Future<void> deactivateOperatorAccount(BuildContext context) async {
+    DefaultDialogBox.loadingDialog(context);
+    try {
+      final user = FirebaseAuth.instance.currentUser;
+      if (user != null) {
+        await FirebaseFirestore.instance.collection('users').doc(user.uid).update({
+          'status': 'deactivated',
+          'deactivatedAt': FieldValue.serverTimestamp(),
+        });
+      }
+      await FirebaseAuth.instance.signOut();
+      firebaseUser = null;
+      isGoogleUser = false;
+      operatorDetails = null;
+      areas.clear();
+      Navigator.of(context)
+          .pushNamedAndRemoveUntil(SigninScreen.routeName, (route) => false);
+    } on PlatformException catch (error) {
+      Navigator.pop(context);
+      DefaultDialogBox.errorDialog(context, content: error.message ?? '');
+    } catch (_) {
+      Navigator.pop(context);
+      DefaultDialogBox.errorDialog(context);
+    }
+  }
+
+  static Future<void> deleteOperatorAccount(BuildContext context) async {
+    DefaultDialogBox.loadingDialog(context);
+    try {
+      final user = FirebaseAuth.instance.currentUser;
+      if (user != null) {
+        final uid = user.uid;
+        await FirebaseFirestore.instance.collection('users').doc(uid).update({
+          'status': 'deleted',
+          'deletedAt': FieldValue.serverTimestamp(),
+        });
+        await user.delete();
+      }
+      firebaseUser = null;
+      isGoogleUser = false;
+      operatorDetails = null;
+      areas.clear();
+      Navigator.of(context)
+          .pushNamedAndRemoveUntil(SigninScreen.routeName, (route) => false);
+    } on FirebaseAuthException catch (error) {
+      Navigator.pop(context);
+      if (error.code == 'requires-recent-login') {
+        await DefaultDialogBox.errorDialog(
+          context,
+          title: 'Recent Login Required',
+          content:
+              'For your security, deleting your account requires recent sign-in. Please log out, sign in again, and retry.',
+          function: () => signout(context),
+        );
+      } else {
+        DefaultDialogBox.errorDialog(context,
+            content: error.message ?? 'Failed to delete account');
+      }
+    } on PlatformException catch (error) {
+      Navigator.pop(context);
+      DefaultDialogBox.errorDialog(context, content: error.message ?? '');
+    } catch (_) {
+      Navigator.pop(context);
+      DefaultDialogBox.errorDialog(context);
+    }
+  }
+
   static Future<void> changePassword(
     BuildContext context, {
     required String password,

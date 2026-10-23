@@ -3,6 +3,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:loading_indicator/loading_indicator.dart';
+import 'package:cableTvBook/widgets/app_svg_icon.dart';
 
 import 'package:cableTvBook/models/operator.dart';
 import 'package:cableTvBook/global/variables.dart';
@@ -187,8 +188,8 @@ class _HomeScreenState extends State<HomeScreen> {
                     Text(
                       '${op.name} • ${op.phoneNumber}',
                       style: TextStyle(
-                        color: Colors.white.withValues(alpha: 0.75),
-                        fontSize: 13,
+                        color: Colors.white.withValues(alpha: 0.8),
+                        fontSize: 14,
                         fontWeight: FontWeight.w500,
                       ),
                     ),
@@ -208,8 +209,8 @@ class _HomeScreenState extends State<HomeScreen> {
                   '${currentAreas.length} Areas',
                   style: const TextStyle(
                     color: Colors.white,
-                    fontWeight: FontWeight.w700,
-                    fontSize: 12,
+                    fontWeight: FontWeight.w800,
+                    fontSize: 13,
                   ),
                 ),
               ),
@@ -224,13 +225,13 @@ class _HomeScreenState extends State<HomeScreen> {
                 value: '$totalAccounts',
                 color: Colors.white,
               ),
-              const SizedBox(width: 12),
+              const SizedBox(width: 16),
               _buildStatChip(
                 label: 'Active',
                 value: '$totalActive',
                 color: AppColors.success,
               ),
-              const SizedBox(width: 12),
+              const SizedBox(width: 16),
               _buildStatChip(
                 label: 'Inactive',
                 value: '$totalInactive',
@@ -244,8 +245,8 @@ class _HomeScreenState extends State<HomeScreen> {
                     '$activePercent% Active',
                     style: const TextStyle(
                       color: AppColors.success,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 12,
+                      fontWeight: FontWeight.w800,
+                      fontSize: 13.5,
                     ),
                   ),
                   const SizedBox(height: 4),
@@ -283,15 +284,18 @@ class _HomeScreenState extends State<HomeScreen> {
           value,
           style: TextStyle(
             color: color,
-            fontSize: 16,
-            fontWeight: FontWeight.bold,
+            fontSize: 22,
+            fontWeight: FontWeight.w800,
+            letterSpacing: -0.5,
           ),
         ),
+        const SizedBox(height: 2),
         Text(
           label,
           style: TextStyle(
-            color: Colors.white.withValues(alpha: 0.6),
-            fontSize: 11,
+            color: Colors.white.withValues(alpha: 0.75),
+            fontSize: 12,
+            fontWeight: FontWeight.w600,
           ),
         ),
       ],
@@ -363,10 +367,12 @@ class _HomeScreenState extends State<HomeScreen> {
                           ),
                         ],
                       ),
-                      child: const Icon(
-                        Icons.home_work_rounded,
-                        color: AppColors.primary,
-                        size: 19,
+                      child: const Center(
+                        child: AppSvgIcon(
+                          AppSvgIconType.locationPin,
+                          color: AppColors.primary,
+                          size: 20,
+                        ),
                       ),
                     ),
                     Row(
@@ -374,7 +380,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         if (hasAccounts)
                           Container(
                             padding: const EdgeInsets.symmetric(
-                                horizontal: 6, vertical: 2.5),
+                                horizontal: 7, vertical: 3),
                             decoration: BoxDecoration(
                               color: activeRate >= 0.7
                                   ? AppColors.successLight
@@ -384,8 +390,8 @@ class _HomeScreenState extends State<HomeScreen> {
                             child: Text(
                               '${(activeRate * 100).round()}%',
                               style: TextStyle(
-                                fontSize: 11,
-                                fontWeight: FontWeight.w700,
+                                fontSize: 12.5,
+                                fontWeight: FontWeight.w800,
                                 color: activeRate >= 0.7
                                     ? AppColors.successDark
                                     : AppColors.warningDark,
@@ -394,8 +400,11 @@ class _HomeScreenState extends State<HomeScreen> {
                           ),
                         const SizedBox(width: 2),
                         PopupMenuButton<String>(
-                          icon: const Icon(Icons.more_vert_rounded,
-                              color: AppColors.textMuted, size: 20),
+                          icon: const AppSvgIcon(
+                            AppSvgIconType.moreVertical,
+                            color: AppColors.textMuted,
+                            size: 18,
+                          ),
                           padding: EdgeInsets.zero,
                           constraints: const BoxConstraints(),
                           onSelected: (val) {
@@ -460,23 +469,38 @@ class _HomeScreenState extends State<HomeScreen> {
                   children: [
                     Text(
                       area.areaName,
-                      maxLines: 2,
+                      maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: const TextStyle(
                         fontWeight: FontWeight.w700,
-                        fontSize: 14.5,
+                        fontSize: 17,
                         letterSpacing: -0.2,
                         color: AppColors.textPrimary,
                         height: 1.2,
                       ),
                     ),
-                    const SizedBox(height: 2),
-                    Text(
-                      '${area.totalAccounts} Subscribers',
-                      style: const TextStyle(
-                        fontSize: 11.5,
-                        fontWeight: FontWeight.w500,
-                        color: AppColors.textSecondary,
+                    const SizedBox(height: 3),
+                    RichText(
+                      text: TextSpan(
+                        children: [
+                          TextSpan(
+                            text: '${area.totalAccounts}',
+                            style: const TextStyle(
+                              fontSize: 17,
+                              fontWeight: FontWeight.w800,
+                              color: AppColors.textPrimary,
+                              letterSpacing: -0.3,
+                            ),
+                          ),
+                          const TextSpan(
+                            text: ' subscribers',
+                            style: TextStyle(
+                              fontSize: 13.5,
+                              fontWeight: FontWeight.w500,
+                              color: AppColors.textSecondary,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ],
@@ -506,7 +530,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   children: [
                     Container(
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 7, vertical: 2),
+                          horizontal: 8, vertical: 3.5),
                       decoration: BoxDecoration(
                         color: AppColors.successLight,
                         borderRadius: BorderRadius.circular(6),
@@ -515,8 +539,8 @@ class _HomeScreenState extends State<HomeScreen> {
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           Container(
-                            width: 5,
-                            height: 5,
+                            width: 6,
+                            height: 6,
                             decoration: const BoxDecoration(
                               color: AppColors.success,
                               shape: BoxShape.circle,
@@ -527,28 +551,51 @@ class _HomeScreenState extends State<HomeScreen> {
                             '${area.activeAccounts}',
                             style: const TextStyle(
                               color: AppColors.successDark,
-                              fontSize: 11,
-                              fontWeight: FontWeight.w700,
+                              fontSize: 13.5,
+                              fontWeight: FontWeight.w800,
+                            ),
+                          ),
+                          const SizedBox(width: 3),
+                          const Text(
+                            'active',
+                            style: TextStyle(
+                              color: AppColors.successDark,
+                              fontSize: 11.5,
+                              fontWeight: FontWeight.w600,
                             ),
                           ),
                         ],
                       ),
                     ),
-                    const SizedBox(width: 5),
+                    const SizedBox(width: 6),
                     Container(
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 7, vertical: 2),
+                          horizontal: 8, vertical: 3.5),
                       decoration: BoxDecoration(
                         color: AppColors.surfaceVariant,
                         borderRadius: BorderRadius.circular(6),
                       ),
-                      child: Text(
-                        '${area.inActiveAccounts} off',
-                        style: const TextStyle(
-                          color: AppColors.textSecondary,
-                          fontSize: 11,
-                          fontWeight: FontWeight.w600,
-                        ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            '${area.inActiveAccounts}',
+                            style: const TextStyle(
+                              color: AppColors.textPrimary,
+                              fontSize: 13.5,
+                              fontWeight: FontWeight.w800,
+                            ),
+                          ),
+                          const SizedBox(width: 3),
+                          const Text(
+                            'off',
+                            style: TextStyle(
+                              color: AppColors.textSecondary,
+                              fontSize: 11.5,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ],
@@ -602,19 +649,73 @@ class _HomeScreenState extends State<HomeScreen> {
                           const Text(
                             'Coverage Areas',
                             style: TextStyle(
-                              fontSize: 17,
+                              fontSize: 18,
                               fontWeight: FontWeight.bold,
                               color: AppColors.textPrimary,
                             ),
                           ),
                           if (areas.length < 16)
-                            TextButton.icon(
-                              style: TextButton.styleFrom(
-                                visualDensity: VisualDensity.compact,
+                            Material(
+                              color: Colors.transparent,
+                              child: InkWell(
+                                borderRadius: BorderRadius.circular(20),
+                                onTap: () => showEditOrAddDialog(),
+                                child: Ink(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 14, vertical: 7),
+                                  decoration: BoxDecoration(
+                                    gradient: const LinearGradient(
+                                      colors: [
+                                        Color(0xFFFEF3C7),
+                                        Color(0xFFFDE68A),
+                                      ],
+                                      begin: Alignment.topLeft,
+                                      end: Alignment.bottomRight,
+                                    ),
+                                    borderRadius: BorderRadius.circular(20),
+                                    border: Border.all(
+                                      color: const Color(0xFFF59E0B)
+                                          .withValues(alpha: 0.35),
+                                      width: 1,
+                                    ),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: const Color(0xFFB45309)
+                                            .withValues(alpha: 0.14),
+                                        blurRadius: 6,
+                                        offset: const Offset(0, 2),
+                                      ),
+                                    ],
+                                  ),
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Container(
+                                        padding: const EdgeInsets.all(2),
+                                        decoration: const BoxDecoration(
+                                          color: AppColors.primary,
+                                          shape: BoxShape.circle,
+                                        ),
+                                        child: const AppSvgIcon(
+                                          AppSvgIconType.addArea,
+                                          size: 13,
+                                          color: Colors.white,
+                                        ),
+                                      ),
+                                      const SizedBox(width: 7),
+                                      const Text(
+                                        'Add Area',
+                                        style: TextStyle(
+                                          color: AppColors.primaryDark,
+                                          fontWeight: FontWeight.w700,
+                                          fontSize: 13,
+                                          letterSpacing: 0.1,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
                               ),
-                              onPressed: () => showEditOrAddDialog(),
-                              icon: const Icon(Icons.add_rounded, size: 18),
-                              label: const Text('Add Area'),
                             ),
                         ],
                       ),
@@ -687,7 +788,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           ),
                           mainAxisSpacing: 12,
                           crossAxisSpacing: 12,
-                          childAspectRatio: Responsive.isMobile(context) ? 0.90 : 1.05,
+                          childAspectRatio: Responsive.isMobile(context) ? 0.84 : 1.05,
                         ),
                         delegate: SliverChildBuilderDelegate(
                           (context, index) =>
@@ -715,15 +816,7 @@ class _HomeScreenState extends State<HomeScreen> {
           },
         ),
       ),
-      floatingActionButton: areas.length < 16
-          ? FloatingActionButton.extended(
-              onPressed: () => showEditOrAddDialog(),
-              backgroundColor: AppColors.primary,
-              foregroundColor: Colors.white,
-              icon: const Icon(Icons.add_location_alt_rounded),
-              label: const Text('Add Area'),
-            )
-          : null,
+      floatingActionButton: null,
     );
   }
 }

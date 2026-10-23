@@ -13,9 +13,9 @@ class SearchScreen extends StatelessWidget {
     return DefaultTabController(
       length: 5,
       initialIndex: 0,
-      child: Scaffold(
-        backgroundColor: AppColors.background,
-        body: ResponsiveContainer(
+      child: Container(
+        color: AppColors.background,
+        child: ResponsiveContainer(
           maxWidth: 1000,
           child: Column(
             children: [

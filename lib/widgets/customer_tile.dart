@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:cableTvBook/widgets/app_svg_icon.dart';
 
 import 'package:cableTvBook/global/variables.dart';
 import 'package:cableTvBook/models/customer.dart';
@@ -171,7 +172,8 @@ class CustomerTile extends StatelessWidget {
                             overflow: TextOverflow.ellipsis,
                             style: const TextStyle(
                               fontWeight: FontWeight.w700,
-                              fontSize: 15,
+                              fontSize: 16.5,
+                              letterSpacing: -0.2,
                               color: AppColors.textPrimary,
                             ),
                           ),
@@ -179,7 +181,7 @@ class CustomerTile extends StatelessWidget {
                         const SizedBox(width: 6),
                         Container(
                           padding: const EdgeInsets.symmetric(
-                              horizontal: 8, vertical: 2),
+                              horizontal: 9, vertical: 3),
                           decoration: BoxDecoration(
                             color: isActive
                                 ? AppColors.successLight
@@ -192,7 +194,7 @@ class CustomerTile extends StatelessWidget {
                               color: isActive
                                   ? AppColors.successDark
                                   : AppColors.errorDark,
-                              fontSize: 11,
+                              fontSize: 11.5,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
@@ -200,49 +202,71 @@ class CustomerTile extends StatelessWidget {
                       ],
                     ),
 
-                    const SizedBox(height: 4),
+                    const SizedBox(height: 6),
 
-                    // Phone row with tap to call
+                    // Phone row with tap to call, plan amount & due badges
                     if (customer.phoneNumber.isNotEmpty)
                       Row(
                         children: [
-                          const Icon(Icons.phone_outlined,
-                              size: 13, color: AppColors.textMuted),
-                          const SizedBox(width: 4),
+                          const AppSvgIcon(
+                            AppSvgIconType.call,
+                            size: 14,
+                            color: AppColors.primary,
+                          ),
+                          const SizedBox(width: 6),
                           Expanded(
                             child: Text(
                               customer.phoneNumber,
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                               style: const TextStyle(
-                                fontSize: 13,
-                                color: AppColors.textSecondary,
-                                fontWeight: FontWeight.w500,
+                                fontSize: 15.5,
+                                color: AppColors.textPrimary,
+                                fontWeight: FontWeight.w700,
+                                letterSpacing: 0.3,
                               ),
                             ),
                           ),
+                          if (customer.currentPlan > 0)
+                            Container(
+                              margin: const EdgeInsets.only(left: 6),
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 8, vertical: 3),
+                              decoration: BoxDecoration(
+                                color: AppColors.primaryContainer,
+                                borderRadius: BorderRadius.circular(6),
+                              ),
+                              child: Text(
+                                '\u20B9${customer.currentPlan.toInt()}/mo',
+                                style: const TextStyle(
+                                  color: AppColors.primaryDark,
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w800,
+                                ),
+                              ),
+                            ),
                           if (hasPending)
                             Container(
-                              margin: const EdgeInsets.only(left: 4),
+                              margin: const EdgeInsets.only(left: 6),
                               padding: const EdgeInsets.symmetric(
-                                  horizontal: 6, vertical: 2),
+                                  horizontal: 8, vertical: 3),
                               decoration: BoxDecoration(
                                 color: AppColors.warningLight,
-                                borderRadius: BorderRadius.circular(4),
+                                borderRadius: BorderRadius.circular(6),
                               ),
                               child: Text(
                                 '${customer.noOfPendingBills} due',
                                 style: const TextStyle(
                                   color: AppColors.warningDark,
-                                  fontSize: 10,
-                                  fontWeight: FontWeight.bold,
+                                  fontSize: 12.5,
+                                  fontWeight: FontWeight.w800,
                                 ),
                               ),
                             ),
                         ],
                       ),
 
-                    const SizedBox(height: 6),
+                    const SizedBox(height: 7),
 
                     // Identifiers row (Account & MAC ID)
                     Wrap(
@@ -255,13 +279,13 @@ class CustomerTile extends StatelessWidget {
                             customer.accountNumber,
                             'Account #',
                           ),
-                          borderRadius: BorderRadius.circular(4),
+                          borderRadius: BorderRadius.circular(6),
                           child: Container(
                             padding: const EdgeInsets.symmetric(
-                                horizontal: 6, vertical: 2),
+                                horizontal: 9, vertical: 4),
                             decoration: BoxDecoration(
                               color: AppColors.surfaceVariant,
-                              borderRadius: BorderRadius.circular(4),
+                              borderRadius: BorderRadius.circular(6),
                             ),
                             child: Row(
                               mainAxisSize: MainAxisSize.min,
@@ -269,22 +293,26 @@ class CustomerTile extends StatelessWidget {
                                 const Text(
                                   'Acc: ',
                                   style: TextStyle(
-                                    fontSize: 11,
-                                    fontWeight: FontWeight.bold,
+                                    fontSize: 12.5,
+                                    fontWeight: FontWeight.w700,
                                     color: AppColors.textMuted,
                                   ),
                                 ),
                                 Text(
                                   customer.accountNumber,
                                   style: const TextStyle(
-                                    fontSize: 11,
-                                    fontWeight: FontWeight.w600,
-                                    color: AppColors.textSecondary,
+                                    fontSize: 13.5,
+                                    fontWeight: FontWeight.w800,
+                                    color: AppColors.textPrimary,
+                                    letterSpacing: 0.2,
                                   ),
                                 ),
                                 const SizedBox(width: 4),
-                                const Icon(Icons.copy_rounded,
-                                    size: 11, color: AppColors.textMuted),
+                                const AppSvgIcon(
+                                  AppSvgIconType.copy,
+                                  size: 12,
+                                  color: AppColors.textMuted,
+                                ),
                               ],
                             ),
                           ),
@@ -296,13 +324,13 @@ class CustomerTile extends StatelessWidget {
                               customer.macId,
                               'MAC ID',
                             ),
-                            borderRadius: BorderRadius.circular(4),
+                            borderRadius: BorderRadius.circular(6),
                             child: Container(
                               padding: const EdgeInsets.symmetric(
-                                  horizontal: 6, vertical: 2),
+                                  horizontal: 9, vertical: 4),
                               decoration: BoxDecoration(
                                 color: AppColors.surfaceVariant,
-                                borderRadius: BorderRadius.circular(4),
+                                borderRadius: BorderRadius.circular(6),
                               ),
                               child: Row(
                                 mainAxisSize: MainAxisSize.min,
@@ -310,22 +338,26 @@ class CustomerTile extends StatelessWidget {
                                   const Text(
                                     'MAC: ',
                                     style: TextStyle(
-                                      fontSize: 11,
-                                      fontWeight: FontWeight.bold,
+                                      fontSize: 12.5,
+                                      fontWeight: FontWeight.w700,
                                       color: AppColors.textMuted,
                                     ),
                                   ),
                                   Text(
                                     customer.macId,
                                     style: const TextStyle(
-                                      fontSize: 11,
-                                      fontWeight: FontWeight.w600,
-                                      color: AppColors.textSecondary,
+                                      fontSize: 13.5,
+                                      fontWeight: FontWeight.w800,
+                                      color: AppColors.textPrimary,
+                                      letterSpacing: 0.2,
                                     ),
                                   ),
                                   const SizedBox(width: 4),
-                                  const Icon(Icons.copy_rounded,
-                                      size: 11, color: AppColors.textMuted),
+                                  const AppSvgIcon(
+                                    AppSvgIconType.copy,
+                                    size: 12,
+                                    color: AppColors.textMuted,
+                                  ),
                                 ],
                               ),
                             ),
@@ -341,17 +373,57 @@ class CustomerTile extends StatelessWidget {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   IconButton(
-                    icon: const Icon(Icons.phone_rounded,
-                        color: AppColors.primary, size: 20),
+                    icon: const AppSvgIcon(
+                      AppSvgIconType.call,
+                      color: AppColors.primary,
+                      size: 20,
+                    ),
                     tooltip: 'Call Subscriber',
                     onPressed: () => _makePhoneCall(customer.phoneNumber),
                   ),
                   PopupMenuButton<String>(
-                    icon: const Icon(Icons.more_vert_rounded,
-                        color: AppColors.textMuted, size: 20),
+                    icon: const AppSvgIcon(
+                      AppSvgIconType.moreVertical,
+                      color: AppColors.textMuted,
+                      size: 20,
+                    ),
                     padding: EdgeInsets.zero,
-                    onSelected: (val) {
+                    onSelected: (val) async {
                       if (val == 'details') {
+                        _navigateToDetail(context);
+                      } else if (val == 'deactivate') {
+                        showDialog(
+                          context: context,
+                          builder: (ctx) => AlertDialog(
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(18)),
+                            title: const Text('Deactivate Customer?'),
+                            content: Text(
+                              'Are you sure you want to deactivate ${customer.name}? Account status will be set to Inactive.',
+                            ),
+                            actions: [
+                              TextButton(
+                                onPressed: () => Navigator.pop(ctx),
+                                child: const Text('Cancel'),
+                              ),
+                              FilledButton(
+                                style: FilledButton.styleFrom(
+                                    backgroundColor: AppColors.warningDark),
+                                onPressed: () async {
+                                  Navigator.pop(ctx);
+                                  await DatabaseService.deactivateCustomer(
+                                    context,
+                                    customerId: customer.id,
+                                    areaId: customer.areaId,
+                                    year: customer.runningYear.toString(),
+                                  );
+                                },
+                                child: const Text('Deactivate'),
+                              ),
+                            ],
+                          ),
+                        );
+                      } else if (val == 'activate') {
                         _navigateToDetail(context);
                       } else if (val == 'delete') {
                         _confirmDelete(context);
@@ -369,6 +441,30 @@ class CustomerTile extends StatelessWidget {
                           ],
                         ),
                       ),
+                      if (isActive)
+                        const PopupMenuItem(
+                          value: 'deactivate',
+                          child: Row(
+                            children: [
+                              Icon(Icons.pause_circle_outline_rounded,
+                                  size: 18, color: AppColors.warningDark),
+                              SizedBox(width: 8),
+                              Text('Deactivate Account'),
+                            ],
+                          ),
+                        )
+                      else
+                        const PopupMenuItem(
+                          value: 'activate',
+                          child: Row(
+                            children: [
+                              Icon(Icons.bolt_rounded,
+                                  size: 18, color: AppColors.success),
+                              SizedBox(width: 8),
+                              Text('Activate / Renew'),
+                            ],
+                          ),
+                        ),
                       const PopupMenuItem(
                         value: 'delete',
                         child: Row(
@@ -376,7 +472,7 @@ class CustomerTile extends StatelessWidget {
                             Icon(Icons.delete_outline_rounded,
                                 size: 18, color: AppColors.error),
                             SizedBox(width: 8),
-                            Text('Delete',
+                            Text('Delete Account',
                                 style: TextStyle(color: AppColors.error)),
                           ],
                         ),

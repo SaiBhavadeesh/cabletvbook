@@ -171,9 +171,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
             physics: const BouncingScrollPhysics(),
             children: <Widget>[
-              // Section 1: Operator Details
+              // Section 1: Personal / Profile Details
               _buildSectionCard(
-                title: 'Operator Profile',
+                title: 'Profile Details',
                 icon: Icons.person_outline_rounded,
                 children: [
                   TextFormField(

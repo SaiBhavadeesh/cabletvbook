@@ -135,6 +135,12 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
     if (areas.isEmpty) {
       return Scaffold(
         backgroundColor: AppColors.background,
+        appBar: AppBar(
+          title: const Text(
+            'Add Customer',
+            style: TextStyle(fontWeight: FontWeight.bold),
+          ),
+        ),
         body: Center(
           child: Padding(
             padding: const EdgeInsets.all(32),
@@ -182,19 +188,27 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
 
     return Scaffold(
       backgroundColor: AppColors.background,
-      body: ResponsiveContainer(
-        maxWidth: 800,
-        child: Form(
-          key: _formKey,
-          child: ListView(
-            physics: const BouncingScrollPhysics(),
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-            children: <Widget>[
-              // Avatar Picker Card
-              Center(
-                child: Padding(
-                  padding: const EdgeInsets.only(bottom: 16),
-                  child: Stack(
+      appBar: AppBar(
+        title: const Text(
+          'Add Customer',
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
+      ),
+      body: SafeArea(
+        top: false,
+        child: ResponsiveContainer(
+          maxWidth: 800,
+          child: Form(
+            key: _formKey,
+            child: ListView(
+              physics: const BouncingScrollPhysics(),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+              children: <Widget>[
+                // Avatar Picker Card
+                Center(
+                  child: Padding(
+                    padding: const EdgeInsets.only(top: 8, bottom: 18),
+                    child: Stack(
                     children: <Widget>[
                       CircleAvatar(
                         radius: 50,
@@ -326,6 +340,9 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
                     initialValue: _selectedAreaId,
                     hint: const Text('Choose coverage area...'),
                     isExpanded: true,
+                    isDense: true,
+                    menuMaxHeight: 260,
+                    alignment: AlignmentDirectional.centerStart,
                     icon: const Icon(Icons.keyboard_arrow_down_rounded,
                         color: AppColors.primary, size: 22),
                     dropdownColor: Colors.white,
@@ -339,7 +356,11 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
                     items: areas.map((area) {
                       return DropdownMenuItem<String>(
                         value: area.id,
-                        child: Text(area.areaName),
+                        child: Text(
+                          area.areaName,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
                       );
                     }).toList(),
                     onChanged: (val) {
@@ -455,6 +476,7 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
             ],
           ),
         ),
+      ),
       ),
     );
   }

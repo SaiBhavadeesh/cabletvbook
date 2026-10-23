@@ -230,7 +230,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     if (op == null) {
       return Scaffold(
         appBar: AppBar(title: const Text('Profile')),
-        body: const Center(child: Text('Operator profile not loaded')),
+        body: const Center(child: Text('Profile not loaded')),
       );
     }
 
@@ -245,7 +245,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       backgroundColor: AppColors.background,
       appBar: AppBar(
         title: const Text(
-          'Operator Profile',
+          'Profile',
           style: TextStyle(fontWeight: FontWeight.bold),
         ),
       ),

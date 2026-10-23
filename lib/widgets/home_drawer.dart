@@ -7,9 +7,9 @@ import 'package:cableTvBook/global/variables.dart';
 import 'package:cableTvBook/screens/profile_screen.dart';
 import 'package:cableTvBook/services/authentication.dart';
 import 'package:cableTvBook/screens/settings_screen.dart';
-import 'package:cableTvBook/screens/collection_screen.dart';
 import 'package:cableTvBook/theme/app_colors.dart';
 import 'package:cableTvBook/widgets/app_logo.dart';
+import 'package:cableTvBook/widgets/app_svg_icon.dart';
 import 'package:cableTvBook/helpers/avatar_image_provider.dart';
 
 class HomeDrawer extends StatelessWidget {
@@ -19,7 +19,8 @@ class HomeDrawer extends StatelessWidget {
 
   Widget _buildDrawerItem({
     required BuildContext context,
-    required IconData icon,
+    IconData? icon,
+    AppSvgIconType? svgIcon,
     required String title,
     required VoidCallback onTap,
     Color? iconColor,
@@ -28,11 +29,17 @@ class HomeDrawer extends StatelessWidget {
     return ListTile(
       dense: true,
       contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 2),
-      leading: Icon(
-        icon,
-        color: iconColor ?? AppColors.textSecondary,
-        size: 22,
-      ),
+      leading: svgIcon != null
+          ? AppSvgIcon(
+              svgIcon,
+              color: iconColor ?? AppColors.textSecondary,
+              size: 20,
+            )
+          : Icon(
+              icon,
+              color: iconColor ?? AppColors.textSecondary,
+              size: 22,
+            ),
       title: Text(
         title,
         style: TextStyle(
@@ -141,6 +148,7 @@ class HomeDrawer extends StatelessWidget {
                       children: [
                         CircleAvatar(
                           radius: 18,
+                          backgroundColor: Colors.transparent,
                           backgroundImage: avatarImage,
                         ),
                         const SizedBox(width: 12),
@@ -159,7 +167,8 @@ class HomeDrawer extends StatelessWidget {
                               Text(
                                 op?.phoneNumber ?? '',
                                 style: TextStyle(
-                                  color: Colors.white.withValues(alpha: 0.7),
+                                  color:
+                                      Colors.white.withValues(alpha: 0.7),
                                   fontSize: 12,
                                 ),
                               ),
@@ -181,21 +190,14 @@ class HomeDrawer extends StatelessWidget {
                   _buildSectionHeader('Management'),
                   _buildDrawerItem(
                     context: context,
-                    icon: Icons.person_outline_rounded,
+                    svgIcon: AppSvgIconType.profile,
                     title: 'Profile',
                     onTap: () =>
                         Navigator.of(context).pushNamed(ProfileScreen.routeName),
                   ),
                   _buildDrawerItem(
                     context: context,
-                    icon: Icons.analytics_outlined,
-                    title: 'Collections & Revenue',
-                    onTap: () => Navigator.of(context)
-                        .pushNamed(CollectionScreen.routeName),
-                  ),
-                  _buildDrawerItem(
-                    context: context,
-                    icon: Icons.tune_rounded,
+                    svgIcon: AppSvgIconType.settings,
                     title: 'Settings',
                     onTap: () => Navigator.of(context)
                         .pushNamed(SettingsScreen.routeName),
@@ -206,7 +208,7 @@ class HomeDrawer extends StatelessWidget {
                   _buildSectionHeader('Support & Legal'),
                   _buildDrawerItem(
                     context: context,
-                    icon: Icons.help_outline_rounded,
+                    svgIcon: AppSvgIconType.help,
                     title: 'Help & Support',
                     onTap: () async {
                       final emailLaunchUri = Uri(
@@ -226,7 +228,7 @@ class HomeDrawer extends StatelessWidget {
                   ),
                   _buildDrawerItem(
                     context: context,
-                    icon: Icons.shield_outlined,
+                    svgIcon: AppSvgIconType.shield,
                     title: 'Privacy Policy',
                     onTap: () async {
                       final uri = Uri.parse(
@@ -242,7 +244,7 @@ class HomeDrawer extends StatelessWidget {
                   ),
                   _buildDrawerItem(
                     context: context,
-                    icon: Icons.description_outlined,
+                    svgIcon: AppSvgIconType.terms,
                     title: 'Terms & Conditions',
                     onTap: () async {
                       final uri = Uri.parse(
@@ -261,7 +263,7 @@ class HomeDrawer extends StatelessWidget {
 
                   _buildDrawerItem(
                     context: context,
-                    icon: Icons.logout_rounded,
+                    svgIcon: AppSvgIconType.logout,
                     title: 'Log out',
                     iconColor: AppColors.error,
                     textColor: AppColors.error,
